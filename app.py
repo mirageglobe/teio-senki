@@ -4,28 +4,179 @@ app.py — Textual TUI for 帝王战纪：三国录
 Uses the alternate-screen buffer via Textual's Driver. The terminal is
 restored cleanly on any exit path — Q, Ctrl+C, or exception.
 """
+
 from __future__ import annotations
 
 import sqlite3
+from threading import Timer
 
 from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.screen import Screen
 from textual.widgets import (
-    DataTable, Footer, Header, Input, RichLog, Static,
-    TabbedContent, TabPane,
+    DataTable,
+    Footer,
+    Header,
+    Input,
+    RichLog,
+    Static,
+    TabbedContent,
+    TabPane,
 )
 
 from clock import BaziClock, essence_drift, effective_stat
+
+
+# ---------------------------------------------------------------------------
+# Splash Screen
+# ---------------------------------------------------------------------------
+
+_SPLASH_ART = """
+[bold gold1]                    ╔══════════════════════╗[/]
+[bold gold1]                    ║   帝  王  战  纪   ║[/]
+[bold gold1]                    ║     三  国  录      ║[/]
+[bold gold1]                    ╚══════════════════════╝[bold cyan]
+
+                    ╔═══════════════════════════╗
+                    ║   S O V E R E I G N       ║
+                    ║   R E C O R D           ║
+                    ║                       ║
+                    ║    三 国 之 战           ║
+                    ║   动 乱 之起            ║
+                    ║   黄巾之乱 (AD 184)      ║
+                    ║                       ║
+                    ║   Turn-Based Strategy   ║
+                    ╚═══════════════════════════╝
+
+         [bold]Press any key to begin your reign...[/]
+
+
+[dim gold3]Leadership:  Cao Cao (Wei) · Liu Bei (Shu) · Sun Quan (Wu)[/]
+[dim gold3]Territory:  29 cities · 498 officers · 4 factions[/]
+"""
+
+
+class SplashScreen(Screen):
+    TITLE = "帝王战纪 — Loading"
+
+    CSS = """
+    SplashScreen { background: $background; }
+    #splash-art { padding: 1 2; }
+    """
+
+    BINDINGS = [
+        Binding("enter", "dismiss", "Begin", priority=True),
+        Binding("escape", "dismiss", "Begin", priority=True),
+        Binding("space", "dismiss", "Begin", priority=True),
+    ]
+
+    def __init__(self, on_dismiss: callable | None = None) -> None:
+        super().__init__()
+        self._on_dismiss = on_dismiss
+        self._started = False
+        self._timer: Timer | None = None
+
+    def compose(self) -> ComposeResult:
+        yield Static(
+            "[gold1]              ╔═══════════════════╗\n              ║  帝王战纪  :三国录 ║\n              ╚═══════════════════╝\n\n              ╔═════════════════════╗\n              ║  S O V E R E I G N   ║\n              ║  R E C O R D       ║\n              ║                   ║\n              ║   三国之战         ║\n              ║  动乱之起         ║\n              ║  黄巾之乱 (184)    ║\n              ║                   ║\n              ║  Turn-Based Strat  ║\n              ╚═══════════════════╝\n\n                  Press any key...\n\n              Cao Cao / Liu Bei / Sun Quan\n              29 cities · 498 officers[dark_gold]",
+            id="splash-art",
+        )
+
+    def on_mount(self) -> None:
+        if self._on_dismiss:
+            self._timer = Timer(5.0, self._auto_dismiss)
+            self._timer.start()
+
+    def _auto_dismiss(self) -> None:
+        if not self._started:
+            self._started = True
+            self.action_dismiss()
+
+    def action_dismiss(self) -> None:
+        self._started = True
+        if self._timer:
+            self._timer.cancel()
+        self.dismiss()
+        if self._on_dismiss:
+            self._on_dismiss()
+
+
+# ---------------------------------------------------------------------------
+# Map Screen
+# ---------------------------------------------------------------------------
+
+
+class MapScreen(Screen):
+    TITLE = "帝王战纪 — Map"
+
+    CSS = """
+    MapScreen { background: $background; }
+    #map-view { padding: 0 1; }
+    """
+
+    BINDINGS = [
+        Binding("escape", "dismiss", "Back", priority=True),
+        Binding("m", "dismiss", "Menu", priority=True),
+        Binding("q", "quit", "Exit", priority=True),
+    ]
+
+    def __init__(self, on_dismiss: callable | None = None) -> None:
+        super().__init__()
+        self._on_dismiss = on_dismiss
+
+    def compose(self) -> ComposeResult:
+        yield Static(
+            "[gold1]                  帝王战纪 — 三国地图\n"
+            "                  ──────────────────\n"
+            "\n"
+            "     NORTH              NORTHEAST        EAST\n"
+            "  ┌─────────┐         ┌─────────┐    ┌─────────┐\n"
+            "  │  幽州  │         │  并州  │    │   徐州  │\n"
+            "  │  Wei   │         │  Wei   │    │   Wu    │\n"
+            "  └─────────┘         └─────────┘    └─────────┘\n"
+            "  ┌─────────┐         ┌─────────┐    ┌─────────┐\n"
+            "  │  冀州  │────────│  兖州  │────│  豫州   │\n"
+            "  │  Wei   │         │  Wei   │    │        │\n"
+            "  │   ▼    │         └─────────┘    └─────────┘\n"
+            "  └─────────┘\n"
+            "     CENTER             SOUTHEAST        EAST\n"
+            "  ┌─────────┐         ┌─────────┐    ┌─────────┐\n"
+            "  │  荆州  │────────│  扬州  │────│  交州   │\n"
+            "  │   ▼    │         │   Wu   │    │   Wu    │\n"
+            "  │  Liu  │         └─────────┘    └─────────┘\n"
+            "  │  Bei  │\n"
+            "  └─────────┘\n"
+            "           WEST / SOUTHWEST\n"
+            "        ┌─────────┐\n"
+            "        │  益州   │\n"
+            "        │  Shu    │\n"
+            "        │  Liu   │\n"
+            "        │  Bei   │\n"
+            "        └─────────┘\n"
+            "\n"
+            "[red]■[/] Wei (Cao Cao)   [green]■[/] Shu (Liu Bei)   [cyan]■[/] Wu (Sun Quan)   [yellow]■[/] Independent\n"
+            "\n"
+            "[dim]Press Esc/M to return | T for Turn | Q to quit[dark_gold]",
+            id="map-view",
+        )
+
+
 from engine import (
-    Command, CommandType,
-    command_points, validate_commands,
-    phase_a, resolve_turn, find_lords,
+    Command,
+    CommandType,
+    command_points,
+    validate_commands,
+    phase_a,
+    resolve_turn,
+    find_lords,
 )
 from ledger import (
-    get_all_cities, get_all_officers, get_clock,
-    get_ledger_log, settle_turn as db_settle,
+    get_all_cities,
+    get_all_officers,
+    get_clock,
+    get_ledger_log,
+    settle_turn as db_settle,
 )
 from models import Element, Tag
 
@@ -35,19 +186,19 @@ from models import Element, Tag
 # ---------------------------------------------------------------------------
 
 _ELEM_STYLE: dict[Element, str] = {
-    Element.WOOD:  "green",
-    Element.FIRE:  "bold red",
+    Element.WOOD: "green",
+    Element.FIRE: "bold red",
     Element.EARTH: "yellow",
     Element.METAL: "white",
     Element.WATER: "cyan",
 }
 
 _CMD_MAP: dict[str, CommandType] = {
-    "ag":   CommandType.BUILD_AGRICULTURE,
-    "com":  CommandType.BUILD_COMMERCE,
+    "ag": CommandType.BUILD_AGRICULTURE,
+    "com": CommandType.BUILD_COMMERCE,
     "tech": CommandType.BUILD_TECHNOLOGY,
-    "ord":  CommandType.BUILD_ORDER,
-    "def":  CommandType.BUILD_DEFENSE,
+    "ord": CommandType.BUILD_ORDER,
+    "def": CommandType.BUILD_DEFENSE,
 }
 
 
@@ -66,6 +217,7 @@ def _drift(d: float) -> Text:
 # ---------------------------------------------------------------------------
 # Turn Screen
 # ---------------------------------------------------------------------------
+
 
 class TurnScreen(Screen):
     """
@@ -87,7 +239,7 @@ class TurnScreen(Screen):
     """
 
     BINDINGS = [
-        Binding("s",      "settle", "Settle Turn", priority=True),
+        Binding("s", "settle", "Settle Turn", priority=True),
         Binding("escape", "cancel", "Cancel / Back"),
     ]
 
@@ -143,7 +295,7 @@ class TurnScreen(Screen):
         if lords:
             lo = lords[0]
             drift = essence_drift(lo.essence, self._new_clock)
-            eff   = effective_stat(lo.strategy, drift)
+            eff = effective_stat(lo.strategy, drift)
             self._cp_total = command_points(eff)
             style = _ELEM_STYLE[lo.essence]
             log.write(
@@ -185,10 +337,7 @@ class TurnScreen(Screen):
         log = self.query_one("#turn-log", RichLog)
 
         if len(parts) != 2 or parts[0] not in _CMD_MAP:
-            log.write(
-                f"  [red]Unknown.[/] Valid: "
-                f"[bold]ag com tech ord def[/] <city_id>"
-            )
+            log.write(f"  [red]Unknown.[/] Valid: [bold]ag com tech ord def[/] <city_id>")
             return
 
         try:
@@ -197,7 +346,7 @@ class TurnScreen(Screen):
             log.write("  [red]City ID must be an integer.[/]")
             return
 
-        cmd  = Command(_CMD_MAP[parts[0]], city_id=city_id)
+        cmd = Command(_CMD_MAP[parts[0]], city_id=city_id)
         left = self._cp_total - self._cp_used
         if cmd.cost > left:
             log.write(f"  [red]Not enough CP[/] — need {cmd.cost}, have {left}.")
@@ -205,13 +354,8 @@ class TurnScreen(Screen):
 
         self._commands.append(cmd)
         self._cp_used += cmd.cost
-        self.query_one("#q-table", DataTable).add_row(
-            cmd.type.value, str(city_id), str(cmd.cost)
-        )
-        log.write(
-            f"  [green]Queued[/] {cmd.type.value}"
-            f" → city {city_id}  (cost {cmd.cost} CP)"
-        )
+        self.query_one("#q-table", DataTable).add_row(cmd.type.value, str(city_id), str(cmd.cost))
+        log.write(f"  [green]Queued[/] {cmd.type.value} → city {city_id}  (cost {cmd.cost} CP)")
         self._update_cp_bar()
 
     # -- Phase C -------------------------------------------------------------
@@ -222,29 +366,28 @@ class TurnScreen(Screen):
             return
 
         self._settled = True
-        log   = self.query_one("#turn-log", RichLog)
-        inp   = self.query_one("#cmd-input", Input)
+        log = self.query_one("#turn-log", RichLog)
+        inp = self.query_one("#cmd-input", Input)
 
         log.write("\n[bold cyan]── PHASE C  Settlement ──────────────────────────────[/]")
 
-        approved        = validate_commands(tuple(self._commands), self._cp_total)
-        cities_by_id    = {c.id: c for c in get_all_cities(self.conn) if c.id is not None}
+        approved = validate_commands(tuple(self._commands), self._cp_total)
+        cities_by_id = {c.id: c for c in get_all_cities(self.conn) if c.id is not None}
         updated, c_evts = resolve_turn(cities_by_id, self._a_events, approved)
 
         db_settle(self.conn, self._new_clock, updated, self._a_events, c_evts)
 
         changed = 0
         for cid, after in updated.items():
-            before  = cities_by_id[cid]
-            deltas  = {
+            before = cities_by_id[cid]
+            deltas = {
                 f: getattr(after, f) - getattr(before, f)
                 for f in ("agriculture", "commerce", "technology", "order", "defense")
                 if getattr(after, f) != getattr(before, f)
             }
             if deltas:
                 parts = "  ".join(
-                    f"[{'green' if v > 0 else 'red'}]{k[:4].upper()} "
-                    f"{'+' if v > 0 else ''}{v}[/]"
+                    f"[{'green' if v > 0 else 'red'}]{k[:4].upper()} {'+' if v > 0 else ''}{v}[/]"
                     for k, v in deltas.items()
                 )
                 log.write(f"  {after.name:<14} {parts}")
@@ -266,6 +409,7 @@ class TurnScreen(Screen):
 # Main App
 # ---------------------------------------------------------------------------
 
+
 class SovereignApp(App):
     TITLE = "帝王战纪：三国录"
 
@@ -278,12 +422,13 @@ class SovereignApp(App):
     """
 
     BINDINGS = [
-        Binding("t",     "end_turn",       "End Turn",  priority=True),
-        Binding("1",     "switch_tab('tab-officers')", "Officers"),
-        Binding("2",     "switch_tab('tab-cities')",   "Cities"),
-        Binding("3",     "switch_tab('tab-log')",      "Log"),
-        Binding("r",     "refresh_all",    "Refresh"),
-        Binding("q",     "quit",           "Exit"),
+        Binding("t", "end_turn", "End Turn", priority=True),
+        Binding("1", "switch_tab('tab-officers')", "Officers"),
+        Binding("2", "switch_tab('tab-cities')", "Cities"),
+        Binding("3", "switch_tab('tab-log')", "Log"),
+        Binding("m", "show_map", "Map", priority=True),
+        Binding("r", "refresh_all", "Refresh"),
+        Binding("q", "quit", "Exit"),
     ]
 
     def __init__(self, conn: sqlite3.Connection) -> None:
@@ -296,21 +441,23 @@ class SovereignApp(App):
         yield Header()
         with TabbedContent(id="main-tabs"):
             with TabPane("Officers [1]", id="tab-officers"):
-                yield DataTable(
-                    id="officers-table", cursor_type="row", zebra_stripes=True
-                )
+                yield DataTable(id="officers-table", cursor_type="row", zebra_stripes=True)
             with TabPane("Cities [2]", id="tab-cities"):
-                yield DataTable(
-                    id="cities-table", cursor_type="row", zebra_stripes=True
-                )
+                yield DataTable(id="cities-table", cursor_type="row", zebra_stripes=True)
             with TabPane("Log [3]", id="tab-log"):
                 yield RichLog(id="log-panel", highlight=True, markup=True, wrap=True)
         yield Footer()
 
     def on_mount(self) -> None:
-        self._populate_officers()
-        self._populate_cities()
-        self._sync_subtitle()
+        def after_map() -> None:
+            self._populate_officers()
+            self._populate_cities()
+            self._sync_subtitle()
+
+        def after_splash() -> None:
+            self.push_screen(MapScreen(after_map))
+
+        self.push_screen(SplashScreen(after_splash))
 
     # -- Data population -----------------------------------------------------
 
@@ -318,20 +465,33 @@ class SovereignApp(App):
         table = self.query_one("#officers-table", DataTable)
         table.clear(columns=True)
         table.add_columns(
-            "ID", "Name", "Title", "Essence", "Drift",
-            "STR*", "VAL*", "GOV*", "INT*", "LOY", "Tags",
+            "ID",
+            "Name",
+            "Title",
+            "Essence",
+            "Drift",
+            "STR*",
+            "VAL*",
+            "GOV*",
+            "INT*",
+            "LOY",
+            "Tags",
         )
         clock = get_clock(self.conn)
         for o in get_all_officers(self.conn):
-            d    = essence_drift(o.essence, clock)
+            d = essence_drift(o.essence, clock)
             tags = " ".join(sorted(t.value for t in o.tags))
             name = Text(o.name, style="bold gold1" if Tag.LORD in o.tags else "")
             table.add_row(
-                str(o.id), name, o.title, _elem(o.essence), _drift(d),
-                str(effective_stat(o.strategy,   d)),
-                str(effective_stat(o.valour,     d)),
+                str(o.id),
+                name,
+                o.title,
+                _elem(o.essence),
+                _drift(d),
+                str(effective_stat(o.strategy, d)),
+                str(effective_stat(o.valour, d)),
                 str(effective_stat(o.governance, d)),
-                str(effective_stat(o.integrity,  d)),
+                str(effective_stat(o.integrity, d)),
                 str(o.loyalty),
                 Text(tags, style="dim"),
             )
@@ -340,15 +500,33 @@ class SovereignApp(App):
         table = self.query_one("#cities-table", DataTable)
         table.clear(columns=True)
         table.add_columns(
-            "ID", "Name", "Chinese", "Region", "Terrain",
-            "AG", "COM", "TECH", "ORD", "DEF", "Pop", "Faction",
+            "ID",
+            "Name",
+            "Chinese",
+            "Region",
+            "Terrain",
+            "AG",
+            "COM",
+            "TECH",
+            "ORD",
+            "DEF",
+            "Pop",
+            "Faction",
         )
         for c in get_all_cities(self.conn):
             table.add_row(
-                str(c.id), c.name, c.chinese, c.region, c.terrain.value,
-                str(c.agriculture), str(c.commerce),
-                str(c.technology),  str(c.order), str(c.defense),
-                f"{c.population:,}", c.faction,
+                str(c.id),
+                c.name,
+                c.chinese,
+                c.region,
+                c.terrain.value,
+                str(c.agriculture),
+                str(c.commerce),
+                str(c.technology),
+                str(c.order),
+                str(c.defense),
+                f"{c.population:,}",
+                c.faction,
             )
 
     def _populate_log(self) -> None:
@@ -379,6 +557,9 @@ class SovereignApp(App):
         tabs.active = tab_id
         if tab_id == "tab-log":
             self._populate_log()
+
+    def action_show_map(self) -> None:
+        self.push_screen(MapScreen())
 
     def action_refresh_all(self) -> None:
         self._populate_officers()

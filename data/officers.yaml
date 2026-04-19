@@ -1607,3 +1607,3415 @@ officers:
     governance: 72
     integrity: 92
     loyalty: 98
+
+  # ── Wei — Late Period ─────────────────────────────────────────────────────────
+
+  - name: "Sima Zhao"
+    title: "Prince of Jin, Regent"
+    essence: earth
+    tags: [lord, civil, strategist]
+    strategy: 88
+    valour: 55
+    governance: 85
+    integrity: 45
+    loyalty: 75
+
+  - name: "Sima Shi"
+    title: "Prince of Jin"
+    essence: earth
+    tags: [civil, strategist]
+    strategy: 80
+    valour: 40
+    governance: 78
+    integrity: 50
+    loyalty: 70
+
+  - name: "Wen Yang"
+    title: "General Who Quells the West"
+    essence: metal
+    tags: [military, strategist, vanguard]
+    strategy: 90
+    valour: 95
+    governance: 55
+    integrity: 75
+    loyalty: 82
+
+  - name: "Zhong Hui"
+    title: "General Who Conquers Shu"
+    essence: water
+    tags: [civil, strategist, scholar]
+    strategy: 92
+    valour: 55
+    governance: 80
+    integrity: 28
+    loyalty: 55
+
+  - name: "Zhang Dai"
+    title: "General of the Right"
+    essence: fire
+    tags: [military, cavalry, strategist]
+    strategy: 78
+    valour: 82
+    governance: 58
+    integrity: 72
+    loyalty: 85
+
+  - name: "Wang Qi"
+    title: "General of the Flying Cavalry"
+    essence: metal
+    tags: [military, cavalry, vanguard]
+    strategy: 72
+    valour: 88
+    governance: 45
+    integrity: 78
+    loyalty: 88
+
+  - name: "Hu Zhi"
+    title: "General Who Pacifies the South"
+    essence: water
+    tags: [military, strategist]
+    strategy: 80
+    valour: 70
+    governance: 62
+    integrity: 85
+    loyalty: 90
+
+  - name: "Xiahou Ba"
+    title: "General of the Vanguard"
+    essence: fire
+    tags: [military, cavalry, vanguard]
+    strategy: 75
+    valour: 90
+    governance: 42
+    integrity: 88
+    loyalty: 95
+
+  - name: "Zhang Hu"
+    title: "General Who Defends the West"
+    essence: earth
+    tags: [military, strategist]
+    strategy: 82
+    valour: 68
+    governance: 65
+    integrity: 70
+    loyalty: 78
+
+  - name: "Cao Mao"
+    title: "Duke of Wei"
+    essence: wood
+    tags: [lord, civil]
+    strategy: 45
+    valour: 35
+    governance: 65
+    integrity: 72
+    loyalty: 80
+
+  - name: "Cao Shuang"
+    title: "Marquis of Yang"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 65
+    valour: 25
+    governance: 75
+    integrity: 20
+    loyalty: 40
+
+  - name: "He Yan"
+    title: "Imperial Counsellor"
+    essence: wood
+    tags: [civil, scholar, strategist]
+    strategy: 78
+    valour: 18
+    governance: 80
+    integrity: 25
+    loyalty: 55
+
+  - name: "Pei Xiu"
+    title: "Minister of Works"
+    essence: earth
+    tags: [civil, scholar, strategist]
+    strategy: 82
+    valour: 20
+    governance: 85
+    integrity: 88
+    loyalty: 90
+
+  - name: "Zhong Yao"
+    title: "Grand Commandant"
+    essence: wood
+    tags: [civil, scholar, diplomat]
+    strategy: 75
+    valour: 18
+    governance: 82
+    integrity: 85
+    loyalty: 92
+
+  - name: "Liu Yan"
+    title: "Governor of Xu Province"
+    essence: fire
+    tags: [lord, civil, scholar]
+    strategy: 52
+    valour: 20
+    governance: 70
+    integrity: 65
+    loyalty: 75
+
+  - name: "Liu Yi"
+    title: "Governor of Pengcheng"
+    essence: wood
+    tags: [lord, military]
+    strategy: 55
+    valour: 45
+    governance: 58
+    integrity: 50
+    loyalty: 65
+
+  - name: "Zheng Tai"
+    title: "General Who Pacifies the South"
+    essence: water
+    tags: [military, strategist]
+    strategy: 75
+    valour: 62
+    governance: 55
+    integrity: 80
+    loyalty: 85
+
+  - name: "Yin Shang"
+    title: "Governor of Runan"
+    essence: metal
+    tags: [civil, scholar]
+    strategy: 58
+    valour: 15
+    governance: 72
+    integrity: 78
+    loyalty: 80
+
+  - name: "Zhang Ji"
+    title: "Commander of Ji Province"
+    essence: metal
+    tags: [military, cavalry]
+    strategy: 65
+    valour: 72
+    governance: 48
+    integrity: 60
+    loyalty: 75
+
+  # ── Wu — Late Period ─────────────────────────────────────────────────────────
+
+  - name: "Zhuge Ke"
+    title: "Prince of Lukang"
+    essence: earth
+    tags: [lord, civil, scholar, strategist]
+    strategy: 78
+    valour: 25
+    governance: 85
+    integrity: 70
+    loyalty: 80
+
+  - name: "Sun Ko"
+    title: "Prince of Kuang"
+    essence: earth
+    tags: [lord, military]
+    strategy: 48
+    valour: 35
+    governance: 55
+    integrity: 45
+    loyalty: 60
+
+  - name: "Sun Feng"
+    title: "Prince of Zan"
+    essence: water
+    tags: [lord, civil]
+    strategy: 42
+    valour: 22
+    governance: 60
+    integrity: 55
+    loyalty: 70
+
+  - name: "Sun Liang"
+    title: "Emperor of Wu"
+    essence: metal
+    tags: [lord, civil]
+    strategy: 35
+    valour: 18
+    governance: 55
+    integrity: 50
+    loyalty: 65
+
+  - name: "Sun Xiu"
+    title: "Emperor of Wu"
+    essence: fire
+    tags: [lord, civil]
+    strategy: 58
+    valour: 30
+    governance: 70
+    integrity: 65
+    loyalty: 75
+
+  - name: "Lu Kang"
+    title: "General Who Conquers Wei"
+    essence: water
+    tags: [military, strategist, vanguard]
+    strategy: 92
+    valour: 88
+    governance: 75
+    integrity: 90
+    loyalty: 95
+
+  - name: "Zhang Wen"
+    title: "Grand Commandant"
+    essence: earth
+    tags: [civil, scholar, diplomat]
+    strategy: 75
+    valour: 15
+    governance: 82
+    integrity: 85
+    loyalty: 88
+
+  - name: "He Zhi"
+    title: "General of the Left"
+    essence: water
+    tags: [military, naval]
+    strategy: 68
+    valour: 72
+    governance: 48
+    integrity: 75
+    loyalty: 82
+
+  - name: "Tong Qian"
+    title: "General Who Quells the South"
+    essence: water
+    tags: [military, naval, strategist]
+    strategy: 75
+    valour: 60
+    governance: 58
+    integrity: 78
+    loyalty: 85
+
+  - name: "Zhou Fang"
+    title: "General of the Left"
+    essence: fire
+    tags: [military, naval, strategist]
+    strategy: 72
+    valour: 78
+    governance: 52
+    integrity: 42
+    loyalty: 55
+
+  - name: "Zhu Yi"
+    title: "General of the Right"
+    essence: wood
+    tags: [military, naval, vanguard]
+    strategy: 65
+    valour: 82
+    governance: 38
+    integrity: 70
+    loyalty: 85
+
+  - name: "Wei Jie"
+    title: "Governor of Jiao Province"
+    essence: wood
+    tags: [civil, scholar, merchant]
+    strategy: 55
+    valour: 18
+    governance: 78
+    integrity: 80
+    loyalty: 82
+
+  - name: "Yan Yi"
+    title: "Inspector of Jiaozhi"
+    essence: earth
+    tags: [civil, scholar, diplomat]
+    strategy: 50
+    valour: 12
+    governance: 72
+    integrity: 85
+    loyalty: 85
+
+  - name: "Lu Xian"
+    title: "General Who Defends the South"
+    essence: fire
+    tags: [military, naval, strategist]
+    strategy: 70
+    valour: 65
+    governance: 55
+    integrity: 60
+    loyalty: 75
+
+  - name: "Shi Di"
+    title: "Governor of Cangwu"
+    essence: earth
+    tags: [military, pioneer]
+    strategy: 58
+    valour: 52
+    governance: 45
+    integrity: 55
+    loyalty: 65
+
+  # ── Shu — Late Period ─────────────────────────────────────────────────────────
+
+  - name: "Huang Hao"
+    title: "Court Attendant"
+    essence: metal
+    tags: [civil, diplomat]
+    strategy: 45
+    valour: 8
+    governance: 55
+    integrity: 15
+    loyalty: 35
+
+  - name: "Yan Yan"
+    title: "Governor of Xichuan"
+    essence: metal
+    tags: [military, cavalry, vanguard, loyalist]
+    strategy: 65
+    valour: 88
+    governance: 38
+    integrity: 88
+    loyalty: 90
+
+  - name: "Zhang Ni"
+    title: "General of the Chariots"
+    essence: metal
+    tags: [military, strategist]
+    strategy: 80
+    valour: 68
+    governance: 50
+    integrity: 78
+    loyalty: 85
+
+  - name: "Luo Xian"
+    title: "General of the South"
+    essence: water
+    tags: [military, pioneer]
+    strategy: 62
+    valour: 72
+    governance: 40
+    integrity: 65
+    loyalty: 75
+
+  - name: "Wu Yi"
+    title: "General of the Left"
+    essence: metal
+    tags: [military, vanguard]
+    strategy: 55
+    valour: 80
+    governance: 32
+    integrity: 70
+    loyalty: 88
+
+  - name: "Wang Xi"
+    title: "General of the Rear"
+    essence: earth
+    tags: [military, cavalry]
+    strategy: 58
+    valour: 75
+    governance: 38
+    integrity: 60
+    loyalty: 80
+
+  - name: "Ma Liang"
+    title: "General Who Assists the Han"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 60
+    valour: 18
+    governance: 68
+    integrity: 55
+    loyalty: 70
+
+  - name: "Yan Bujian"
+    title: "Queen of the South"
+    essence: earth
+    tags: [lord, civil, strategist]
+    strategy: 52
+    valour: 42
+    governance: 60
+    integrity: 65
+    loyalty: 80
+
+  - name: "Wang Gaihua"
+    title: "General of the South"
+    essence: water
+    tags: [military, cavalry]
+    strategy: 55
+    valour: 75
+    governance: 30
+    integrity: 58
+    loyalty: 70
+
+  # ── Jin ─────────────────────────────────────────────────────────────────────
+
+  - name: "Sima Yan"
+    title: "Founder of Jin"
+    essence: earth
+    tags: [lord, civil, strategist]
+    strategy: 80
+    valour: 50
+    governance: 85
+    integrity: 60
+    loyalty: 85
+
+  # ── Other Minor Factions ────────────────────────────────────────────────
+
+  - name: "Zhang Rang"
+    title: "Yellow Turban Leader"
+    essence: wood
+    tags: [lord, civil, strategist]
+    strategy: 72
+    valour: 35
+    governance: 65
+    integrity: 55
+    loyalty: 80
+
+  - name: "Bo Zhang"
+    title: "Yellow Turban Commander"
+    essence: fire
+    tags: [military, vanguard]
+    strategy: 58
+    valour: 72
+    governance: 25
+    integrity: 45
+    loyalty: 75
+
+  - name: "Zhang Bao"
+    title: "Yellow Turban, Sky General"
+    essence: wood
+    tags: [military, strategist]
+    strategy: 70
+    valour: 60
+    governance: 45
+    integrity: 55
+    loyalty: 85
+
+  - name: "Zhao Zhong"
+    title: "Yellow Turban Commander"
+    essence: earth
+    tags: [military, vanguard]
+    strategy: 52
+    valour: 70
+    governance: 22
+    integrity: 48
+    loyalty: 70
+
+  - name: "Dong Cheng"
+    title: "Lord of Fixed Ocean"
+    essence: wood
+    tags: [civil, strategist]
+    strategy: 75
+    valour: 35
+    governance: 65
+    integrity: 80
+    loyalty: 85
+
+  - name: "Hou Cheng"
+    title: "Yellow Turban Officer"
+    essence: fire
+    tags: [military, vanguard]
+    strategy: 48
+    valour: 65
+    governance: 18
+    integrity: 40
+    loyalty: 65
+
+  - name: "Liu Pi"
+    title: "Yellow Turban Leader"
+    essence: wood
+    tags: [lord, military]
+    strategy: 65
+    valour: 45
+    governance: 50
+    integrity: 50
+    loyalty: 75
+
+  - name: "Zhou Jing"
+    title: "Wizard of the Way"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 45
+    valour: 10
+    governance: 55
+    integrity: 60
+    loyalty: 70
+
+  - name: "Yang Biao"
+    title: "Imperial Tutor"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 42
+    valour: 8
+    governance: 65
+    integrity: 75
+    loyalty: 80
+
+  - name: "Huang Xu"
+    title: "Yellow Turban Commander"
+    essence: fire
+    tags: [military]
+    strategy: 45
+    valour: 55
+    governance: 20
+    integrity: 42
+    loyalty: 65
+
+  - name: "Cui Zhous"
+    title: "Yellow Turban Officer"
+    essence: earth
+    tags: [military]
+    strategy: 50
+    valour: 48
+    governance: 22
+    integrity: 38
+    loyalty: 60
+
+  - name: "Yu Du"
+    title: "Yellow Turban Officer"
+    essence: fire
+    tags: [military]
+    strategy: 42
+    valour: 50
+    governance: 18
+    integrity: 35
+    loyalty: 55
+
+  - name: "Pei Yu"
+    title: "Governor of Lujiang"
+    essence: metal
+    tags: [military, strategist]
+    strategy: 70
+    valour: 60
+    governance: 58
+    integrity: 75
+    loyalty: 82
+
+  - name: "Zang Ba"
+    title: "General of Lujiang"
+    essence: fire
+    tags: [military, strategist]
+    strategy: 78
+    valour: 72
+    governance: 45
+    integrity: 65
+    loyalty: 85
+
+  - name: "Liu Xu"
+    title: "Governor of Langya"
+    essence: water
+    tags: [military, cavalry]
+    strategy: 60
+    valour: 58
+    governance: 52
+    integrity: 70
+    loyalty: 78
+
+  - name: "Xun Can"
+    title: "Scholar of Xun Family"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 68
+    valour: 12
+    governance: 72
+    integrity: 82
+    loyalty: 85
+
+  - name: "Xun Jun"
+    title: "Scholar of Xun Family"
+    essence: metal
+    tags: [civil, scholar]
+    strategy: 60
+    valour: 15
+    governance: 70
+    integrity: 80
+    loyalty: 82
+
+  - name: "Huangfu Song"
+    title: "General Against Rebellion"
+    essence: earth
+    tags: [military, strategist]
+    strategy: 65
+    valour: 75
+    governance: 42
+    integrity: 72
+    loyalty: 85
+
+  - name: "Zhu Jun"
+    title: "Imperial Commander"
+    essence: earth
+    tags: [military, strategist]
+    strategy: 72
+    valour: 78
+    governance: 48
+    integrity: 65
+    loyalty: 80
+
+  - name: "Zhang Bao"
+    title: "Commander of the Capital"
+    essence: fire
+    tags: [military, cavalry]
+    strategy: 58
+    valour: 70
+    governance: 30
+    integrity: 55
+    loyalty: 70
+
+  - name: "Wang Yue"
+    title: "General of the East"
+    essence: water
+    tags: [military, cavalry]
+    strategy: 62
+    valour: 68
+    governance: 35
+    integrity: 60
+    loyalty: 75
+
+  - name: "Liu Yan"
+    title: "Governor of Yuzhou"
+    essence: fire
+    tags: [lord, civil, scholar]
+    strategy: 52
+    valour: 28
+    governance: 70
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhang Xiu"
+    title: "Governor of Wan"
+    essence: fire
+    tags: [lord, military, cavalry, vanguard]
+    strategy: 72
+    valour: 85
+    governance: 50
+    integrity: 50
+    loyalty: 75
+
+  - name: "Yuan Shang"
+    title: "Prince of Liu"
+    essence: fire
+    tags: [lord, military]
+    strategy: 55
+    valour: 60
+    governance: 45
+    integrity: 25
+    loyalty: 50
+
+  - name: "Yuan Xi"
+    title: "Prince of Yan"
+    essence: metal
+    tags: [lord, military, cavalry]
+    strategy: 58
+    valour: 55
+    governance: 48
+    integrity: 30
+    loyalty: 55
+
+  - name: "Yuan Wei"
+    title: "Official of Yuan Family"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 52
+    valour: 15
+    governance: 62
+    integrity: 60
+    loyalty: 70
+
+  - name: "Yuan Yao"
+    title: "Official of Yuan Family"
+    essence: metal
+    tags: [civil, scholar]
+    strategy: 48
+    valour: 12
+    governance: 58
+    integrity: 55
+    loyalty: 65
+
+  - name: "Zhang Feng"
+    title: "Commander of Black Mountain"
+    essence: wood
+    tags: [military, vanguard]
+    strategy: 65
+    valour: 70
+    governance: 35
+    integrity: 42
+    loyalty: 60
+
+  - name: "Yellow Scarves Messenger"
+    title: "ZT Messenger"
+    essence: earth
+    tags: [civil]
+    strategy: 30
+    valour: 15
+    governance: 40
+    integrity: 45
+    loyalty: 65
+
+  - name: "Dong Bai"
+    title: "Dong Zhuo's Daughter"
+    essence: fire
+    tags: [civil, diplomat]
+    strategy: 45
+    valour: 12
+    governance: 55
+    integrity: 58
+    loyalty: 72
+
+  # ── Additional Historical Figures ───────────────────────────────────────────
+
+  - name: "Zhang Rang"
+    title: "Imperial Inspector"
+    essence: wood
+    tags: [civil, scholar, diplomat]
+    strategy: 55
+    valour: 15
+    governance: 75
+    integrity: 85
+    loyalty: 85
+
+  - name: " Bian Rang"
+    title: "Inspector of Xuzhou"
+    essence: metal
+    tags: [civil]
+    strategy: 48
+    valour: 12
+    governance: 70
+    integrity: 80
+    loyalty: 80
+
+  - name: "Cao Jie"
+    title: "Palace Attendant"
+    essence: wood
+    tags: [civil]
+    strategy: 35
+    valour: 8
+    governance: 55
+    integrity: 70
+    loyalty: 75
+
+  - name: "Lady Zhen"
+    title: "Consort Zhen"
+    essence: wood
+    tags: [civil, diplomat]
+    strategy: 50
+    valour: 12
+    governance: 65
+    integrity: 80
+    loyalty: 85
+
+  - name: "Lady Guo"
+    title: "Empress Guo"
+    essence: earth
+    tags: [civil, diplomat]
+    strategy: 42
+    valour: 8
+    governance: 58
+    integrity: 75
+    loyalty: 82
+
+  - name: "Empress Fu Shou"
+    title: "Empress of Wei"
+    essence: metal
+    tags: [civil]
+    strategy: 38
+    valour: 6
+    governance: 52
+    integrity: 65
+    loyalty: 70
+
+  - name: "Zhang Yan"
+    title: "Lord of the Black Mountain"
+    essence: wood
+    tags: [lord, military, strategist]
+    strategy: 68
+    valour: 78
+    governance: 45
+    integrity: 48
+    loyalty: 65
+
+  - name: "Yu She"
+    title: "Black Mountain Warlord"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 60
+    governance: 28
+    integrity: 35
+    loyalty: 55
+
+  - name: "Liu Wu"
+    title: "Governor of Kuaiji"
+    essence: water
+    tags: [lord, military]
+    strategy: 55
+    valour: 45
+    governance: 60
+    integrity: 65
+    loyalty: 75
+
+  - name: "Wang Kai"
+    title: "Governor of Langya"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 52
+    valour: 15
+    governance: 68
+    integrity: 78
+    loyalty: 82
+
+  - name: "Zhu Fen"
+    title: "Inspector of Yuzhou"
+    essence: water
+    tags: [civil]
+    strategy: 45
+    valour: 10
+    governance: 60
+    integrity: 70
+    loyalty: 75
+
+  - name: "Wang Xuan"
+    title: "Imperial Astronomer"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 55
+    valour: 12
+    governance: 65
+    integrity: 75
+    loyalty: 80
+
+  - name: "Liu Xia"
+    title: "Imperial Clerk"
+    essence: fire
+    tags: [civil, scholar]
+    strategy: 48
+    valour: 10
+    governance: 58
+    integrity: 65
+    loyalty: 72
+
+  - name: "Xun Xu"
+    title: "Minister of Works"
+    essence: wood
+    tags: [civil, scholar, strategist]
+    strategy: 72
+    valour: 18
+    governance: 80
+    integrity: 85
+    loyalty: 88
+
+  - name: "Xun Shang"
+    title: "Official of Xun Family"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 58
+    valour: 12
+    governance: 72
+    integrity: 82
+    loyalty: 85
+
+  - name: "Xun Yue"
+    title: "Scholar of Xun Family"
+    essence: metal
+    tags: [civil, scholar]
+    strategy: 65
+    valour: 15
+    governance: 75
+    integrity: 80
+    loyalty: 82
+
+  - name: "Xun Shu"
+    title: "Governor of Yingchuan"
+    essence: metal
+    tags: [civil, scholar]
+    strategy: 60
+    valour: 10
+    governance: 70
+    integrity: 78
+    loyalty: 82
+
+  - name: "Zhang Qin"
+    title: "Commander of Ruzhou"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 58
+    governance: 35
+    integrity: 45
+    loyalty: 60
+
+  - name: "Zhu Cao"
+    title: "Yaojiang Jun"
+    essence: earth
+    tags: [military]
+    strategy: 50
+    valour: 55
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Deng Ze"
+    title: "Imperial Adjutant"
+    essence: wood
+    tags: [civil]
+    strategy: 45
+    valour: 8
+    governance: 55
+    integrity: 60
+    loyalty: 70
+
+  - name: "Huang Mian"
+    title: "General of the West"
+    essence: metal
+    tags: [military, cavalry]
+    strategy: 62
+    valour: 72
+    governance: 42
+    integrity: 58
+    loyalty: 75
+
+  - name: "Zhang Song"
+    title: "Governor of Hanzhong"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 52
+    valour: 15
+    governance: 68
+    integrity: 60
+    loyalty: 70
+
+  - name: "Yi Ji"
+    title: "Governor of Shu"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 60
+    integrity: 55
+    loyalty: 65
+
+  - name: "Peng Yang"
+    title: "Governor of Shu"
+    essence: water
+    tags: [civil]
+    strategy: 45
+    valour: 8
+    governance: 58
+    integrity: 52
+    loyalty: 60
+
+  - name: "Wang Zhang"
+    title: "Governor of Shu"
+    essence: fire
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 62
+    integrity: 58
+    loyalty: 68
+
+  - name: "Huang Yuan"
+    title: "Inspector of Yizhou"
+    essence: metal
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 60
+    integrity: 65
+    loyalty: 72
+
+  - name: "Zhang Chong"
+    title: "Governor of Chengdu"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 8
+    governance: 65
+    integrity: 70
+    loyalty: 75
+
+  - name: "Li Xing"
+    title: "Inspector of Ba"
+    essence: fire
+    tags: [civil]
+    strategy: 45
+    valour: 10
+    governance: 55
+    integrity: 55
+    loyalty: 65
+
+  - name: "Zhang Qian"
+    title: "Imperial Messenger"
+    essence: metal
+    tags: [civil, diplomat]
+    strategy: 58
+    valour: 25
+    governance: 65
+    integrity: 70
+    loyalty: 75
+
+  - name: "Zheng Xuan"
+    title: "Grand Master"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 55
+    valour: 10
+    governance: 68
+    integrity: 75
+    loyalty: 80
+
+  - name: "Kong Bi"
+    title: "Descendant of Confucius"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 52
+    valour: 12
+    governance: 70
+    integrity: 85
+    loyalty: 85
+
+  - name: "Zhang Jin"
+    title: "General of Cao Wei"
+    essence: fire
+    tags: [military]
+    strategy: 60
+    valour: 68
+    governance: 35
+    integrity: 50
+    loyalty: 72
+
+  - name: "Ren Jun"
+    title: "Minister of the Interior"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 60
+    integrity: 68
+    loyalty: 75
+
+  - name: "Guan Ying"
+    title: "General of the West"
+    essence: fire
+    tags: [military, cavalry]
+    strategy: 62
+    valour: 70
+    governance: 40
+    integrity: 55
+    loyalty: 70
+
+  - name: "Xu Chang"
+    title: "Imperial Clerk"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 55
+    valour: 15
+    governance: 65
+    integrity: 72
+    loyalty: 80
+
+  - name: "Wang Ye"
+    title: "Gentleman of the Palace"
+    essence: water
+    tags: [civil]
+    strategy: 42
+    valour: 12
+    governance: 58
+    integrity: 62
+    loyalty: 72
+
+  - name: "Sima Fu"
+    title: "Duke of Jin"
+    essence: earth
+    tags: [civil]
+    strategy: 65
+    valour: 25
+    governance: 72
+    integrity: 55
+    loyalty: 75
+
+  - name: "Sima Wang"
+    title: "Prince of Langya"
+    essence: metal
+    tags: [lord, civil]
+    strategy: 58
+    valour: 20
+    governance: 68
+    integrity: 52
+    loyalty: 70
+
+  - name: "Sima Zhao"
+    title: "Prince of Xin"
+    essence: wood
+    tags: [lord, military]
+    strategy: 60
+    valour: 45
+    governance: 62
+    integrity: 48
+    loyalty: 72
+
+  - name: "Wang Ling"
+    title: "Imperial Guard Commander"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 62
+    governance: 35
+    integrity: 45
+    loyalty: 60
+
+  - name: "Zhangju"
+    title: "Yellow Turban Leader"
+    essence: earth
+    tags: [lord, civil]
+    strategy: 58
+    valour: 30
+    governance: 55
+    integrity: 40
+    loyalty: 70
+
+  - name: "Bo Zhang"
+    title: "Yellow Turban Officer"
+    essence: fire
+    tags: [military]
+    strategy: 50
+    valour: 60
+    governance: 20
+    integrity: 38
+    loyalty: 65
+
+  - name: "Zhang Ba"
+    title: "Yellow Turban Commander"
+    essence: wood
+    tags: [military]
+    strategy: 52
+    valour: 55
+    governance: 22
+    integrity: 42
+    loyalty: 68
+
+  - name: "Bo Zhang"
+    title: "Yellow Turban General"
+    essence: water
+    tags: [military]
+    strategy: 48
+    valour: 52
+    governance: 18
+    integrity: 35
+    loyalty: 62
+
+  - name: "Zhao"
+    title: "Yellow Turban Officer"
+    essence: fire
+    tags: [military]
+    strategy: 45
+    valour: 48
+    governance: 15
+    integrity: 32
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Yellow Turban Captain"
+    essence: wood
+    tags: [military]
+    strategy: 42
+    valour: 45
+    governance: 12
+    integrity: 28
+    loyalty: 55
+
+  - name: "Zhang Jue"
+    title: "Lord of Heaven"
+    essence: metal
+    tags: [lord, civil]
+    strategy: 75
+    valour: 45
+    governance: 65
+    integrity: 55
+    loyalty: 85
+
+  - name: "Zhang Bao"
+    title: "General of the Wind"
+    essence: earth
+    tags: [military]
+    strategy: 60
+    valour: 55
+    governance: 32
+    integrity: 48
+    loyalty: 80
+
+  - name: "Zhang"
+    title: "Yellow Turban Commander"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 58
+    governance: 25
+    integrity: 40
+    loyalty: 72
+
+  - name: "Ma Yuan"
+    title: "General of the South"
+    essence: fire
+    tags: [lord, military, cavalry]
+    strategy: 75
+    valour: 85
+    governance: 50
+    integrity: 65
+    loyalty: 80
+
+  - name: "Shi Xie"
+    title: "Governor of Jiaozhi"
+    essence: water
+    tags: [lord, civil, scholar, diplomat, merchant]
+    strategy: 62
+    valour: 22
+    governance: 82
+    integrity: 80
+    loyalty: 85
+
+  - name: "Ji Ling"
+    title: "General of Shanyang"
+    essence: water
+    tags: [military]
+    strategy: 58
+    valour: 65
+    governance: 30
+    integrity: 45
+    loyalty: 65
+
+  - name: "Liu He"
+    title: "Governor of Lujiang"
+    essence: earth
+    tags: [lord]
+    strategy: 45
+    valour: 30
+    governance: 55
+    integrity: 50
+    loyalty: 65
+
+  - name: "Chen Yan"
+    title: "Governor of Jiangxia"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 70
+    loyalty: 78
+
+  - name: "Wen Png"
+    title: "General of Ye"
+    essence: metal
+    tags: [military]
+    strategy: 60
+    valour: 58
+    governance: 35
+    integrity: 52
+    loyalty: 68
+
+  - name: "Yuan Chong"
+    title: "Officer of Yuan"
+    essence: wood
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 30
+    integrity: 45
+    loyalty: 62
+
+  - name: "Yuan"
+    title: "Yuan Family Officer"
+    essence: earth
+    tags: [military]
+    strategy: 48
+    valour: 45
+    governance: 28
+    integrity: 40
+    loyalty: 58
+
+  - name: "Xun"
+    title: "Xun Family Scholar"
+    essence: wood
+    tags: [civil, scholar]
+    strategy: 48
+    valour: 10
+    governance: 58
+    integrity: 65
+    loyalty: 72
+
+  - name: "Yan"
+    title: "Scholar of Yan"
+    essence: fire
+    tags: [civil]
+    strategy: 42
+    valour: 8
+    governance: 52
+    integrity: 58
+    loyalty: 65
+
+  - name: "Liu"
+    title: "Governor of Wei"
+    essence: metal
+    tags: [lord, civil]
+    strategy: 58
+    valour: 25
+    governance: 68
+    integrity: 70
+    loyalty: 78
+
+  - name: "Wang"
+    title: "Official of Wang"
+    essence: water
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 65
+    integrity: 72
+    loyalty: 80
+
+  - name: "Zhuge"
+    title: "Zhuge Family"
+    essence: earth
+    tags: [civil, scholar, strategist]
+    strategy: 95
+    valour: 25
+    governance: 92
+    integrity: 95
+    loyalty: 92
+
+  - name: "Liu"
+    title: "Liu Family Elder"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 20
+    governance: 68
+    integrity: 75
+    loyalty: 80
+
+  - name: "Cao"
+    title: "Cao Family Member"
+    essence: metal
+    tags: [civil]
+    strategy: 48
+    valour: 15
+    governance: 60
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhang"
+    title: "Zhang Family Officer"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 48
+    loyalty: 62
+
+  - name: "Liu"
+    title: "Governor of Shu"
+    essence: earth
+    tags: [lord, civil]
+    strategy: 55
+    valour: 20
+    governance: 65
+    integrity: 62
+    loyalty: 72
+
+  - name: "Xun"
+    title: "Official"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 62
+    integrity: 68
+    loyalty: 75
+
+  - name: "Yan"
+    title: "Warlord"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 55
+    governance: 30
+    integrity: 40
+    loyalty: 55
+
+  - name: "Zhang"
+    title: "Warlord"
+    essence: fire
+    tags: [military]
+    strategy: 48
+    valour: 50
+    governance: 25
+    integrity: 35
+    loyalty: 52
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: wood
+    tags: [military]
+    strategy: 45
+    valour: 42
+    governance: 28
+    integrity: 38
+    loyalty: 50
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: water
+    tags: [military]
+    strategy: 48
+    valour: 45
+    governance: 22
+    integrity: 40
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Official"
+    essence: metal
+    tags: [civil]
+    strategy: 42
+    valour: 10
+    governance: 52
+    integrity: 55
+    loyalty: 62
+
+  - name: "Yan"
+    title: "General"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 55
+    governance: 32
+    integrity: 45
+    loyalty: 60
+
+  - name: "Liu"
+    title: "Governor"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 15
+    governance: 58
+    integrity: 60
+    loyalty: 70
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: wood
+    tags: [military]
+    strategy: 50
+    valour: 45
+    governance: 28
+    integrity: 38
+    loyalty: 52
+
+  - name: "Wang"
+    title: "Wang Family"
+    essence: water
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 62
+    integrity: 68
+    loyalty: 75
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 48
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Li"
+    title: "Li Family"
+    essence: metal
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 58
+    integrity: 62
+    loyalty: 70
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 50
+    governance: 32
+    integrity: 45
+    loyalty: 60
+
+  - name: "Zhu"
+    title: "Zhu Family"
+    essence: wood
+    tags: [civil]
+    strategy: 45
+    valour: 12
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Huang"
+    title: "Huang Family"
+    essence: fire
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 60
+    integrity: 65
+    loyalty: 72
+
+  - name: "Sun"
+    title: "Sun Family"
+    essence: metal
+    tags: [civil]
+    strategy: 55
+    valour: 15
+    governance: 68
+    integrity: 70
+    loyalty: 78
+
+  - name: "Zhuge Jin"
+    title: "Wu Diplomat"
+    essence: earth
+    tags: [civil, scholar, diplomat, strategist]
+    strategy: 75
+    valour: 22
+    governance: 85
+    integrity: 88
+    loyalty: 90
+
+  - name: "Zhang Ya"
+    title: "Officer"
+    essence: water
+    tags: [civil]
+    strategy: 42
+    valour: 8
+    governance: 50
+    integrity: 55
+    loyalty: 62
+
+  - name: "Cao Hong"
+    title: "General"
+    essence: fire
+    tags: [military, cavalry, vanguard, loyalist]
+    strategy: 65
+    valour: 85
+    governance: 38
+    integrity: 75
+    loyalty: 98
+
+  - name: "Cao Zhen"
+    title: "Grand General"
+    essence: earth
+    tags: [military, cavalry, strategist, loyalist]
+    strategy: 85
+    valour: 80
+    governance: 72
+    integrity: 85
+    loyalty: 98
+
+  - name: "Cao Pi"
+    title: "Emperor"
+    essence: metal
+    tags: [lord, civil, scholar, diplomat, strategist]
+    strategy: 82
+    valour: 68
+    governance: 85
+    integrity: 62
+    loyalty: 90
+
+  - name: "Cao Rui"
+    title: "Emperor"
+    essence: wood
+    tags: [lord, civil]
+    strategy: 45
+    valour: 25
+    governance: 55
+    integrity: 50
+    loyalty: 75
+
+  - name: "Cao Fang"
+    title: "Emperor"
+    essence: earth
+    tags: [lord, civil]
+    strategy: 40
+    valour: 20
+    governance: 50
+    integrity: 45
+    loyalty: 55
+
+  - name: "Cao Mao"
+    title: "Emperor"
+    essence: wood
+    tags: [lord, civil]
+    strategy: 45
+    valour: 35
+    governance: 65
+    integrity: 72
+    loyalty: 80
+
+  - name: "Cao Huan"
+    title: "Emperor"
+    essence: metal
+    tags: [lord, civil]
+    strategy: 42
+    valour: 28
+    governance: 58
+    integrity: 65
+    loyalty: 75
+
+  - name: "Liu Xie"
+    title: "Emperor Xian"
+    essence: wood
+    tags: [lord, civil]
+    strategy: 35
+    valour: 22
+    governance: 45
+    integrity: 50
+    loyalty: 60
+
+  - name: "Xun Xie"
+    title: "Official"
+    essence: wood
+    tags: [civil]
+    strategy: 48
+    valour: 12
+    governance: 60
+    integrity: 72
+    loyalty: 80
+
+  - name: "Cao Zhang"
+    title: "Prince"
+    essence: fire
+    tags: [military, cavalry, vanguard]
+    strategy: 72
+    valour: 94
+    governance: 45
+    integrity: 68
+    loyalty: 90
+
+  - name: "Cao Chong"
+    title: "Prince"
+    essence: earth
+    tags: [civil]
+    strategy: 58
+    valour: 25
+    governance: 70
+    integrity: 82
+    loyalty: 95
+
+  - name: "Cao Xun"
+    title: "Prince"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 75
+    loyalty: 88
+
+  - name: "Cao Zhi"
+    title: "Prince, Poet"
+    essence: fire
+    tags: [civil, scholar]
+    strategy: 60
+    valour: 20
+    governance: 75
+    integrity: 70
+    loyalty: 80
+
+  - name: "Cao Zuo"
+    title: "Prince"
+    essence: water
+    tags: [civil]
+    strategy: 50
+    valour: 18
+    governance: 62
+    integrity: 68
+    loyalty: 82
+
+  - name: "Cao Gan"
+    title: "Prince"
+    essence: metal
+    tags: [military]
+    strategy: 58
+    valour: 52
+    governance: 45
+    integrity: 55
+    loyalty: 75
+
+  - name: "Cao Shuo"
+    title: "Prince"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 22
+    governance: 65
+    integrity: 70
+    loyalty: 85
+
+  - name: "Cao Yan"
+    title: "Prince"
+    essence: wood
+    tags: [military]
+    strategy: 55
+    valour: 48
+    governance: 42
+    integrity: 52
+    loyalty: 70
+
+  - name: "Cao Yu"
+    title: "Prince"
+    essence: metal
+    tags: [military]
+    strategy: 58
+    valour: 55
+    governance: 48
+    integrity: 58
+    loyalty: 75
+
+  - name: "Cao Xiu"
+    title: "General"
+    essence: fire
+    tags: [military, cavalry]
+    strategy: 62
+    valour: 70
+    governance: 40
+    integrity: 60
+    loyalty: 80
+
+  - name: "Lady Xiahou"
+    title: "Xiahou Family"
+    essence: metal
+    tags: [civil]
+    strategy: 42
+    valour: 12
+    governance: 58
+    integrity: 70
+    loyalty: 78
+
+  - name: "Xiahou Shan"
+    title: "General"
+    essence: metal
+    tags: [military, vanguard]
+    strategy: 68
+    valour: 85
+    governance: 40
+    integrity: 78
+    loyalty: 90
+
+  - name: "Xiahou Shang"
+    title: "General"
+    essence: water
+    tags: [military]
+    strategy: 65
+    valour: 72
+    governance: 38
+    integrity: 70
+    loyalty: 85
+
+  - name: "Xiahou Wei"
+    title: "General"
+    essence: earth
+    tags: [military, vanguard]
+    strategy: 60
+    valour: 78
+    governance: 35
+    integrity: 72
+    loyalty: 88
+
+  - name: "Xiahou Hui"
+    title: "General"
+    essence: wood
+    tags: [military]
+    strategy: 58
+    valour: 70
+    governance: 32
+    integrity: 68
+    loyalty: 82
+
+  - name: "Xiahou Yuan"
+    title: "General"
+    essence: fire
+    tags: [military, cavalry, strategist]
+    strategy: 75
+    valour: 88
+    governance: 35
+    integrity: 80
+    loyalty: 95
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: water
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 32
+    integrity: 48
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 28
+    integrity: 45
+    loyalty: 60
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: fire
+    tags: [civil]
+    strategy: 48
+    valour: 12
+    governance: 58
+    integrity: 62
+    loyalty: 72
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: earth
+    tags: [military]
+    strategy: 50
+    valour: 45
+    governance: 25
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhuge Dan"
+    title: "General"
+    essence: wood
+    tags: [military, strategist]
+    strategy: 80
+    valour: 68
+    governance: 65
+    integrity: 40
+    loyalty: 55
+
+  - name: "Zhuge Xu"
+    title: "Zhuge Family"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 58
+    valour: 18
+    governance: 70
+    integrity: 82
+    loyalty: 88
+
+  - name: "Feng Xi"
+    title: "Official"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 70
+    loyalty: 78
+
+  - name: "Hu Zu"
+    title: "Governor"
+    essence: water
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 60
+    integrity: 65
+    loyalty: 75
+
+  - name: "Shi Zang"
+    title: "Official"
+    essence: metal
+    tags: [civil]
+    strategy: 45
+    valour: 12
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Shi Yi"
+    title: "Official"
+    essence: fire
+    tags: [civil]
+    strategy: 48
+    valour: 8
+    governance: 58
+    integrity: 62
+    loyalty: 72
+
+  - name: "Shi Xie"
+    title: "Governor"
+    essence: wood
+    tags: [lord, civil]
+    strategy: 52
+    valour: 18
+    governance: 68
+    integrity: 72
+    loyalty: 80
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: metal
+    tags: [military]
+    strategy: 50
+    valour: 45
+    governance: 30
+    integrity: 40
+    loyalty: 55
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: water
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 28
+    integrity: 38
+    loyalty: 52
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: wood
+    tags: [civil]
+    strategy: 45
+    valour: 12
+    governance: 52
+    integrity: 50
+    loyalty: 60
+
+  - name: "Yuan Xi"
+    title: "Prince"
+    essence: metal
+    tags: [lord, military]
+    strategy: 58
+    valour: 55
+    governance: 48
+    integrity: 30
+    loyalty: 55
+
+  - name: "Yuan Chang"
+    title: "General"
+    essence: wood
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: fire
+    tags: [military]
+    strategy: 48
+    valour: 40
+    governance: 25
+    integrity: 35
+    loyalty: 50
+
+  - name: "Gao Gan"
+    title: "Governor"
+    essence: earth
+    tags: [lord, military]
+    strategy: 58
+    valour: 52
+    governance: 40
+    integrity: 45
+    loyalty: 65
+
+  - name: "Liu Yao"
+    title: "Warlord"
+    essence: fire
+    tags: [lord, military]
+    strategy: 62
+    valour: 55
+    governance: 50
+    integrity: 60
+    loyalty: 75
+
+  - name: "Zhao Wei"
+    title: "Imperial Censor"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 62
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: water
+    tags: [military]
+    strategy: 52
+    valour: 50
+    governance: 32
+    integrity: 48
+    loyalty: 62
+
+  - name: "Han"
+    title: "Han Family"
+    essence: wood
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 58
+    integrity: 60
+    loyalty: 70
+
+  - name: "Wei"
+    title: "Wei Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 12
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Liu"
+    title: "Governor"
+    essence: earth
+    tags: [lord]
+    strategy: 45
+    valour: 28
+    governance: 58
+    integrity: 60
+    loyalty: 72
+
+  - name: "Yan"
+    title: "Warlord"
+    essence: fire
+    tags: [lord]
+    strategy: 48
+    valour: 45
+    governance: 40
+    integrity: 35
+    loyalty: 55
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: metal
+    tags: [civil]
+    strategy: 55
+    valour: 18
+    governance: 68
+    integrity: 70
+    loyalty: 80
+
+  - name: "Ren"
+    title: "Ren Family"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: water
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: metal
+    tags: [military]
+    strategy: 55
+    valour: 65
+    governance: 35
+    integrity: 58
+    loyalty: 80
+
+  - name: "Sun"
+    title: "Sun Family"
+    essence: fire
+    tags: [military]
+    strategy: 58
+    valour: 60
+    governance: 42
+    integrity: 55
+    loyalty: 78
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [civil]
+    strategy: 48
+    valour: 15
+    governance: 58
+    integrity: 62
+    loyalty: 72
+
+  - name: "Li"
+    title: "Li Family"
+    essence: fire
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 62
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: metal
+    tags: [military]
+    strategy: 55
+    valour: 50
+    governance: 32
+    integrity: 45
+    loyalty: 60
+
+  - name: "Huang"
+    title: "Huang Family"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Zhu"
+    title: "Zhu Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Guan"
+    title: "General"
+    essence: metal
+    tags: [military, cavalry, loyalist, vanguard]
+    strategy: 96
+    valour: 99
+    governance: 75
+    integrity: 100
+    loyalty: 99
+
+  - name: "Guan Ping"
+    title: "General"
+    essence: metal
+    tags: [military, vanguard, cavalry, loyalist]
+    strategy: 72
+    valour: 88
+    governance: 40
+    integrity: 90
+    loyalty: 99
+
+  - name: "Guan Xing"
+    title: "General"
+    essence: metal
+    tags: [military, cavalry, vanguard, loyalist]
+    strategy: 70
+    valour: 88
+    governance: 35
+    integrity: 90
+    loyalty: 99
+
+  - name: "Guan Suo"
+    title: "General"
+    essence: metal
+    tags: [military, cavalry, vanguard]
+    strategy: 68
+    valour: 85
+    governance: 32
+    integrity: 82
+    loyalty: 95
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Liang"
+    title: "Liang Family"
+    essence: wood
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 25
+    integrity: 38
+    loyalty: 52
+
+  - name: "Mao"
+    title: "Mao Family"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Huang"
+    title: "Huang Family"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 55
+    governance: 30
+    integrity: 45
+    loyalty: 62
+
+  - name: "Zhou"
+    title: "Zhou Family"
+    essence: metal
+    tags: [civil]
+    strategy: 48
+    valour: 12
+    governance: 58
+    integrity: 60
+    loyalty: 70
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: water
+    tags: [military]
+    strategy: 50
+    valour: 45
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Li"
+    title: "Li Family"
+    essence: fire
+    tags: [civil]
+    strategy: 55
+    valour: 18
+    governance: 68
+    integrity: 70
+    loyalty: 80
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 50
+    governance: 32
+    integrity: 45
+    loyalty: 60
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 25
+    integrity: 38
+    loyalty: 52
+
+  - name: "Wei"
+    title: "Wei Family"
+    essence: water
+    tags: [civil]
+    strategy: 48
+    valour: 12
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 62
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 32
+    integrity: 48
+    loyalty: 62
+
+  - name: "Li"
+    title: "Li Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Han"
+    title: "Han Family"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 55
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 25
+    integrity: 38
+    loyalty: 52
+
+  - name: "Wei"
+    title: "Wei Family"
+    essence: water
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Sun"
+    title: "Sun Family"
+    essence: water
+    tags: [military]
+    strategy: 55
+    valour: 48
+    governance: 35
+    integrity: 52
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 45
+    loyalty: 58
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: fire
+    tags: [lord]
+    strategy: 50
+    valour: 25
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Wu"
+    title: "Wu Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhou"
+    title: "Zhou Family"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Shi"
+    title: "Shi Family"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Yu"
+    title: "Yu Family"
+    essence: water
+    tags: [civil]
+    strategy: 55
+    valour: 15
+    governance: 68
+    integrity: 70
+    loyalty: 80
+
+  - name: "Wang"
+    title: "Wang Family"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Wei"
+    title: "Wei Family"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: metal
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Huang Family"
+    essence: earth
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: wood
+    tags: [lord]
+    strategy: 58
+    valour: 30
+    governance: 65
+    integrity: 62
+    loyalty: 75
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: fire
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: metal
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 25
+    integrity: 38
+    loyalty: 52
+
+  - name: "Shi"
+    title: "Shi Family"
+    essence: water
+    tags: [civil]
+    strategy: 55
+    valour: 15
+    governance: 68
+    integrity: 70
+    loyalty: 80
+
+  - name: "Xun"
+    title: "Xun Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Xun"
+    title: "Xun Family"
+    essence: wood
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Xun"
+    title: "Xun Family"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Xun"
+    title: "Xun Family"
+    essence: water
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhong"
+    title: "Zhong Family"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 10
+    governance: 58
+    integrity: 60
+    loyalty: 70
+
+  - name: "Zhong"
+    title: "Zhong Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 12
+    governance: 62
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhong"
+    title: "Zhong Family"
+    essence: metal
+    tags: [military]
+    strategy: 55
+    valour: 50
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Chen"
+    title: "Chen Family"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Chen"
+    title: "Chen Family"
+    essence: fire
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Chen"
+    title: "Chen Family"
+    essence: metal
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Chen"
+    title: "Chen Family"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 50
+    governance: 32
+    integrity: 45
+    loyalty: 62
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: water
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 32
+    integrity: 45
+    loyalty: 60
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 55
+
+  - name: "Wang"
+    title: "Wang Family"
+    essence: earth
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Wang"
+    title: "Wang Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Wang"
+    title: "Wang Family"
+    essence: water
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 48
+    loyalty: 65
+
+  - name: "Wang"
+    title: "Wang Family"
+    essence: wood
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: earth
+    tags: [civil]
+    strategy: 48
+    valour: 10
+    governance: 55
+    integrity: 58
+    loyalty: 68
+
+  - name: "Gao"
+    title: "Gao Family"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: water
+    tags: [military]
+    strategy: 50
+    valour: 42
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: fire
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Liu"
+    title: "Governor"
+    essence: wood
+    tags: [lord]
+    strategy: 55
+    valour: 25
+    governance: 65
+    integrity: 65
+    loyalty: 75
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: earth
+    tags: [military]
+    strategy: 50
+    valour: 45
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 55
+    governance: 32
+    integrity: 50
+    loyalty: 65
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: water
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 25
+    integrity: 38
+    loyalty: 52
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: fire
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Han"
+    title: "Han Family"
+    essence: metal
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: water
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Lu"
+    title: "Lu Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Lu"
+    title: "Lu Family"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Hua"
+    title: "Hua Family"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Gong"
+    title: "Gong Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhong"
+    title: "Zhong Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: water
+    tags: [military]
+    strategy: 52
+    valour: 42
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Zhong"
+    title: "Zhong Family"
+    essence: earth
+    tags: [civil]
+    strategy: 50
+    valour: 12
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: water
+    tags: [military]
+    strategy: 50
+    valour: 42
+    governance: 28
+    integrity: 40
+    loyalty: 55
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: metal
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 48
+    loyalty: 65
+
+  - name: "Zhong"
+    title: "Zhong Family"
+    essence: wood
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: water
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: earth
+    tags: [military]
+    strategy: 55
+    valour: 50
+    governance: 35
+    integrity: 48
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [military]
+    strategy: 48
+    valour: 42
+    governance: 25
+    integrity: 38
+    loyalty: 52
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: water
+    tags: [civil]
+    strategy: 50
+    valour: 15
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Yuan"
+    title: "Yuan Family"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Cao"
+    title: "Cao Family"
+    essence: fire
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 55
+    governance: 32
+    integrity: 50
+    loyalty: 65
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: metal
+    tags: [military]
+    strategy: 52
+    valour: 50
+    governance: 30
+    integrity: 48
+    loyalty: 62
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: wood
+    tags: [lord]
+    strategy: 50
+    valour: 20
+    governance: 60
+    integrity: 62
+    loyalty: 72
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: water
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 52
+    governance: 32
+    integrity: 48
+    loyalty: 62
+
+  - name: "Guan"
+    title: "Guan Family"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 50
+    governance: 30
+    integrity: 45
+    loyalty: 60
+
+  - name: "Sun"
+    title: "Sun Family"
+    essence: earth
+    tags: [lord]
+    strategy: 52
+    valour: 25
+    governance: 62
+    integrity: 60
+    loyalty: 72
+
+  - name: "Sun"
+    title: "Sun Family"
+    essence: water
+    tags: [military]
+    strategy: 55
+    valour: 52
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: wood
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: fire
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: metal
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Liu"
+    title: "Liu Family"
+    essence: water
+    tags: [military]
+    strategy: 55
+    valour: 50
+    governance: 35
+    integrity: 50
+    loyalty: 65
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: earth
+    tags: [military]
+    strategy: 52
+    valour: 45
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Zhang"
+    title: "Officer"
+    essence: fire
+    tags: [military]
+    strategy: 52
+    valour: 48
+    governance: 30
+    integrity: 42
+    loyalty: 58
+
+  - name: "Guo"
+    title: "Guo Family"
+    essence: wood
+    tags: [civil]
+    strategy: 52
+    valour: 15
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Kong"
+    title: "Kong Family"
+    essence: earth
+    tags: [civil, scholar]
+    strategy: 55
+    valour: 15
+    governance: 72
+    integrity: 85
+    loyalty: 85
+
+  - name: "Zhang"
+    title: "Zhang Family"
+    essence: earth
+    tags: [civil]
+    strategy: 52
+    valour: 18
+    governance: 65
+    integrity: 68
+    loyalty: 78
+
+  - name: "Zhuge Jin"
+    title: "General"
+    essence: earth
+    tags: [civil, scholar, diplomat, strategist]
+    strategy: 75
+    valour: 22
+    governance: 85
+    integrity: 88
+    loyalty: 90
