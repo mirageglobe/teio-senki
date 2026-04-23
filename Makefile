@@ -1,25 +1,14 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help install run lint test clean
+.PHONY: help data godot
 
-help:                ## Show this help menu
+help:                ## show this help menu
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
-install:             ## Install dependencies with uv
-	uv sync
+data:                ## convert yaml archives to json for godot
+	@mkdir -p godot/data
+	yq -o=json data/officers.yaml > godot/data/officers.json
+	yq -o=json data/cities.yaml > godot/data/cities.json
 
-run:                 ## Launch the game
-	uv run python main.py
-
-lint:                ## Lint with ruff
-	uv run ruff check .
-
-test:                ## Run tests
-	uv run pytest
-
-reset:               ## Delete the ledger database (forces reseed on next run)
-	rm -f ledger.db
-
-clean:               ## Remove cache and build artefacts
-	find . -type d -name __pycache__ -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
+godot:               ## launch the godot 4 project
+	godot --path godot/

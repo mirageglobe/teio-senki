@@ -1,44 +1,19 @@
 # Claude Code
 .claude/
 
-# Python
-__pycache__/
-*.py[cod]
-*.pyo
-*.pyd
-.Python
+# Godot
+godot/.godot/
+godot/exports/
+*.translation
+*.import
 
-# Virtual environment
-.venv/
-venv/
-env/
-
-# uv
-.uv/
-
-# Distribution / packaging
-dist/
-build/
-*.egg-info/
-*.egg
-MANIFEST
-
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Linting / type checking
-.ruff_cache/
-.mypy_cache/
-
-# Textual
-.textual/
+# Godot generated
+godot/**/*.uid
 
 # Game runtime state
-ledger.db
-ledger.db-shm
-ledger.db-wal
+godot/data/ledger.db
+godot/data/ledger.db-shm
+godot/data/ledger.db-wal
 
 # macOS
 .DS_Store
