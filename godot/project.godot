@@ -15,7 +15,8 @@ config/features=PackedStringArray("4.3", "Forward Plus")
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
+window/stretch/aspect="expand"
+window/stretch/background_color=Color(0, 0, 0, 1)
 
 [rendering]
 

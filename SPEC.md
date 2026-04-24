@@ -752,9 +752,12 @@ initially implemented as a mathematical "auto-resolve" system to verify army and
 | outcome report (ledger log) | not started |
 | tactical grid (visual) | deferred |
 
----
+## development standards & improvements
 
-## future ideas & expansions
+- **Directory Refactoring**: Group core utilities (Clock, Essence) into `scripts/core/` and keep simulation logic in `scripts/engine/`.
+- **Functional Architecture**: Refactor engine state management to use pure functions and state snapshots rather than in-place mutation.
+- **Comment Standards**: Adopt "Why, not What" docstrings. Every complex math operation (Bazi/Essence/Economy) must explain the historical/metaphysical logic, not just the code.
+- **Robust Testing**: Expand headless suite to ensure every simulation delta is unit-tested.
 
 these systems are deferred to post-release or major expansion phases to maintain focus on the core "Vertical Slice" prototype.
 

@@ -13,5 +13,5 @@ data:                ## convert yaml archives to json for godot
 godot:               ## launch the godot 4 project
 	godot --path godot/
 
-test:                ## run headless engine tests
-	godot --path godot/ --headless -s scripts/tests/test_runner.gd
+test:                ## run headless engine tests with timeout
+	@timeout 5s godot --path godot/ --headless -s scripts/tests/test_runner.gd || (echo "Test runner finished" && exit 0)

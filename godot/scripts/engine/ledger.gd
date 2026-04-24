@@ -9,6 +9,20 @@ var cities: Dictionary = {}
 var game_clock: Dictionary = {"year": 189, "month": 1}
 var logs: Array = []
 
+var _snapshot: Dictionary = {}
+
+func save_snapshot():
+	_snapshot = {
+		"officers": officers.duplicate(true),
+		"cities": cities.duplicate(true),
+		"game_clock": game_clock.duplicate()
+	}
+
+func restore_snapshot():
+	officers = _snapshot.officers.duplicate(true)
+	cities = _snapshot.cities.duplicate(true)
+	game_clock = _snapshot.game_clock.duplicate()
+
 func load_data():
 	officers = _load_json("res://data/officers.json")
 	cities = _load_json("res://data/cities.json")
