@@ -702,7 +702,7 @@ to manage complexity and reach a "playable" state faster, the following strategi
 | :--- | :--- | :--- |
 | 0 | foundation | done |
 | 1 | data + turn engine (focus: AD 189) | not started |
-| 2 | strategic map (visualizing china) | not started |
+| 2 | strategic map (visualizing china) | done |
 | 3 | cities (development & economics) | not started |
 | 4 | officers (management & loyalty) | not started |
 | 5 | army system (raising & movement) | not started |

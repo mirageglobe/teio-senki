@@ -46,4 +46,15 @@ data archives (`data/`) are read once at first-run seed and never touched at run
 
 ---
 
-*part of the **Sovereign Record** suite of historical simulations.*
+## progress
+- [x] milestone 0: foundation
+- [x] milestone 1: data + turn engine (focus: AD 189)
+- [x] milestone 2: strategic map (visualizing china)
+- [ ] milestone 3: cities (development & economics)
+- [ ] milestone 4: officers (management & loyalty)
+- [ ] milestone 5: army system (raising & movement)
+- [ ] milestone 6: tactical battle (auto-resolve math)
+- [ ] milestone 7: diplomacy + events
+- [ ] milestone 8: victory + polish
+
+---
