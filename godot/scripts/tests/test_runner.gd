@@ -51,6 +51,21 @@ func _init() -> void:
 		print("[FAIL] Turn loop")
 		success = false
 
+	# Test suite: City Economy
+	var test_city_economy = load("res://scripts/tests/test_city_economy.gd")
+	if not test_city_economy.run():
+		success = false
+
+	# Test suite: Sovereign Economy (build commands + per-turn yield)
+	var test_sovereign_economy = load("res://scripts/tests/test_sovereign_economy.gd")
+	if not test_sovereign_economy.run():
+		success = false
+
+	# Test suite: City Panel Data (formatter for UI)
+	var test_city_panel_data = load("res://scripts/tests/test_city_panel_data.gd")
+	if not test_city_panel_data.run():
+		success = false
+
 	print("--- TESTS COMPLETE ---")
 	
 	if success:

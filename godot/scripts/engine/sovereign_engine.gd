@@ -4,6 +4,9 @@ extends RefCounted
 # Explicit preloads so class_name globals are not required — safe for headless -s mode.
 const EssenceScript = preload("res://scripts/core/essence.gd")
 const GameClockScript = preload("res://scripts/core/game_clock.gd")
+const CityEconomyScript = preload("res://scripts/core/city_economy.gd")
+
+const BUILD_GAIN := 5  # stat points awarded per build command
 
 var ledger: RefCounted  # Ledger instance
 var clock: RefCounted   # GameClock instance
@@ -63,7 +66,46 @@ func settle_turn() -> void:
 		_execute_command(cmd)
 	command_queue.clear()
 	diplomacy_queue.clear()
+	_run_cycle_d_yield()
 	ledger.log_event("TURN_COMPLETE", "Turn %d.%d settled successfully." % [clock.year, clock.month])
 
 func _execute_command(cmd: Dictionary) -> void:
-	ledger.log_event("COMMAND_EXEC", "Executed %s with cost %d" % [cmd.type, cmd.cost], cmd.params)
+	var city_name: String = cmd.params.get("city", "")
+	var city: Dictionary = ledger.get_city(city_name)
+	if city.is_empty():
+		ledger.log_event("COMMAND_EXEC", "Unknown city for %s" % cmd.type)
+		return
+
+	match cmd.type:
+		"BUILD_AG":
+			city["agriculture"] = mini(100, city.get("agriculture", 0) + BUILD_GAIN)
+			ledger.log_event("COMMAND_EXEC", "%s: agriculture → %d" % [city_name, city["agriculture"]])
+		"BUILD_COM":
+			city["commerce"] = mini(100, city.get("commerce", 0) + BUILD_GAIN)
+			ledger.log_event("COMMAND_EXEC", "%s: commerce → %d" % [city_name, city["commerce"]])
+		"BUILD_TECH":
+			city["technology"] = mini(100, city.get("technology", 0) + BUILD_GAIN)
+			ledger.log_event("COMMAND_EXEC", "%s: technology → %d" % [city_name, city["technology"]])
+		"BUILD_ORD":
+			city["order"] = mini(100, city.get("order", 0) + BUILD_GAIN)
+			ledger.log_event("COMMAND_EXEC", "%s: order → %d" % [city_name, city["order"]])
+		_:
+			ledger.log_event("COMMAND_EXEC", "Unknown command %s" % cmd.type)
+
+func _run_cycle_d_yield() -> void:
+	var total_grain := 0
+	var total_gold := 0
+	for city_name: String in ledger.cities:
+		var city: Dictionary = ledger.cities[city_name]
+		var tech: int = city.get("technology", 0)
+		var order: int = city.get("order", 0)
+		var grain := CityEconomyScript.calc_grain_yield(city.get("agriculture", 0), tech)
+		var gold := CityEconomyScript.calc_gold_yield(city.get("commerce", 0), tech)
+		var loss := CityEconomyScript.calc_corruption_loss(order)
+		total_grain += maxi(0, grain - loss)
+		total_gold += maxi(0, gold - loss)
+	ledger.resources["grain"] += total_grain
+	ledger.resources["gold"] += total_gold
+	ledger.log_event("YIELD", "Grain +%d, Gold +%d (total: %d / %d)" % [
+		total_grain, total_gold, ledger.resources["grain"], ledger.resources["gold"]
+	])

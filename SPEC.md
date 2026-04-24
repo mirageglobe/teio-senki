@@ -688,8 +688,8 @@ to manage complexity and reach a "playable" state faster, the following strategi
 
 | phase | focus | milestones | status |
 | :--- | :--- | :--- | :--- |
-| **1: genesis** | foundation, sqlite, and turn engine | 0, 1 | in progress |
-| **2: cartography** | strategic map and visual world | 2 | not started |
+| **1: genesis** | foundation, sqlite, and turn engine | 0, 1 | done |
+| **2: cartography** | strategic map and visual world | 2 | done |
 | **3: governance** | city development and economics | 3 | not started |
 | **4: sovereignty** | officer management and allegiance | 4 | not started |
 | **5: conflict** | armies and tactical battle system | 5, 6 | not started |
@@ -701,7 +701,7 @@ to manage complexity and reach a "playable" state faster, the following strategi
 | milestone | focus | status |
 | :--- | :--- | :--- |
 | 0 | foundation | done |
-| 1 | data + turn engine (focus: AD 189) | not started |
+| 1 | data + turn engine (focus: AD 189) | done |
 | 2 | strategic map (visualizing china) | done |
 | 3 | cities (development & economics) | not started |
 | 4 | officers (management & loyalty) | not started |
@@ -724,7 +724,7 @@ to manage complexity and reach a "playable" state faster, the following strategi
 
 ---
 
-### milestone 1 — data + turn engine `not started`
+### milestone 1 — data + turn engine `done`
 
 SQLite init, YAML seeding, bazi clock, and the four-cycle turn loop in GDScript. **priority focus: AD 189 scenario.**
 

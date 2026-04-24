@@ -7,6 +7,7 @@ extends RefCounted
 var officers: Dictionary = {}
 var cities: Dictionary = {}
 var game_clock: Dictionary = {"year": 189, "month": 1}
+var resources: Dictionary = {"grain": 0, "gold": 0}
 var logs: Array = []
 
 var _snapshot: Dictionary = {}
