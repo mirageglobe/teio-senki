@@ -1,10 +1,37 @@
 # spec: 帝王战纪：三国录
 
-> design and architecture reference for the sovereign record engine.
+> "Sovereignty through the Ledger, Strategy through the Elements."
+
+## tldr
+A headless, turn-based grand strategy engine set in the Three Kingdoms era. Architecture prioritises **data integrity (SQLite)** and **simulation purity (Headless)** over visual spectacle. 
+
+---
+
+## project structure
+
+```text
+godot/
+├── data/               # Converted JSON game data
+├── scenes/             # Godot UI/Visual scenes
+├── scripts/
+│   ├── engine/         # Headless core: Clock, Essence, Ledger, Engine
+│   ├── tests/          # Headless test runner & automated suite
+│   └── ui/             # Godot UI scripts (Views only)
+└── project.godot
+data/                   # YAML Master Archive (Source of Truth)
+```
+
+## scope containment policy (no-drift)
+- **Engine/UI Separation**: Logic MUST be testable in `make test` without initializing the UI.
+- **SQLite Ledger**: If a feature doesn't store data in the ledger, it is not part of the core simulation.
+- **No Tactical Grid (V1)**: The grid battle is deferred to expansions. Stick to the auto-resolve formula.
+- **Single Scenario**: Development is locked to **AD 189 (Dong Zhuo)**. Do not balance other scenarios until the game is playable.
+- **No "Just-in-case"**: Do not implement features until the turn engine needs them (e.g., don't build espionage before the diplomacy cycle is functional).
 
 ---
 
 ## overview
+...
 
 **帝王战纪：三国录** is a turn-based grand strategy simulation set during China's Three Kingdoms era (AD 184–280), beginning at the Yellow Turban Rebellion epoch. the player assumes the role of a sovereign (君主), managing cities and officers through principled statecraft, elemental alignment, and long-term institutional building.
 
@@ -38,7 +65,7 @@ victory is measured across three dimensions — territory, institutional strengt
 | main | entry point: seeds DB from YAML archives on first run, launches frontend |
 | models | typed domain models: Officer, City, Army, Element, Tag, Terrain, and bonus lookup tables |
 | clock | bazi calendar: heavenly stem (天干) / earthly branch (地支) tracking, essence drift calculation |
-| engine | three-phase turn processor: command validation, seasonal deltas, CP budget |
+| engine | three-cycle turn processor: command validation, seasonal deltas, CP budget |
 | battle | tactical battle resolver: grid movement, combat, duels, siege, morale |
 | diplomacy | inter-faction relations: alliances, espionage, tribute, bribery |
 | events | event generator: random events, historical triggers, NPC appearances |
@@ -54,7 +81,7 @@ data/cities.yaml     ├──> archive ──> domain models
                      │
                      └──> main (first-run seed) ──> ledger ──> ledger.db
                                                                     ↑
-    frontend ──> engine (phase A/B/C) ──────────────> ledger ──────┘
+    frontend ──> engine (cycle A/B/C/D) ─────────────> ledger ──────┘
              └──> battle / diplomacy / events ────────────────────┘
                                                   (settle_turn, atomic commit)
 ```
@@ -183,6 +210,44 @@ archives are the canonical human-readable source. they seed the SQLite ledger on
 
 ---
 
+## scenario & player setup
+
+before the game loop begins, the player must define the starting conditions of the simulation.
+
+### 1. scenario selection
+
+scenarios define the historical epoch, including the distribution of cities, the status of factions, and the available pool of officers.
+
+| scenario | epoch | description |
+| :--- | :--- | :--- |
+| Yellow Turban Rebellion | AD 184 | the fall of the Han; Zhang Jiao's uprising |
+| Dong Zhuo's Rise | AD 189 | chaos in the capital; the anti-Dong Zhuo coalition forms |
+| Rivalry of Lords | AD 194 | the death of Dong Zhuo; independent lords vie for power |
+| Battle of Guandu | AD 200 | the clash between Cao Cao and Yuan Shao |
+| Three Kingdoms | AD 220 | the formal division of the empire into Wei, Shu, and Wu |
+
+**data mapping:**
+- scenario selection filters the `data/cities.yaml` and `data/officers.yaml` to set the initial `faction` ownership and officer availability in `ledger.db`.
+
+### 2. sovereign selection
+
+the player chooses an officer to serve as their **Sovereign (君主)**. 
+
+- only officers with the **lord** tag are eligible for selection.
+- the selected officer's `essence` determines the player's elemental alignment.
+- the sovereign's `strategy` stat determines the initial base **Command Point (CP)** budget.
+- if the sovereign dies without an heir (family or assigned successor), the simulation ends in defeat.
+
+### 3. starting position
+
+the player's starting territory is determined by the faction assigned to their chosen sovereign in the selected scenario.
+
+- **Main Capital**: the primary city where the sovereign is stationed.
+- **Territory**: all cities assigned to the same faction in the scenario data.
+- **Resources**: starting food and gold are calculated as the sum of controlled cities' outputs.
+
+---
+
 ## game systems
 
 ---
@@ -236,11 +301,11 @@ the primary game view. a stylised top-down map of Han China showing all cities, 
 - camera pans with arrow keys or drag; zooms with scroll wheel.
 - clicking a city node → opens CityScreen overlay.
 - clicking an army token → opens ArmyScreen overlay.
-- two opposing armies on adjacent tiles → march order triggers battle on phase C settlement.
-- end-turn button advances all phases and re-renders map state.
+- two opposing armies on adjacent tiles → march order triggers battle on cycle D settlement.
+- end-turn button advances all cycles and re-renders map state.
 
 **movement:**
-- `march <army_id> <x> <y>` in phase B queues movement.
+- `march <army_id> <x> <y>` in cycle C queues movement.
 - movement range per turn: `floor(general.strategy ÷ 20)`, min 1, max 5 tiles.
 - terrain movement costs (tiles per step):
 
@@ -254,7 +319,7 @@ the primary game view. a stylised top-down map of Han China showing all cities, 
 | pass | 2 | — |
 
 - naval armies (general has naval tag) move freely on river/coast; 3× cost on land tiles.
-- army entering a tile with an enemy army triggers battle (phase C).
+- army entering a tile with an enemy army triggers battle (cycle D).
 - army adjacent to enemy city with siege stance: DEF degrades each turn.
 
 **supply line:**
@@ -365,7 +430,7 @@ officers are the primary asset of any state. they are recruited, assigned to rol
 - found officers appear in the ledger_log as OFFICER_DISCOVERED events.
 
 **data requirements:**
-- `officer_allegiance` table: loyalty drift written here during phase A; new row inserted on defection.
+- `officer_allegiance` table: loyalty drift written here during cycle A; new row inserted on defection.
 - `officer_assignments` table: officer_id, role (governor/general/advisor), city_id or army_id, assigned_turn.
 
 **status:** officer archive, stats, essence drift, and tags implemented. assignment, loyalty drift, search, age/health, and defection not yet implemented.
@@ -401,77 +466,21 @@ armies are the instrument of territorial expansion and defence. they are raised,
 | encamp | fortified position; −50% incoming damage; no advance |
 
 **movement:**
-- armies move via player orders in phase B: `march <army_id> <x> <y>`.
+- armies move via player orders in cycle C: `march <army_id> <x> <y>`.
 - movement range per turn: `general.strategy ÷ 20`, min 1, max 5 tiles.
-- entering a tile occupied by an enemy army triggers battle resolution in phase C.
+- entering a tile occupied by an enemy army triggers battle resolution in cycle D.
 
 **status:** army model not yet implemented. troop count tracked only as garrison on cities.
 
 ---
 
-### 5. tactical battle map
+### 5. tactical battle map (Auto-Resolve)
 
-a separate scene from the strategic map. triggered when armies clash on the strategic map or when a field sortie is ordered from a besieged city. the battle plays out on a dedicated tactical grid before returning the outcome to the strategic map.
+initially implemented as a mathematical "auto-resolve" system. the battle plays out in the engine before returning the outcome to the strategic map.
 
 **trigger conditions:**
 - field battle: army moves onto tile occupied by enemy army.
 - sortie: defender orders a sortie while city is under siege.
-- ambush (planned): high-strategy general may intercept a marching army.
-
-**grid dimensions:**
-- **15 × 9 tiles** (width × height).
-- attacker deploys from the right 3 columns (x 12–14); defender deploys from the left 3 columns (x 0–2).
-- centre 9 columns (x 3–11) are contested ground.
-- grid tiles are generated from the strategic map tile at the battle location (terrain carries over).
-
-```
- defender zone  |  contested ground  |  attacker zone
-  [ x 0–2 ]         [ x 3–11 ]           [ x 12–14 ]
-```
-
-**unit types:**
-
-each army deploys its troops split into up to 4 units based on officer tags:
-
-| unit type | officer tag | move | attack range | strength |
-| :--- | :--- | :---: | :---: | :--- |
-| infantry | military | 2 | 1 (melee) | balanced; holds ground |
-| cavalry | cavalry | 4 | 1 (charge) | high charge damage; weak vs spear |
-| archers | scholar/strategist | 2 | 3 (ranged) | high range; low defence |
-| naval | naval | 3 (water) | 2 | strong on river/coast only |
-| siege engine | engineer | 1 | 4 (ranged) | high siege damage; immobile once placed |
-
-if the army has no matching officer tag, all troops default to infantry.
-
-**turn order:**
-1. initiative determined by general's strategy (higher goes first). ties broken by valour.
-2. each unit gets 1 action per round: move, attack, or hold.
-3. player selects unit → valid move tiles highlight → player selects destination or target.
-4. after all player units act, enemy AI resolves its units.
-5. round ends; morale and casualty totals updated; next round begins.
-
-**action points per unit per round:**
-
-| action | cost | notes |
-| :--- | :--- | :--- |
-| move | 1 AP | move up to unit's move range |
-| attack | 1 AP | attack adjacent or in-range tile |
-| move + attack | 2 AP | available only to cavalry (charge) |
-| hold / rally | 0 AP | skip action; +5 morale to this unit |
-
-**battle terrain tiles:**
-
-terrain at the battle location is drawn from the strategic map tile and expanded into a tactical pattern:
-
-| terrain | tactical tile effect |
-| :--- | :--- |
-| plain | no modifier; cavalry move +1 |
-| forest | −1 move to all units; archers −1 range; +10% defence for infantry in forest |
-| river | impassable to non-naval units; naval +25% |
-| mountain / hill | +20% defence for units on high ground; −1 move uphill |
-| coast | naval free movement; others −1 move in shallow water tiles |
-| pass | bottleneck tile (1-wide column); defender holds with small force |
-| fortification | city wall tile (siege only); DEF reduces damage; engineer demolishes |
 
 **battle resolution per round:**
 
@@ -483,103 +492,27 @@ defender.morale -= damage ÷ 50
 
 modifiers:
 - `valour_mod` = attacking officer's valour ÷ 50 (range 0.02–2.0)
-- `terrain_mod` = from tactical terrain table above
+- `terrain_mod` = base terrain multiplier (plain: 1.0, mountain: 0.8, etc.)
 - `element_mod` = essence drift multiplier of commanding officer
 - `morale_mod` = attacker morale ÷ 100
 
 **duel mechanics:**
-- triggered when two generals are on adjacent tiles and a charge action is taken.
-- also triggered probabilistically at battle start if valour difference > 20.
 - resolution: both generals roll `valour + 1d20`; higher roll wins.
-- outcomes:
+- decisive win (diff > 15): loser dies or flees; −30 morale to loser's army.
 
-| result | effect |
-| :--- | :--- |
-| decisive win (diff > 15) | loser dies or flees; −30 morale to loser's army |
-| win (diff 5–15) | loser retreats 2 tiles; −15 morale to loser's army |
-| draw (diff < 5) | both injured (−10 health); no morale change |
-
-- vanguard tag: +10 to duel roll.
-- cavalry tag: +5 to duel roll on plain terrain.
-- loyalist tag: officer refuses to flee on decisive loss (stands and fights to 0 health).
-
-**morale and rout:**
-- each unit has morale (1–100); army morale = average of all unit morales.
-- morale drops on: casualties, failed charges, general killed/fled, being flanked.
-- if a unit's morale hits 0: unit routs — moves 3 tiles away from enemy and loses 10% troops per turn.
-- if army morale hits 0: full rout — all units flee; pursuer deals +50% bonus casualties.
-
-**battle victory conditions:**
-
-| condition | trigger | result |
-| :--- | :--- | :--- |
-| rout | enemy army morale = 0 | winner holds tile; loser retreats to nearest friendly city |
-| annihilation | enemy troops < 10% starting | as above; bonus ledger_log entry |
-| general killed | commanding general dies in duel | −40 morale; forced rout check |
-| retreat ordered | player manually retreats | army moves 2 tiles back; no penalty beyond lost ground |
-| siege fall | DEF = 0 during siege | city captured; garrison eliminated |
-
-**siege battle specifics:**
-- battle grid uses fortification tiles on the defender's left edge (city wall).
-- attacker must breach wall tiles (reduced by siege engine fire) before reaching city interior.
-- defender can place garrison troops on wall tiles at +20% defence bonus.
-- sortie: defender can send units into contested ground; if attacker morale breaks, siege lifts.
-
-**battle outcomes recorded in ledger:**
-- BATTLE_WON / BATTLE_LOST / BATTLE_DRAWN
-- GENERAL_KILLED / GENERAL_FLED / DUEL_RESULT
-- SIEGE_LIFTED / CITY_CAPTURED
-- all troop losses, officer health changes, and morale deltas
-
-**Godot scene structure:**
-
-| node | purpose |
-| :--- | :--- |
-| BattleScene (root) | manages round loop, initiative queue, outcome dispatch |
-| BattleTileMap | 15×9 tactical grid; terrain tiles from strategic map context |
-| UnitLayer | unit tokens for each deployed unit (attacker + defender) |
-| UILayer | action panel (move/attack/hold), morale bars, round counter |
-| DuelScreen (modal) | animated duel sequence overlaid on battle scene |
-| BattleLog | scrolling round-by-round event feed |
-
-**status:** battle system not yet implemented. duel roll and morale model defined above are the initial implementation target.
+**status:** battle system not yet implemented. auto-resolve formula is the initial implementation target.
 
 ---
 
 ### 6. diplomacy
 
-inter-faction relations managed through a dedicated diplomacy phase resolved between phase A and phase B.
+inter-faction relations managed through a dedicated diplomacy cycle resolved between cycle A and cycle C.
 
 **relation score:**
 - each pair of factions has a relation score (−100 hostile to +100 allied).
-- changes based on: wars, tribute, gifts, marriages, broken agreements, shared enemies.
 
 **diplomatic actions (cost CP or gold):**
-
-| action | cost | effect |
-| :--- | :--- | :--- |
-| send tribute | gold | +relation; buys temporary non-aggression |
-| propose alliance | CP + gold | formal alliance; both factions share enemy info |
-| gift officer | — | send a low-loyalty officer as goodwill; risky |
-| demand surrender | — | offer target faction vassalage; accepted if relation very high |
-| threaten | — | −relation with target; may deter attack |
-| spy | CP | place a spy in target city; reveals troop/pillar data |
-| bribe officer | gold | attempt to reduce target officer's loyalty; resisted by integrity |
-| marriage | — | formal alliance via officer/family link; long-term +relation |
-
-**alliance tiers:**
-
-| tier | threshold | benefit |
-| :--- | :--- | :--- |
-| neutral | 0–30 | no hostility pact; no shared intel |
-| friendly | 31–60 | trade access; minor intel sharing |
-| allied | 61–85 | coordinated campaigns; shared supply |
-| vassal / suzerain | 86–100 | subordinate faction; tribute flows to suzerain |
-
-**espionage:**
-- spy placed in a city remains until discovered (integrity check each turn).
-- active spy: reveals city pillars, garrison, officer assignments, and army positions.
-- spy discovery: triggers ESPIONAGE_DETECTED event; −relation with source faction.
+- send tribute, propose alliance, threaten.
 
 **status:** not yet implemented.
 
@@ -587,70 +520,40 @@ inter-faction relations managed through a dedicated diplomacy phase resolved bet
 
 ### 7. events system
 
-phase A generates world events each turn. some are automatic (seasonal); others are random or historically scripted.
+cycle A generates world events each turn. initially limited to seasonal shifts and resource signals.
 
-**event categories:**
-
-| category | trigger | example |
-| :--- | :--- | :--- |
-| seasonal | every turn | grain signal, gold signal, order drift |
-| random | probability roll | locust swarm (−AG), flood (−COM), epidemic (−population) |
-| NPC actor | officer tag + probability | physician (Hua Tuo) restores officer health; sage offers advice; merchant opens trade route |
-| historical | year + conditions | Yellow Turban Rebellion, Dong Zhuo coup, Battle of Guandu trigger windows |
-| officer lifecycle | age / loyalty / health | officer falls ill, retires, defects, dies, has child |
-| faction | relation score | rival declares war, proposes alliance, faction collapses |
-
-**event resolution:**
-- events present a choice (accept/decline) or apply automatically.
-- effects are recorded in `ledger_log` with effects_json.
-- some events are permanent (officer death); others are temporary (flood).
-
-**historical scripted events (planned):**
-
-| event | trigger window | effect |
-| :--- | :--- | :--- |
-| Yellow Turban Rebellion | AD 184 (epoch) | initial instability; ORD −20 in central cities |
-| Dong Zhuo seizes capital | AD 189 | Luoyang/Chang'an factions shift; coalition forms |
-| Battle of Guandu | AD 200 (if Yuan Shao vs Cao Cao active) | scripted army clash event |
-| Red Cliffs | AD 208 (if Cao Cao marches south) | naval penalty for northern faction |
-
-**NPC actors:**
-- drawn from the officer archive by tag.
-- appear as phase A choice events: "Hua Tuo arrives in [city]. Treat your wounded general? (costs 50 gold)"
-- accepting applies the effect and logs the NPC visit; declining passes.
-
-**status:** seasonal events (SEASON_SHIFT, GRAIN_SIGNAL, etc.) implemented. random, NPC, historical, and lifecycle events not yet implemented.
+**status:** seasonal events implemented. random and historical events deferred.
 
 ---
 
 ### 8. turn structure (full)
 
-each turn = one month. phases execute in strict order; nothing is committed until phase C completes.
+each turn = one month. cycles execute in strict order; nothing is committed until cycle D completes.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  phase A — world update (automatic, no player input)    │
+│  cycle A — world update (automatic, no player input)    │
 │    1. bazi clock advances                               │
-│    2. seasonal deltas applied to all cities             │
+│    2. seasonal deltas calculated for all cities         │
 │    3. essence drift recalculated for all officers       │
 │    4. random / historical events generated              │
 │    5. NPC actor events offered                          │
-│    6. loyalty drift applied to all officers             │
-│    7. army supply consumed; attrition if supply = 0     │
+│    6. loyalty drift calculated                          │
+│    7. army supply / attrition computed                  │
 │    8. population growth/decline computed                │
 ├─────────────────────────────────────────────────────────┤
-│  phase D — diplomacy (optional, player-initiated)       │
+│  cycle B — diplomacy (optional, player-initiated)       │
 │    - send tribute, propose alliance, bribe, spy         │
 │    - no CP cost; costs gold or dedicated diplomat CP    │
 ├─────────────────────────────────────────────────────────┤
-│  phase B — player commands (CP-limited)                 │
+│  cycle C — player commands (CP-limited)                 │
 │    - city development: ag / com / tech / ord / def      │
 │    - officer: search / recruit / assign / dismiss       │
 │    - military: recruit / march / siege / encamp         │
 │    - commands queued; engine validates CP budget        │
 ├─────────────────────────────────────────────────────────┤
-│  phase C — settlement (atomic SQLite transaction)       │
-│    - apply all phase A / D / B deltas                   │
+│  cycle D — settlement (atomic SQLite transaction)       │
+│    - apply all cycle A / B / C deltas                   │
 │    - resolve battles triggered by army movement         │
 │    - resolve siege outcomes                             │
 │    - advance game_clock                                 │
@@ -659,51 +562,9 @@ each turn = one month. phases execute in strict order; nothing is committed unti
 └─────────────────────────────────────────────────────────┘
 ```
 
-**command points (CP):**
-- generated by the active lord: `strategy (post-drift) ÷ 10`, min 5.
-- advisor officers attached to lord provide +1 CP each (max 3 advisors).
-- diplomacy actions use a separate diplomat CP pool (planned).
-
-**seasonal deltas per city:**
-
-| season | element | AG | COM | TECH | ORD |
-| :--- | :--- | :---: | :---: | :---: | :---: |
-| spring | Wood | +2 | 0 | +1 | 0 |
-| summer | Fire | +1 | +2 | +2 | -1 |
-| transition | Earth | 0 | 0 | 0 | +2 |
-| autumn | Metal | +3 | +1 | 0 | +1 |
-| winter | Water | -2 | -1 | 0 | 0 |
-
-transition months: 3, 6, 9, 12.
-
 ---
 
 ### 9. essence drift
-
-the clock module computes a float multiplier (0.80–1.25) applied to all officer stats each turn, based on the Wu Xing relationship between the officer's essence and the current dominant element.
-
-| relationship | multiplier | description |
-| :--- | :---: | :--- |
-| peak (same element) | 1.25 | officer element matches dominant element exactly |
-| nourished (dominant generates officer) | 1.15 | dominant element feeds the officer's element |
-| feeding (officer generates dominant) | 1.10 | officer's element feeds the dominant |
-| resistant (officer controls dominant) | 0.90 | officer's element controls the dominant |
-| suppressed (dominant controls officer) | 0.80 | dominant element controls the officer's element |
-
-Wu Xing cycles:
-
-```
-generating: Wood -> Fire -> Earth -> Metal -> Water -> Wood
-controlling: Wood -x Earth -x Water -x Fire -x Metal -x Wood
-```
-
-| essence | peak season | suppressed season |
-| :--- | :--- | :--- |
-| Wood | spring | autumn |
-| Fire | summer | winter |
-| Earth | transitions | — |
-| Metal | autumn | spring |
-| Water | winter | summer |
 
 effective stat = clamp(base × drift, 1, 100).
 
@@ -711,52 +572,21 @@ effective stat = clamp(base × drift, 1, 100).
 
 ### 10. bazi calendar (天干地支)
 
-tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184 (Yellow Turban Rebellion).
-
-- 10 heavenly stems (天干): drive the year's elemental character.
-- 12 earthly branches (地支): drive the month's dominant element, season, and zodiac animal.
-- combined: 10 × 12 = 60-month repeating cycle.
-
-derived each turn:
-- `dominant_element`: Wu Xing element governing this month.
-- `season`: spring / summer / transition / autumn / winter.
-- `is_transition_month`: true for months 3, 6, 9, 12.
+tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184.
 
 ---
 
 ### 11. victory and legacy
 
-no single win screen. victory is assessed from the ledger at three levels.
-
-**victory conditions:**
-
-| dimension | measure | assessed from |
-| :--- | :--- | :--- |
-| sovereignty | cities controlled at era end, weighted by strategic value | `cities.faction` history in ledger_log |
-| institutional strength | officer loyalty avg × governance avg × ORD avg across all cities | officer and city records in ledger_log |
-| historical judgment | ratio of just acts to brutal acts; elemental balance of policy decisions | event tags in ledger_log (JUST / BRUTAL / BALANCED) |
+victory is assessed from the ledger at three levels.
 
 **era end trigger:**
 - unification: one faction holds all cities → sovereignty victory.
-- year 280 (era end): game scores all three dimensions; highest composite wins.
-- annihilation: faction loses all cities → eliminated.
-
-**legacy score:**
-- a player who unifies through betrayal and scorched earth holds the land but scores low on historical judgment.
-- a player who builds deep institutions and balanced policy may score higher than the military victor.
-- ledger_log is the permanent record; all decisions are traceable.
+- year 280 (era end): game scores all dimensions.
 
 ---
 
 ## persistence
-
-three storage layers, each matched to its concern:
-
-| layer | format | file | concern |
-| :--- | :--- | :--- | :--- |
-| canonical seed data | YAML | `data/officers.yaml`, `data/cities.yaml` | human-readable archive; read once at first run |
-| runtime game state | SQLite | `ledger.db` | relational ledger; atomic transactions; append-only log |
-| player preferences | JSON | `user://prefs.json` | Godot user data dir; no game logic dependency |
 
 ### SQLite (`ledger.db`)
 
@@ -773,79 +603,116 @@ WAL mode and foreign keys enabled.
 | `army_officers` | junction: army_id → officer_id |
 | `faction_relations` | pairwise relation scores between factions |
 | `game_clock` | single row: current year, month |
-| `ledger_log` | append-only event log (year, month, phase, event_type, description, effects_json) |
-
-all pillar columns have CHECK constraints (1–100). `ledger_log` is a chronicle — victory scoring queries it, but it is not the source of truth for current game state.
-
-### JSON (`user://prefs.json`)
-
-written and read by Godot via `FileAccess`. contains no game state — safe to delete without affecting a saved game.
-
-```json
-{
-  "display": {
-    "fullscreen": false,
-    "resolution": "1280x720"
-  },
-  "audio": {
-    "master_volume": 1.0,
-    "music_volume": 0.8,
-    "sfx_volume": 1.0
-  },
-  "gameplay": {
-    "last_scenario": "189ad",
-    "text_speed": "normal"
-  }
-}
-```
+| `ledger_log` | append-only event log (year, month, cycle, event_type, description, effects_json) |
 
 ---
 
 ## frontend
-
-**Godot 4** is the frontend engine. the headless modules (engine, battle, diplomacy, events, clock, ledger, archive, models) are the authoritative core; Godot renders state and dispatches player commands. YAML archives and SQLite ledger are engine-level concerns untouched by the frontend.
-
-rationale:
-- built-in scene tree, tilemap, and animation systems suit the grid-based strategy map.
-- open-source, no royalties, strong 2D support for the pixel art / Han character aesthetic.
-- multi-platform export (desktop, web) without licensing constraints.
-- GDScript and C# are both viable for the frontend layer.
 
 ### scenes
 
 | scene | maps to system | status |
 | :--- | :--- | :--- |
 | SplashScreen | — | hello world scaffold done |
+| ScenarioSelectScreen | scenario & sovereign setup | not started |
 | StrategicMapScreen | strategic map — tilemap, armies, faction overlays | not started |
 | CityScreen | city development — pillar bars, officer slot, food/gold | not started |
 | OfficerScreen | officer management — roster, stats, assignment | not started |
 | ArmyScreen | army system — troop count, morale, supply, stance | not started |
-| BattleScreen | tactical battle — grid, units, commands, duel animation | not started |
+| BattleScreen | tactical battle — report / auto-resolve animation | not started |
 | DiplomacyScreen | diplomacy — faction list, relation scores, action panel | not started |
 | LedgerScreen | ledger log — scrollable history, event filter | not started |
 | VictoryScreen | legacy scoring — three-dimension breakdown | not started |
 
 ---
 
-## phases
+## headless testing strategy
+
+since the engine is decoupled from the frontend, verification is performed through automated logic tests and simulation snapshots.
+
+### 1. the "robot player" (integration test)
+
+a standalone script (GDScript or Python) that interacts with the `headless` modules to simulate gameplay. this is the primary tool for Milestone 1 verification.
+
+**structure:**
+```text
+1. setup:
+   - create an in-memory or temporary sqlite database.
+   - run 'archive' module to load YAML data.
+   - run 'ledger' init to seed the database for AD 189.
+
+2. execution (simulate 12 turns):
+   - for turn in 1..12:
+     - log state: current year/month/dominant_element.
+     - cycle A: run world update (essence drift, resource deltas).
+     - cycle B: (optional) inject a diplomacy command.
+     - cycle C: inject player commands (e.g., build_ag, recruit_army).
+     - cycle D: run settlement (commit to DB, resolve battles).
+
+3. validation:
+   - assert: year/month progressed correctly.
+   - assert: city pillars changed by expected seasonal + command deltas.
+   - assert: officer stats were correctly clamped (1–100) after drift.
+   - check: 'ledger_log' contains a record for every event in the turn.
+```
+
+### 2. unit testing (logic isolation)
+
+each headless module must pass isolated tests:
+- **clock_test**: verify the 60-unit cycle and seasonal transitions.
+- **essence_test**: verify that every Wu Xing relationship (nourishing, controlling, etc.) produces the correct drift multiplier.
+- **battle_math_test**: run 10,000 auto-resolve loops to verify that stat differences result in consistent, non-glitchy outcomes (no negative troop counts, etc.).
+
+### 3. "golden master" regression
+
+- run a 100-turn simulation with a fixed random seed.
+- dump the final state of all SQLite tables to a text file (`master_state.txt`).
+- after any engine refactor, re-run the simulation. 
+- if the output differs from the master state, a logic regression has occurred.
+
+---
+
+## milestones
 
 > `done` · `in progress` · `not started`
 
-| phase | focus | status |
+### development strategy (simplifications)
+
+to manage complexity and reach a "playable" state faster, the following strategies are enforced:
+- **auto-resolve first**: milestone 6 (battle) will initially implement a side-effect-free math resolver (valour vs strategy) rather than a full tactical grid. the grid is deferred to expansions.
+- **canonical scenario**: focus exclusively on **AD 189 (dong zhuo's rise)** for initial development and balancing. other scenarios are data-only targets for now.
+- **vertical slice seeding**: start with a subset of the 500 officers (e.g., only those with the `lord` tag and their primary generals) to verify essence drift and the game loop.
+- **ui minimalism**: use placeholder godot ui components to verify engine logic before committing to custom pixel art assets.
+
+### development phases
+
+| phase | focus | milestones | status |
+| :--- | :--- | :--- | :--- |
+| **1: genesis** | foundation, sqlite, and turn engine | 0, 1 | in progress |
+| **2: cartography** | strategic map and visual world | 2 | not started |
+| **3: governance** | city development and economics | 3 | not started |
+| **4: sovereignty** | officer management and allegiance | 4 | not started |
+| **5: conflict** | armies and tactical battle system | 5, 6 | not started |
+| **6: statecraft** | diplomacy and world events | 7 | not started |
+| **7: legacy** | victory, scoring, and polish | 8 | not started |
+
+### milestone tracking
+
+| milestone | focus | status |
 | :--- | :--- | :--- |
 | 0 | foundation | done |
-| 1 | data + turn engine | not started |
-| 2 | cities | not started |
-| 3 | officers | not started |
-| 4 | army system | not started |
-| 5 | strategic map | not started |
-| 6 | tactical battle | not started |
+| 1 | data + turn engine (focus: AD 189) | not started |
+| 2 | strategic map (visualizing china) | not started |
+| 3 | cities (development & economics) | not started |
+| 4 | officers (management & loyalty) | not started |
+| 5 | army system (raising & movement) | not started |
+| 6 | tactical battle (auto-resolve math) | not started |
 | 7 | diplomacy + events | not started |
 | 8 | victory + polish | not started |
 
 ---
 
-### phase 0 — foundation `done`
+### milestone 0 — foundation `done`
 
 | item | status |
 | :--- | :--- |
@@ -857,107 +724,62 @@ rationale:
 
 ---
 
-### phase 1 — data + turn engine `not started`
+### milestone 1 — data + turn engine `not started`
 
-SQLite init, YAML seeding, bazi clock, and the three-phase turn loop in GDScript.
+SQLite init, YAML seeding, bazi clock, and the four-cycle turn loop in GDScript. **priority focus: AD 189 scenario.**
 
 | item | status |
-| :--- | :--- |
+| :--- | :--- | :--- |
 | SQLite init (schema, WAL, seed from YAML) | not started |
+| Scenario & Sovereign selection logic | not started |
 | bazi calendar + essence drift | not started |
-| phase A — seasonal deltas | not started |
-| phase B — CP commands | not started |
-| phase C — atomic settlement | not started |
+| cycle A — seasonal deltas | not started |
+| cycle B — diplomacy | not started |
+| cycle C — player commands | not started |
+| cycle D — atomic settlement | not started |
 
 ---
 
-### phase 2 — cities `not started`
+### milestone 6 — tactical battle `not started`
 
-city resources and economic simulation.
+initially implemented as a mathematical "auto-resolve" system to verify army and officer stats before building the visual grid.
 
 | item | status |
 | :--- | :--- |
-| city food + gold output per turn | not started |
-| population growth / decline | not started |
-| unrest trigger (ORD < 30) | not started |
-| city screen (pillar bars, resources, governor slot) | not started |
+| auto-resolve formula (valour vs strategy) | not started |
+| casualty & morale calculation | not started |
+| duel resolution math | not started |
+| outcome report (ledger log) | not started |
+| tactical grid (visual) | deferred |
 
 ---
 
-### phase 3 — officers `not started`
+## future ideas & expansions
 
-officer lifecycle, allegiance, and assignment.
+these systems are deferred to post-release or major expansion phases to maintain focus on the core "Vertical Slice" prototype.
 
-| item | status |
-| :--- | :--- |
-| officer allegiance table + loyalty drift | not started |
-| officer assignment (governor / general / advisor) | not started |
-| officer search + recruitment | not started |
-| officer experience + stat growth | not started |
-| officer age / health / death | not started |
+### 1. tactical grid battle
+- transition from abstract "auto-resolve" to a full 15×9 tactical grid.
+- unit-specific movement and attack ranges.
+- detailed terrain modifiers for tactical tiles.
 
----
+### 2. advanced diplomacy & espionage
+- **spy placement**: deep infiltration of enemy cities to sabotage or extract data.
+- **bribery**: mechanics for turning high-integrity officers (resisted by integrity).
+- **marriage alliances**: familial links between factions for long-term stability.
 
-### phase 4 — army system `not started`
+### 3. historical scripted events
+- full chronological event triggers (e.g., Yellow Turban Rebellion AD 184, Red Cliffs AD 208).
+- scripted army spawns and territory shifts based on historical timelines.
 
-raising, moving, and supplying armies.
+### 4. officer lifecycle (lineage & health)
+- **aging**: officers grow old and stats naturally decay or shift.
+- **heirs**: lineage systems to handle faction leadership transitions upon death.
+- **health**: complex wound and illness management.
 
-| item | status |
-| :--- | :--- |
-| army model (troops, morale, supply, stance) | not started |
-| troop recruitment from cities | not started |
-| army movement + supply line + attrition | not started |
-| siege (DEF degradation, city fall) | not started |
+### 5. naval warfare
+- specialized naval units and river/sea tactical grids.
+- ship-to-ship combat and boarding mechanics.
 
----
-
-### phase 5 — strategic map `not started`
-
-China campaign map scene.
-
-| item | status |
-| :--- | :--- |
-| Godot TileMap (terrain tiles, faction colour overlay) | not started |
-| city nodes (size by population tier) | not started |
-| army tokens + movement on map | not started |
-| city count expansion (30 → 41+) | not started |
-
----
-
-### phase 6 — tactical battle `not started`
-
-battle scene and turn-based resolution.
-
-| item | status |
-| :--- | :--- |
-| battle grid (15×9, deployment zones) | not started |
-| unit types + movement + damage formula | not started |
-| morale (break and rout) | not started |
-| officer duels | not started |
-| Godot battle scene | not started |
-
----
-
-### phase 7 — diplomacy + events `not started`
-
-inter-faction relations and world events.
-
-| item | status |
-| :--- | :--- |
-| faction relation scores + diplomacy actions | not started |
-| random events (flood, locust, epidemic) | not started |
-| NPC event actors | not started |
-| historical scripted events | not started |
-
----
-
-### phase 8 — victory + polish `not started`
-
-scoring, remaining scenes, multi-era.
-
-| item | status |
-| :--- | :--- |
-| victory scoring (territory, institutional, legacy) | not started |
-| era-end trigger (unification or year 280) | not started |
-| remaining Godot scenes (officer, diplomacy, ledger) | not started |
-| multi-era framework | not started |
+### 6. multi-era engine
+- support for other historical eras (Sengoku, Roman Republic, etc.) using the same core sovereign engine.
