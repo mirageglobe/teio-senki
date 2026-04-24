@@ -23,7 +23,6 @@ func _fade_in() -> void:
 		_ready_for_input = true
 		_blink_prompt()
 	)
-	get_tree().create_timer(SPLASH_DURATION).timeout.connect(_advance)
 
 
 func _blink_prompt() -> void:
