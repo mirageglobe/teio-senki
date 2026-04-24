@@ -7,8 +7,8 @@ func _init() -> void:
 	print("--- BEGINNING HEADLESS ENGINE TESTS ---")
 	
 	# Load scripts dynamically
-	var game_clock = load("res://scripts/engine/game_clock.gd")
-	var essence = load("res://scripts/engine/essence.gd")
+	var game_clock = load("res://scripts/core/game_clock.gd")
+	var essence = load("res://scripts/core/essence.gd")
 	var ledger = load("res://scripts/engine/ledger.gd")
 	var engine = load("res://scripts/engine/sovereign_engine.gd")
 	

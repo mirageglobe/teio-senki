@@ -1,68 +1,69 @@
 class_name SovereignEngine
 extends RefCounted
 
-var ledger
-var clock
+# Explicit preloads so class_name globals are not required — safe for headless -s mode.
+const EssenceScript = preload("res://scripts/core/essence.gd")
+const GameClockScript = preload("res://scripts/core/game_clock.gd")
+
+var ledger: RefCounted  # Ledger instance
+var clock: RefCounted   # GameClock instance
 var current_sovereign_id: String = "Cao Cao"
 
 var command_queue: Array = []
 var diplomacy_queue: Array = []
 var available_cp: int = 0
 
-func _init(p_ledger, p_clock):
+func _init(p_ledger: RefCounted, p_clock: RefCounted) -> void:
 	ledger = p_ledger
 	clock = p_clock
 
-func start_turn():
+func start_turn() -> void:
 	_run_cycle_a()
 	_calculate_cp()
 
-func _run_cycle_a():
+func _run_cycle_a() -> void:
 	clock.advance_month()
-	ledger.game_clock.year = clock.year
-	ledger.game_clock.month = clock.month
-	
-	var dominant = clock.get_dominant_element()
-	var season = clock.get_current_season()
-	
+	# Replace the clock dict wholesale to avoid field-level mutation of ledger state.
+	ledger.game_clock = {"year": clock.year, "month": clock.month}
+
+	var dominant: String = GameClockScript.element_for_month(clock.month)
+	var season: String = GameClockScript.season_for_month(clock.month)
+
 	ledger.log_event("SEASON_SHIFT", "The season is now %s, dominated by %s." % [season, dominant])
-	
-	var sovereign = ledger.get_officer(current_sovereign_id)
+
+	var sovereign: Dictionary = ledger.get_officer(current_sovereign_id)
 	if not sovereign.is_empty():
-		# Using global load if Essence class name is not recognized
-		var essence_cls = load("res://scripts/engine/essence.gd")
-		var drift = essence_cls.get_drift_multiplier(sovereign.essence, dominant)
-		var eff_strategy = essence_cls.get_effective_stat(sovereign.strategy, drift)
+		var drift: float = EssenceScript.get_drift_multiplier(sovereign.essence, dominant)
+		var eff_strategy: int = EssenceScript.get_effective_stat(sovereign.strategy, drift)
 		ledger.log_event("ESSENCE_DRIFT", "%s feels the shift. Effective Strategy: %d (x%.2f)" % [current_sovereign_id, eff_strategy, drift])
 
-func _calculate_cp():
-	var sovereign = ledger.get_officer(current_sovereign_id)
+func _calculate_cp() -> void:
+	var sovereign: Dictionary = ledger.get_officer(current_sovereign_id)
 	if sovereign.is_empty():
 		available_cp = 5
 		return
-		
-	var dominant = clock.get_dominant_element()
-	var essence_cls = load("res://scripts/engine/essence.gd")
-	var drift = essence_cls.get_drift_multiplier(sovereign.essence, dominant)
-	var eff_strategy = essence_cls.get_effective_stat(sovereign.strategy, drift)
-	
+
+	var dominant: String = GameClockScript.element_for_month(clock.month)
+	var drift: float = EssenceScript.get_drift_multiplier(sovereign.essence, dominant)
+	var eff_strategy: int = EssenceScript.get_effective_stat(sovereign.strategy, drift)
+
 	available_cp = max(5, eff_strategy / 10)
 	ledger.log_event("RESOURCES", "Command Points generated: %d" % available_cp)
 
-func queue_command(command_type: String, params: Dictionary, cost: int):
+func queue_command(command_type: String, params: Dictionary, cost: int) -> bool:
 	if available_cp >= cost:
 		command_queue.append({"type": command_type, "params": params, "cost": cost})
 		available_cp -= cost
 		return true
 	return false
 
-func settle_turn():
+func settle_turn() -> void:
 	ledger.log_event("SETTLEMENT", "Resolving turn cycle D...")
-	for cmd in command_queue:
+	for cmd: Dictionary in command_queue:
 		_execute_command(cmd)
 	command_queue.clear()
 	diplomacy_queue.clear()
 	ledger.log_event("TURN_COMPLETE", "Turn %d.%d settled successfully." % [clock.year, clock.month])
 
-func _execute_command(cmd: Dictionary):
+func _execute_command(cmd: Dictionary) -> void:
 	ledger.log_event("COMMAND_EXEC", "Executed %s with cost %d" % [cmd.type, cmd.cost], cmd.params)
