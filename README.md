@@ -35,7 +35,7 @@ make run      # launch the game
 | module | role |
 | :--- | :--- |
 | main | entry point: seeds DB from YAML archives, launches frontend |
-| engine | three-phase turn processor (headless, side-effect-free) |
+| engine | three-cycle turn processor (headless, side-effect-free) |
 | clock | bazi calendar and essence drift calculation |
 | ledger | SQLite layer: schema, CRUD, atomic settle_turn |
 | models | typed domain models: Officer, City, Element, Tag, Terrain |

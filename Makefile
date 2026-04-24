@@ -12,3 +12,6 @@ data:                ## convert yaml archives to json for godot
 
 godot:               ## launch the godot 4 project
 	godot --path godot/
+
+test:                ## run headless engine tests
+	godot --path godot/ --headless -s scripts/tests/test_runner.gd
