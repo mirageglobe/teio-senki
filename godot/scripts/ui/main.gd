@@ -28,13 +28,27 @@ func _draw() -> void:
 func _render_cities(cities: Dictionary) -> void:
 	for city_name: String in cities:
 		var city: Dictionary = cities[city_name]
-		var btn := Button.new()
-		btn.text = "● " + city.get("name", "Unknown")
-		btn.add_theme_font_size_override("font_size", 10)
-		btn.position = Vector2(city.x * 32, city.y * 32)
-		btn.flat = true
-		btn.pressed.connect(_on_city_pressed.bind(city_name))
-		add_child(btn)
+
+		var dot := Button.new()
+		dot.text = "●"
+		dot.add_theme_font_size_override("font_size", 10)
+		dot.flat = true
+		dot.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		dot.pressed.connect(_on_city_pressed.bind(city_name))
+
+		var lbl := Label.new()
+		lbl.text = city.get("name", "Unknown")
+		lbl.add_theme_font_size_override("font_size", 8)
+		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lbl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+
+		var container := VBoxContainer.new()
+		# centre the 64px-wide container on the grid point
+		container.position = Vector2(city.x * 32 - 32, city.y * 32 - 8)
+		container.custom_minimum_size = Vector2(64, 0)
+		container.add_child(dot)
+		container.add_child(lbl)
+		add_child(container)
 
 func _build_city_panel() -> void:
 	_panel = PanelContainer.new()
