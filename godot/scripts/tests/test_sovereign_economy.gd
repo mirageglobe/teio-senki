@@ -13,7 +13,7 @@ static func run() -> bool:
 	var ledger := LedgerScript.new()
 	ledger.load_data()
 	var clock := GameClockScript.new(189, 1)
-	var engine := EngineScript.new(ledger, clock)
+	var engine := EngineScript.new(ledger, clock, "Cao Cao")
 
 	# Test 1: BUILD_AG increases city agriculture stat
 	var ag_before: int = ledger.get_city("Luoyang").get("agriculture", 0)

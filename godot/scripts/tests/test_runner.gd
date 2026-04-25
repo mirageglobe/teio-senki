@@ -40,7 +40,7 @@ func _init() -> void:
 		success = false
 
 	# Test 4: Turn Loop
-	var e = engine.new(l, clock)
+	var e = engine.new(l, clock, "Cao Cao")
 	e.start_turn()
 	e.queue_command("BUILD_AG", {"city": "Luoyang"}, 2)
 	e.settle_turn()

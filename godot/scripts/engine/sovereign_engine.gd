@@ -10,15 +10,16 @@ const BUILD_GAIN := 5  # stat points awarded per build command
 
 var ledger: RefCounted  # Ledger instance
 var clock: RefCounted   # GameClock instance
-var current_sovereign_id: String = "Cao Cao"
+var current_sovereign_id: String
 
 var command_queue: Array[Dictionary] = []
 var diplomacy_queue: Array[Dictionary] = []
 var available_cp: int = 0
 
-func _init(p_ledger: RefCounted, p_clock: RefCounted) -> void:
+func _init(p_ledger: RefCounted, p_clock: RefCounted, p_sovereign_id: String) -> void:
 	ledger = p_ledger
 	clock = p_clock
+	current_sovereign_id = p_sovereign_id
 
 func start_turn() -> void:
 	_run_cycle_a()
