@@ -12,8 +12,8 @@ var ledger: RefCounted  # Ledger instance
 var clock: RefCounted   # GameClock instance
 var current_sovereign_id: String = "Cao Cao"
 
-var command_queue: Array = []
-var diplomacy_queue: Array = []
+var command_queue: Array[Dictionary] = []
+var diplomacy_queue: Array[Dictionary] = []
 var available_cp: int = 0
 
 func _init(p_ledger: RefCounted, p_clock: RefCounted) -> void:

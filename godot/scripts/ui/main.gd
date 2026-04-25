@@ -85,7 +85,7 @@ static func _fmt_pop(pop: int) -> String:
 	return str(pop)
 
 func _unhandled_input(event: InputEvent) -> void:
-	var camera = $Camera2D
+	var camera: Camera2D = $Camera2D
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			camera.zoom *= 1.1
@@ -103,5 +103,3 @@ func _unhandled_input(event: InputEvent) -> void:
 				else:
 					get_tree().quit()
 
-func _input(event: InputEvent) -> void:
-	pass
