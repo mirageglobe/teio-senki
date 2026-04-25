@@ -3,7 +3,7 @@
 > "Sovereignty through the Ledger, Strategy through the Elements."
 
 ## tldr
-A headless, turn-based grand strategy engine set in the Three Kingdoms era. Architecture prioritises **data integrity (SQLite)** and **simulation purity (Headless)** over visual spectacle. 
+A headless, turn-based grand strategy engine set in the Three Kingdoms era. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (in-memory ledger + JSON persistence)** over visual spectacle.
 
 ---
 
@@ -23,7 +23,7 @@ data/                   # YAML Master Archive (Source of Truth)
 
 ## scope containment policy (no-drift)
 - **Engine/UI Separation**: Logic MUST be testable in `make test` without initializing the UI.
-- **SQLite Ledger**: If a feature doesn't store data in the ledger, it is not part of the core simulation.
+- **Ledger Boundary**: If a feature doesn't write state to the ledger, it is not part of the core simulation.
 - **No Tactical Grid (V1)**: The grid battle is deferred to expansions. Stick to the auto-resolve formula.
 - **Single Scenario**: Development is locked to **AD 189 (Dong Zhuo)**. Do not balance other scenarios until the game is playable.
 - **No "Just-in-case"**: Do not implement features until the turn engine needs them (e.g., don't build espionage before the diplomacy cycle is functional).
@@ -55,35 +55,34 @@ victory is measured across three dimensions — territory, institutional strengt
 
 - **headless engine**: all simulation logic (engine, clock) is side-effect-free and testable without the frontend.
 - **typed domain models**: single source of truth for all entities. raw/untyped data never crosses module boundaries.
-- **mutable current state + chronicle log**: SQLite tables store live game state directly. `ledger_log` is an append-only chronicle for history, narrative, and victory scoring — not the primary state store.
+- **mutable current state + chronicle log**: in-memory dictionaries store live game state. `ledger_log` is an append-only array for history, narrative, and victory scoring — not the primary state store. state is serialised to JSON on save.
 - **YAML archives**: human-readable canonical data (`data/officers.yaml`, `data/cities.yaml`). read once at first-run seed; never touched at runtime.
 
 ### module responsibilities
 
 | module | role |
 | :--- | :--- |
-| main | entry point: seeds DB from YAML archives on first run, launches frontend |
+| main | entry point: loads JSON archives into ledger on first run, launches frontend |
 | models | typed domain models: Officer, City, Army, Element, Tag, Terrain, and bonus lookup tables |
 | clock | bazi calendar: heavenly stem (天干) / earthly branch (地支) tracking, essence drift calculation |
 | engine | three-cycle turn processor: command validation, seasonal deltas, CP budget |
 | battle | tactical battle resolver: grid movement, combat, duels, siege, morale |
 | diplomacy | inter-faction relations: alliances, espionage, tribute, bribery |
 | events | event generator: random events, historical triggers, NPC appearances |
-| ledger | SQLite layer: schema init, CRUD, atomic settle_turn transaction |
+| ledger | in-memory state store: officers, cities, clock, resources, append-only log; serialises to JSON on save |
 | archive | YAML loader: parses human-readable config into validated domain models |
 | frontend | Godot 4 scenes: splash, strategic map, city, officer, army, battle, diplomacy, ledger, victory |
 
 ### data flow
 
 ```
-data/officers.yaml ──┐
-data/cities.yaml     ├──> archive ──> domain models
-                     │
-                     └──> main (first-run seed) ──> ledger ──> ledger.db
-                                                                    ↑
-    frontend ──> engine (cycle A/B/C/D) ─────────────> ledger ──────┘
-             └──> battle / diplomacy / events ────────────────────┘
-                                                  (settle_turn, atomic commit)
+data/*.yaml  ──(make data)──▶  godot/data/*.json  ──(ledger.load_data)──▶  in-memory ledger
+                                                                                    │
+    frontend ──> engine (cycle A/B/C/D) ────────────────────> ledger ──────────────┘
+             └──> battle / diplomacy / events                        │
+                                                         (settle_turn; snapshot/restore on failure)
+                                                                     │
+                                                              save ──▶  save.json
 ```
 
 ---
@@ -206,7 +205,7 @@ Plain, Mountain, Forest, River, Coast, Pass
 
 target city count is 41–47. current 30 covers the core theatre; southern (Jiao Zhou) and far-north (Liaodong) cities are the main gaps.
 
-archives are the canonical human-readable source. they seed the SQLite ledger on first run only. subsequent launches read exclusively from `ledger.db`.
+archives are the canonical human-readable source. they seed the in-memory ledger on new game start. subsequent launches load from `save.json` instead.
 
 ---
 
@@ -227,7 +226,7 @@ scenarios define the historical epoch, including the distribution of cities, the
 | Three Kingdoms | AD 220 | the formal division of the empire into Wei, Shu, and Wu |
 
 **data mapping:**
-- scenario selection filters the `data/cities.yaml` and `data/officers.yaml` to set the initial `faction` ownership and officer availability in `ledger.db`.
+- scenario selection filters the loaded JSON archives to set the initial `faction` ownership and officer availability in the in-memory ledger.
 
 ### 2. sovereign selection
 
@@ -552,7 +551,7 @@ each turn = one month. cycles execute in strict order; nothing is committed unti
 │    - military: recruit / march / siege / encamp         │
 │    - commands queued; engine validates CP budget        │
 ├─────────────────────────────────────────────────────────┤
-│  cycle D — settlement (atomic SQLite transaction)       │
+│  cycle D — settlement (snapshot/restore for atomicity)  │
 │    - apply all cycle A / B / C deltas                   │
 │    - resolve battles triggered by army movement         │
 │    - resolve siege outcomes                             │
@@ -588,22 +587,23 @@ victory is assessed from the ledger at three levels.
 
 ## persistence
 
-### SQLite (`ledger.db`)
+### in-memory ledger + JSON save
 
-WAL mode and foreign keys enabled.
+runtime state lives entirely in memory. on save, the ledger serialises to `save.json`. on load, `save.json` is deserialised back into the ledger. new game starts seed from `godot/data/*.json` (converted from YAML archives).
 
-| table | purpose |
-| :--- | :--- |
-| `officers` | intrinsic officer records (stats, essence, health, age, experience) |
-| `officer_tags` | junction table: officer_id → tag |
-| `officer_allegiance` | relational state: faction, lord_id, loyalty, joined_turn, end_turn |
-| `officer_assignments` | role, city_id or army_id, assigned_turn |
-| `cities` | city records with all pillar values, governor_id, garrison, food, gold |
-| `armies` | army records: general, troops, morale, supply, position, stance |
-| `army_officers` | junction: army_id → officer_id |
-| `faction_relations` | pairwise relation scores between factions |
-| `game_clock` | single row: current year, month |
-| `ledger_log` | append-only event log (year, month, cycle, event_type, description, effects_json) |
+this approach is cross-platform by default — no native extensions required, works on desktop, mobile, and web exports.
+
+| ledger key | type | purpose |
+| :--- | :--- | :--- |
+| `officers` | Dictionary | officer records: stats, essence, health, age, experience, tags |
+| `cities` | Dictionary | city records: pillars, governor_id, garrison, food, gold |
+| `armies` | Dictionary | army records: general, troops, morale, supply, position, stance |
+| `faction_relations` | Dictionary | pairwise relation scores between factions |
+| `game_clock` | Dictionary | current year, month |
+| `resources` | Dictionary | player-faction grain and gold totals |
+| `logs` | Array[Dictionary] | append-only event log: year, month, cycle, event_type, description, effects |
+
+**atomicity:** cycle D takes a full ledger snapshot before applying deltas. on any failure, `restore_snapshot()` rolls back to the pre-settlement state.
 
 ---
 
@@ -637,9 +637,9 @@ a standalone script (GDScript or Python) that interacts with the `headless` modu
 **structure:**
 ```text
 1. setup:
-   - create an in-memory or temporary sqlite database.
-   - run 'archive' module to load YAML data.
-   - run 'ledger' init to seed the database for AD 189.
+   - instantiate ledger and call load_data() to seed from JSON archives.
+   - instantiate clock at AD 189, month 1.
+   - instantiate engine with ledger, clock, and sovereign_id.
 
 2. execution (simulate 12 turns):
    - for turn in 1..12:
@@ -647,7 +647,7 @@ a standalone script (GDScript or Python) that interacts with the `headless` modu
      - cycle A: run world update (essence drift, resource deltas).
      - cycle B: (optional) inject a diplomacy command.
      - cycle C: inject player commands (e.g., build_ag, recruit_army).
-     - cycle D: run settlement (commit to DB, resolve battles).
+     - cycle D: run settlement (snapshot → apply deltas → restore on failure).
 
 3. validation:
    - assert: year/month progressed correctly.
@@ -666,7 +666,7 @@ each headless module must pass isolated tests:
 ### 3. "golden master" regression
 
 - run a 100-turn simulation with a fixed random seed.
-- dump the final state of all SQLite tables to a text file (`master_state.txt`).
+- serialise the final ledger state to a text file (`master_state.json`).
 - after any engine refactor, re-run the simulation. 
 - if the output differs from the master state, a logic regression has occurred.
 
@@ -688,7 +688,7 @@ to manage complexity and reach a "playable" state faster, the following strategi
 
 | phase | focus | milestones | status |
 | :--- | :--- | :--- | :--- |
-| **1: genesis** | foundation, sqlite, and turn engine | 0, 1 | done |
+| **1: genesis** | foundation, data pipeline, and turn engine | 0, 1 | done |
 | **2: cartography** | strategic map and visual world | 2 | done |
 | **3: governance** | city development and economics | 3 | done |
 | **4: sovereignty** | officer management and allegiance | 4 | not started |
@@ -720,17 +720,17 @@ to manage complexity and reach a "playable" state faster, the following strategi
 | splash screen (fade, blink prompt, 5s auto-advance, key dismiss) | done |
 | main scene placeholder | done |
 | design: officer + city archives (YAML, 498 officers, 30 cities) | done |
-| design: bazi calendar, turn structure, SQLite schema | done |
+| design: bazi calendar, turn structure, ledger schema | done |
 
 ---
 
 ### milestone 1 — data + turn engine `done`
 
-SQLite init, YAML seeding, bazi clock, and the four-cycle turn loop in GDScript. **priority focus: AD 189 scenario.**
+JSON archive loading, in-memory ledger init, bazi clock, and the four-cycle turn loop in GDScript. **priority focus: AD 189 scenario.**
 
 | item | status |
 | :--- | :--- |
-| SQLite init (schema, WAL, seed from YAML) | done |
+| JSON archive loading + ledger seed | done |
 | Scenario & Sovereign selection logic | done |
 | bazi calendar + essence drift | done |
 | cycle A — seasonal deltas | done |
@@ -756,7 +756,7 @@ initially implemented as a mathematical "auto-resolve" system to verify army and
 
 | decision | choice | why |
 | :--- | :--- | :--- |
-| SQLite over JSON for runtime state | SQLite (WAL mode) | atomic settle_turn transaction; rollback on failure; foreign-key integrity across officers, cities, armies |
+| in-memory ledger over SQLite | Dictionary + JSON serialisation | cross-platform by default — no GDExtension dependency; SQLite has no built-in Godot 4 support and breaks on web exports; snapshot/restore gives sufficient atomicity for a turn-based sim |
 | GDScript over C# | GDScript | tighter Godot 4 integration; no separate build step; sufficient for turn-based simulation pace |
 | YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON is fast to load in Godot without a parser dependency |
 | headless-first engine | `RefCounted`/`Node` classes testable via `godot --headless` | allows CI verification without the editor; separates simulation correctness from visual rendering |
@@ -770,9 +770,9 @@ initially implemented as a mathematical "auto-resolve" system to verify army and
 
 | dimension | score | notes |
 | :--- | :--- | :--- |
-| overall | 3 / 5 | moderate; multi-layer simulation with SQLite, headless engine, and Godot frontend |
+| overall | 3 / 5 | moderate; multi-layer simulation with in-memory ledger, headless engine, and Godot frontend |
 | core (clock, essence, economy) | 2 / 5 | pure math; stateless functions; well-bounded domain |
-| engine (sovereign_engine, ledger) | 3 / 5 | four-cycle turn loop, atomic SQLite transactions, validation logic |
+| engine (sovereign_engine, ledger) | 3 / 5 | four-cycle turn loop, snapshot/restore atomicity, validation logic |
 | data pipeline (YAML → JSON → DB) | 2 / 5 | one-way conversion; `make data` is the only transform step |
 | ui (Godot scenes) | 2 / 5 | view-only; reads from ledger; no simulation logic |
 | future: army + battle system | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid |

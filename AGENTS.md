@@ -13,7 +13,7 @@ You are a Senior Technical Architect and Game Designer. Your goal is to help bui
 | **Engine** | Godot 4 (Forward Plus) | Main game engine, scene tree, and rendering |
 | **Logic** | GDScript | All game logic, state transitions, and simulation core |
 | **Data Format** | YAML (`data/`) | Human-readable, version-controllable master archives |
-| **Runtime Data** | JSON / SQLite | High-integrity runtime stores; derived from YAML archives |
+| **Runtime Data** | in-memory + JSON save | cross-platform ledger; serialised to `save.json` on save |
 | **Visuals** | Pixel Art (1280x720) | Low-fidelity, high-clarity aesthetic |
 
 ## Architecture: Headless-First, Data-Driven
@@ -26,7 +26,7 @@ data/*.yaml  ──(make data)──▶  godot/data/*.json  ──(ledger.gd)─
 ```
 
 - **YAML is the Master Archive.** All officer stats, tags, and configuration live in `data/`. Edit YAML to change game data; commit it to version control.
-- **JSON/SQLite is the Active Ledger.** It is populated from YAML and acts as the runtime store.
+- **In-memory Ledger is the Active Store.** Loaded from JSON archives at game start; serialised to `save.json` on save. no native database dependency.
 - **Headless-First Engine.** Core simulation logic (Clock, Essence, Turn Engine) must be built as `RefCounted` or `Node` classes that can be tested without the Godot editor (`godot --headless`).
 - **UI is a View Only.** Scenes read from the engine/ledger; they never contain core simulation logic.
 
