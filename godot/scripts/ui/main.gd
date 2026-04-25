@@ -6,6 +6,7 @@ const CityPanelDataScript = preload("res://scripts/core/city_panel_data.gd")
 var _ledger: RefCounted
 var _panel: PanelContainer
 var _panel_label: RichTextLabel
+var _ui_layer: CanvasLayer
 
 func _ready() -> void:
 	var camera := Camera2D.new()
@@ -14,6 +15,11 @@ func _ready() -> void:
 	camera.position = Vector2(640, 360)
 	camera.zoom = Vector2(1.2, 1.2)
 	add_child(camera)
+
+	# ui layer sits above Camera2D transforms — always screen-space
+	_ui_layer = CanvasLayer.new()
+	_ui_layer.layer = 10
+	add_child(_ui_layer)
 
 	_ledger = LedgerScript.new()
 	_ledger.load_data()
@@ -58,20 +64,35 @@ func _build_city_panel() -> void:
 	_panel = PanelContainer.new()
 	_panel.anchor_left = 1.0
 	_panel.anchor_right = 1.0
+	_panel.anchor_top = 0.0
 	_panel.anchor_bottom = 1.0
-	_panel.offset_left = -220
-	_panel.offset_top = 0
+	_panel.offset_left = -240
 	_panel.offset_right = 0
+	_panel.offset_top = 0
 	_panel.offset_bottom = 0
 	_panel.visible = false
+
+	var margin := MarginContainer.new()
+	margin.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	margin.add_theme_constant_override("margin_top", 12)
+	margin.add_theme_constant_override("margin_right", 10)
+	margin.add_theme_constant_override("margin_bottom", 12)
+	margin.add_theme_constant_override("margin_left", 10)
+
+	var scroll := ScrollContainer.new()
+	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 
 	_panel_label = RichTextLabel.new()
 	_panel_label.bbcode_enabled = true
 	_panel_label.fit_content = true
+	_panel_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_panel_label.add_theme_font_size_override("normal_font_size", 11)
-	_panel.add_child(_panel_label)
 
-	add_child(_panel)
+	scroll.add_child(_panel_label)
+	margin.add_child(scroll)
+	_panel.add_child(margin)
+	_ui_layer.add_child(_panel)
 
 func _on_city_pressed(city_name: String) -> void:
 	var city: Dictionary = _ledger.get_city(city_name)
@@ -80,18 +101,19 @@ func _on_city_pressed(city_name: String) -> void:
 	var pillars: Dictionary = data.get("pillars", {})
 	_panel_label.text = (
 		"[b]%s[/b]\n" % data.get("title", city_name) +
-		"%s · %s\n" % [data.get("region", ""), data.get("terrain", "")] +
-		"Faction: %s\n" % data.get("faction", "—") +
-		"Population: %s\n\n" % _fmt_pop(data.get("population", 0)) +
-		"[b]Pillars[/b]\n" +
-		"Agriculture  %d\n" % pillars.get("agriculture", 0) +
-		"Commerce     %d\n" % pillars.get("commerce", 0) +
-		"Technology   %d\n" % pillars.get("technology", 0) +
-		"Order        %d\n\n" % pillars.get("order", 0) +
-		"[b]Yield / Turn[/b]\n" +
-		"Grain  +%d\n" % data.get("grain_yield", 0) +
-		"Gold   +%d\n" % data.get("gold_yield", 0) +
-		"Corruption  -%d\n" % data.get("corruption_loss", 0)
+		"[color=#888888]%s  ·  %s[/color]\n" % [data.get("region", ""), data.get("terrain", "")] +
+		"[color=#888888]%s[/color]\n" % data.get("faction", "—") +
+		"Pop  %s\n" % _fmt_pop(data.get("population", 0)) +
+		"\n[b]— pillars —[/b]\n" +
+		"Agriculture   [b]%d[/b]\n" % pillars.get("agriculture", 0) +
+		"Commerce      [b]%d[/b]\n" % pillars.get("commerce", 0) +
+		"Technology    [b]%d[/b]\n" % pillars.get("technology", 0) +
+		"Order         [b]%d[/b]\n" % pillars.get("order", 0) +
+		"\n[b]— yield / turn —[/b]\n" +
+		"Grain    [color=#88cc88]+%d[/color]\n" % data.get("grain_yield", 0) +
+		"Gold     [color=#cccc66]+%d[/color]\n" % data.get("gold_yield", 0) +
+		"Corrupt  [color=#cc6666]-%d[/color]\n" % data.get("corruption_loss", 0) +
+		"\n[color=#555555][i]esc to close[/i][/color]"
 	)
 	_panel.visible = true
 
