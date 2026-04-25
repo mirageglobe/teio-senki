@@ -56,6 +56,17 @@ When asked to design a system, always ask:
 - "Can this be tested headlessly?"
 - "Is the UI separated from the logic?"
 
+## Boundary Do-Not Table
+
+| boundary | do NOT put here | put here instead |
+| :--- | :--- | :--- |
+| `scripts/ui/` | simulation math, state transitions, ledger writes | read-only display logic; call engine methods |
+| `scripts/engine/` | Godot scene nodes, UI signals, rendering calls | pure functions; side-effect-free turn logic |
+| `scripts/core/` | I/O, database access, scene references | domain math (clock, essence, economy formulas) |
+| `scripts/tests/` | production logic, real file I/O | assertions against headless engine outputs |
+| `data/*.yaml` | runtime state, computed values | canonical human-readable officer/city archives |
+| `godot/data/*.json` | manual edits (generated via `make data`) | converted YAML output consumed by ledger |
+
 ## Project Commands
 
 Run `make help` to see available commands.

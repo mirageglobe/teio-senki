@@ -10,6 +10,10 @@ godot/exports/
 # Godot generated
 godot/**/*.uid
 
+# Generated from YAML via `make data` — do not commit
+godot/data/officers.json
+godot/data/cities.json
+
 # Game runtime state
 godot/data/ledger.db
 godot/data/ledger.db-shm

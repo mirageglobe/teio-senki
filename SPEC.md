@@ -690,7 +690,7 @@ to manage complexity and reach a "playable" state faster, the following strategi
 | :--- | :--- | :--- | :--- |
 | **1: genesis** | foundation, sqlite, and turn engine | 0, 1 | done |
 | **2: cartography** | strategic map and visual world | 2 | done |
-| **3: governance** | city development and economics | 3 | not started |
+| **3: governance** | city development and economics | 3 | done |
 | **4: sovereignty** | officer management and allegiance | 4 | not started |
 | **5: conflict** | armies and tactical battle system | 5, 6 | not started |
 | **6: statecraft** | diplomacy and world events | 7 | not started |
@@ -703,7 +703,7 @@ to manage complexity and reach a "playable" state faster, the following strategi
 | 0 | foundation | done |
 | 1 | data + turn engine (focus: AD 189) | done |
 | 2 | strategic map (visualizing china) | done |
-| 3 | cities (development & economics) | not started |
+| 3 | cities (development & economics) | done |
 | 4 | officers (management & loyalty) | not started |
 | 5 | army system (raising & movement) | not started |
 | 6 | tactical battle (auto-resolve math) | not started |
@@ -729,14 +729,14 @@ to manage complexity and reach a "playable" state faster, the following strategi
 SQLite init, YAML seeding, bazi clock, and the four-cycle turn loop in GDScript. **priority focus: AD 189 scenario.**
 
 | item | status |
-| :--- | :--- | :--- |
-| SQLite init (schema, WAL, seed from YAML) | not started |
-| Scenario & Sovereign selection logic | not started |
-| bazi calendar + essence drift | not started |
-| cycle A — seasonal deltas | not started |
-| cycle B — diplomacy | not started |
-| cycle C — player commands | not started |
-| cycle D — atomic settlement | not started |
+| :--- | :--- |
+| SQLite init (schema, WAL, seed from YAML) | done |
+| Scenario & Sovereign selection logic | done |
+| bazi calendar + essence drift | done |
+| cycle A — seasonal deltas | done |
+| cycle B — diplomacy | done |
+| cycle C — player commands | done |
+| cycle D — atomic settlement | done |
 
 ---
 
@@ -751,6 +751,34 @@ initially implemented as a mathematical "auto-resolve" system to verify army and
 | duel resolution math | not started |
 | outcome report (ledger log) | not started |
 | tactical grid (visual) | deferred |
+
+## decisions
+
+| decision | choice | why |
+| :--- | :--- | :--- |
+| SQLite over JSON for runtime state | SQLite (WAL mode) | atomic settle_turn transaction; rollback on failure; foreign-key integrity across officers, cities, armies |
+| GDScript over C# | GDScript | tighter Godot 4 integration; no separate build step; sufficient for turn-based simulation pace |
+| YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON is fast to load in Godot without a parser dependency |
+| headless-first engine | `RefCounted`/`Node` classes testable via `godot --headless` | allows CI verification without the editor; separates simulation correctness from visual rendering |
+| auto-resolve battle (v1) | math formula, no tactical grid | reach playable loop sooner; grid deferred to post-release expansion |
+| single scenario lock (AD 189) | Dong Zhuo's Rise only | prevents data balancing sprawl before core loop is verified |
+| mutable state + append-only log | live tables + `ledger_log` | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring |
+
+---
+
+## complexity score
+
+| dimension | score | notes |
+| :--- | :--- | :--- |
+| overall | 3 / 5 | moderate; multi-layer simulation with SQLite, headless engine, and Godot frontend |
+| core (clock, essence, economy) | 2 / 5 | pure math; stateless functions; well-bounded domain |
+| engine (sovereign_engine, ledger) | 3 / 5 | four-cycle turn loop, atomic SQLite transactions, validation logic |
+| data pipeline (YAML → JSON → DB) | 2 / 5 | one-way conversion; `make data` is the only transform step |
+| ui (Godot scenes) | 2 / 5 | view-only; reads from ledger; no simulation logic |
+| future: army + battle system | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid |
+| future: diplomacy + events | 4 / 5 | pairwise faction state, scripted triggers, branching outcomes |
+
+---
 
 ## development standards & improvements
 

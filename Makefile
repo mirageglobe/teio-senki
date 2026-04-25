@@ -5,6 +5,9 @@
 help:                ## show this help menu
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
 
+install:             ## install dependencies (brew bundle)
+	brew bundle
+
 data:                ## convert yaml archives to json for godot
 	@mkdir -p godot/data
 	yq -o=json data/officers.yaml > godot/data/officers.json

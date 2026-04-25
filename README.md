@@ -30,22 +30,6 @@ make run      # launch the game
 
 ---
 
-## agent context
-
-| module | role |
-| :--- | :--- |
-| main | entry point: seeds DB from YAML archives, launches frontend |
-| engine | three-cycle turn processor (headless, side-effect-free) |
-| clock | bazi calendar and essence drift calculation |
-| ledger | SQLite layer: schema, CRUD, atomic settle_turn |
-| models | typed domain models: Officer, City, Element, Tag, Terrain |
-| archive | YAML loader for officers and cities data |
-| frontend | Godot scenes: splash, map, turn screen, sovereign dashboard |
-
-data archives (`data/`) are read once at first-run seed and never touched at runtime. all runtime state lives in `ledger.db`.
-
----
-
 ## roadmap
 
 see [SPEC.md](SPEC.md#milestones) for the project roadmap.
