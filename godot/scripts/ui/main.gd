@@ -41,6 +41,10 @@ func _render_cities(cities: Dictionary) -> void:
 		lbl.add_theme_font_size_override("font_size", 8)
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		lbl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		lbl.visible = false
+
+		dot.mouse_entered.connect(func() -> void: lbl.visible = true)
+		dot.mouse_exited.connect(func() -> void: lbl.visible = false)
 
 		var container := VBoxContainer.new()
 		# centre the 64px-wide container on the grid point
