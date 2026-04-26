@@ -425,15 +425,16 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 
 each city is an economic unit that generates food, gold, and manpower each turn. the player allocates commands to grow pillars and sustain their state.
 
-**active pillars (MVP — 3 pillars):**
+**core city actions:**
 
-| pillar | code | produces | seasonal peak |
+| action | cost | effect | strategic value |
 | :--- | :--- | :--- | :--- |
-| agriculture | AG | food per turn | autumn |
-| commerce | COM | gold per turn | summer |
-| defense | DEF | wall strength; reduces siege damage | — |
-
-TECH and ORD are read from city archive data and applied in yield formulas (TECH amplifies AG/COM output; ORD reduces corruption loss). player BUILD commands for these pillars are deferred — starting values are set by the scenario data only.
+| **Develop (AG/COM/DEF)** | CP | Pillar growth | Core long-term growth |
+| **Recruit** | CP + Gold | Increases garrison | Essential for expansion/defense |
+| **Train** | CP | Increases garrison morale | Vital for battle readiness |
+| **Search** | CP | Discover unrecruited officers | Adds personality & talent pool |
+| **Reward** | Gold | +Loyalty to governor/assigned | Prevents defection |
+| **Transport** | CP | Moves Food/Gold to other city | Allows logistical depth |
 
 **derived outputs per turn:**
 - `food += (AG × season delta) − army_upkeep`
@@ -1066,23 +1067,26 @@ pixel art rendering layer over the verified Go engine. the engine does not chang
 
 ## roadmap
 
+See the [milestones section](#milestones) for the detailed implementation schedule.
+
 ### near term
 
-milestones 4–8; priority order: officers → armies → battle → diplomacy → victory. see milestone tracking above for full task breakdowns.
+milestones 4–8; priority order: officers → armies → battle → diplomacy → victory.
 
 highest dependency risk items:
-- `[engine]` historical event triggers — scripted facts vs generative logic boundary `[hard]`
-- `[ui]` StrategicMapScreen army tokens + movement input `[hard]`
+- `[engine]` historical event triggers — scripted facts vs generative logic boundary [hard]
+- `[ui]` StrategicMapScreen army tokens + movement input [hard]
+- `[ui]` Cycle B interaction: list controlled cities, allow selection, then present city-specific actions (build, recruit, etc.) [medium]
 
 ### ideas
 
-- `[engine]` **tactical grid battle** — full 15×9 tactical grid; unit movement ranges; detailed terrain modifiers `[hard]`
-- `[engine]` **advanced diplomacy & espionage** — spy placement, bribery (resisted by integrity), marriage alliances `[hard]`
-- `[engine]` **historical scripted events** — full chronological triggers (Yellow Turban AD 184, Red Cliffs AD 208, etc.) `[hard]`
-- `[engine]` **officer lineage & health** — aging stat decay, heir system, complex wound and illness management `[medium]`
-- `[engine]` **naval warfare** — specialised naval units; river/sea tactical grids; boarding mechanics `[hard]`
-- `[engine]` **multi-era engine** — Sengoku, Roman Republic, and other eras on the same sovereign engine `[hard]`
-- `[engine]` **AI sovereigns** — each NPC faction runs an AI decision-maker in cycle B; see design below `[medium]`
+- `[engine]` **tactical grid battle** — full 15×9 tactical grid; unit movement ranges; detailed terrain modifiers [hard]
+- `[engine]` **advanced diplomacy & espionage** — spy placement, bribery (resisted by integrity), marriage alliances [hard]
+- `[engine]` **historical scripted events** — full chronological triggers (Yellow Turban AD 184, Red Cliffs AD 208, etc.) [hard]
+- `[engine]` **officer lineage & health** — aging stat decay, heir system, complex wound and illness management [medium]
+- `[engine]` **naval warfare** — specialised naval units; river/sea tactical grids; boarding mechanics [hard]
+- `[engine]` **multi-era engine** — Sengoku, Roman Republic, and other eras on the same sovereign engine [hard]
+- `[engine]` **AI sovereigns** — each NPC faction runs an AI decision-maker in cycle B [medium]
 
 ---
 

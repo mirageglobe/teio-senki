@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/mirageglobe/teio-senki/internal/models"
 )
@@ -53,7 +54,6 @@ func (l *Ledger) loadOfficers(path string) error {
 	for _, o := range wrapper.Officers {
 		l.Officers[o.Name] = o
 	}
-	fmt.Printf("ledger: loaded %d officers\n", len(l.Officers))
 	return nil
 }
 
@@ -71,8 +71,24 @@ func (l *Ledger) loadCities(path string) error {
 	for _, c := range wrapper.Cities {
 		l.Cities[c.Name] = c
 	}
-	fmt.Printf("ledger: loaded %d cities\n", len(l.Cities))
 	return nil
+}
+
+// Lords returns all officers with the "lord" tag, sorted by strategy descending.
+func (l *Ledger) Lords() []models.Officer {
+	var result []models.Officer
+	for _, o := range l.Officers {
+		for _, tag := range o.Tags {
+			if tag == "lord" {
+				result = append(result, o)
+				break
+			}
+		}
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Strategy > result[j].Strategy
+	})
+	return result
 }
 
 // Log appends an event entry.
