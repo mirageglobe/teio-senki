@@ -643,6 +643,47 @@ this approach is cross-platform by default — no native extensions required, wo
 
 ---
 
+## deployment
+
+one codebase, multiple export targets via Godot's built-in export templates. no platform-specific code branches — all platform differences are handled at the export layer.
+
+### target platforms
+
+| platform | format | priority | toolchain required |
+| :--- | :--- | :---: | :--- |
+| macOS | `.app` bundle (zipped) | 1 | Godot export template; Apple Developer account for notarisation |
+| Linux | self-contained binary | 2 | Godot export template; no signing required |
+| Android | `.apk` / `.aab` | 3 | Android SDK + NDK; keystore for signing |
+| iOS | Xcode project → App Store | 4 | macOS + Xcode + Apple Developer account ($99/yr) |
+
+### export rules
+
+- **no fixed pixel coordinates** — use Godot's anchor/container system so layouts scale across resolutions.
+- **no keyboard-only flows** — every action must have a touch/mouse equivalent (required for Android and iOS).
+- **no platform-specific code** — engine and UI scripts must export unmodified to all targets.
+- **save path via `user://`** — `save.json` written to `user://` (Godot resolves this per-platform: `~/Library/Application Support` on macOS, `~/.local/share` on Linux, internal storage on Android/iOS).
+
+### makefile targets (planned)
+
+| target | action |
+| :--- | :--- |
+| `make export-mac` | build `.app` bundle to `dist/mac/` |
+| `make export-linux` | build Linux binary to `dist/linux/` |
+| `make export-android` | build `.apk` to `dist/android/` |
+| `make export-ios` | export Xcode project to `dist/ios/` |
+
+### platform notes
+
+**macOS** — Godot exports a self-contained `.app`. for distribution outside the App Store, the binary must be notarised (requires Apple Developer account and `codesign` + `xcrun notarytool`). for personal/dev use, users can bypass Gatekeeper via right-click → open.
+
+**Linux** — simplest export. single binary, no signing. distribute via itch.io or direct download.
+
+**Android** — requires Android SDK (API level 33+), NDK, and a keystore file for release signing. Godot generates the APK directly. minimum target: Android 8.0 (API 26).
+
+**iOS** — requires Xcode on macOS and an Apple Developer account. Godot exports an Xcode project; final build and App Store submission happen in Xcode. most complex target — defer until macOS and Android are validated.
+
+---
+
 ## headless testing strategy
 
 since the engine is decoupled from the frontend, verification is performed through automated logic tests and simulation snapshots.
@@ -876,6 +917,7 @@ JSON archive loading, in-memory ledger init, bazi clock, and the turn loop in GD
 | auto-resolve battle (v1) | math formula, no tactical grid | reach playable loop sooner; grid deferred to post-release expansion |
 | single scenario lock (AD 189) | Dong Zhuo's Rise only | prevents data balancing sprawl before core loop is verified |
 | mutable state + append-only log | live tables + `ledger_log` | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring |
+| single codebase, Godot export templates | one GDScript codebase exports to macOS / Linux / Android / iOS | no platform branches; all differences handled at export layer; `user://` for save paths handles per-platform storage automatically |
 | desktop primary, mobile secondary | desktop is the reference platform; mobile port after M8 | avoids designing around mobile constraints during active development while keeping the port feasible |
 | 2D only, no 3D geometry | Godot Forward+ but 2D scenes only | strategy game needs no 3D; pseudo-3D shading via 2D normal maps achieves depth without scene complexity |
 | pixel art, low asset cost | 16×16 or 32×32 tiles, palette-swaps | cheap to produce, fast to iterate, consistent with the minimalist aesthetic |
