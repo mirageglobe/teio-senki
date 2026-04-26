@@ -26,7 +26,7 @@ data/                   # YAML Master Archive (Source of Truth)
 ### simplicity first
 - **flat over relational** — game state lives in flat dictionaries on domain models. no row-lifecycle tables, no FK references, no separate join records.
 - **sequential over transactional** — apply deltas in order. if something breaks, fix the bug. no snapshot/restore, no rollback machinery.
-- **3 pillars not 5** — AG/COM/DEF are active. TECH and ORD exist in the archive but are inactive until the core loop is proven and balanced.
+- **no new pillar systems** — AG/COM/TECH/ORD are active in yield formulas (set by scenario data). DEF is active for sieges. player BUILD commands for TECH and ORD are deferred until the core loop is balanced.
 - **static before dynamic** — population is a static recruitment cap. dynamic growth/decline is a polish feature, not a foundation.
 - **distance over pathfinding** — supply is a Chebyshev distance check, not graph traversal. simple rules first.
 - **territory wins** — victory is one faction holding all cities. multi-dimension scoring is deferred.
@@ -142,8 +142,8 @@ data/*.yaml  ──(make data)──▶  godot/data/*.json  ──(ledger.load_d
 | garrison | int | troops stationed for city defence |
 | agriculture | int 1–100 | AG pillar — active |
 | commerce | int 1–100 | COM pillar — active |
-| technology | int 1–100 | TECH pillar — deferred; stored in archive only |
-| order | int 1–100 | ORD pillar — deferred; stored in archive only |
+| technology | int 1–100 | TECH pillar — active in yield formula; BUILD command deferred |
+| order | int 1–100 | ORD pillar — active in corruption formula; BUILD command deferred |
 | defense | int 1–100 | DEF pillar — active |
 | food | int | food stockpile in units; army upkeep drawn here |
 | gold | int | treasury; recruitment and diplomacy costs drawn here |
@@ -358,7 +358,7 @@ each city is an economic unit that generates food, gold, and manpower each turn.
 | commerce | COM | gold per turn | summer |
 | defense | DEF | wall strength; reduces siege damage | — |
 
-TECH and ORD exist in the archive data but are inactive in the simulation. they are deferred to the polish milestone.
+TECH and ORD are read from city archive data and applied in yield formulas (TECH amplifies AG/COM output; ORD reduces corruption loss). player BUILD commands for these pillars are deferred — starting values are set by the scenario data only.
 
 **derived outputs per turn:**
 - `food += (AG × season delta) − army_upkeep`

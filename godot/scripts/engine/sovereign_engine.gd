@@ -13,7 +13,6 @@ var clock: RefCounted   # GameClock instance
 var current_sovereign_id: String
 
 var command_queue: Array[Dictionary] = []
-var diplomacy_queue: Array[Dictionary] = []
 var available_cp: int = 0
 
 func _init(p_ledger: RefCounted, p_clock: RefCounted, p_sovereign_id: String) -> void:
@@ -62,12 +61,11 @@ func queue_command(command_type: String, params: Dictionary, cost: int) -> bool:
 	return false
 
 func settle_turn() -> void:
-	ledger.log_event("SETTLEMENT", "Resolving turn cycle D...")
+	ledger.log_event("SETTLEMENT", "Resolving turn cycle C...")
 	for cmd: Dictionary in command_queue:
 		_execute_command(cmd)
 	command_queue.clear()
-	diplomacy_queue.clear()
-	_run_cycle_d_yield()
+	_run_cycle_c_settle()
 	ledger.log_event("TURN_COMPLETE", "Turn %d.%d settled successfully." % [clock.year, clock.month])
 
 func _execute_command(cmd: Dictionary) -> void:
@@ -84,16 +82,10 @@ func _execute_command(cmd: Dictionary) -> void:
 		"BUILD_COM":
 			city["commerce"] = mini(100, city.get("commerce", 0) + BUILD_GAIN)
 			ledger.log_event("COMMAND_EXEC", "%s: commerce → %d" % [city_name, city["commerce"]])
-		"BUILD_TECH":
-			city["technology"] = mini(100, city.get("technology", 0) + BUILD_GAIN)
-			ledger.log_event("COMMAND_EXEC", "%s: technology → %d" % [city_name, city["technology"]])
-		"BUILD_ORD":
-			city["order"] = mini(100, city.get("order", 0) + BUILD_GAIN)
-			ledger.log_event("COMMAND_EXEC", "%s: order → %d" % [city_name, city["order"]])
 		_:
 			ledger.log_event("COMMAND_EXEC", "Unknown command %s" % cmd.type)
 
-func _run_cycle_d_yield() -> void:
+func _run_cycle_c_settle() -> void:
 	var total_grain := 0
 	var total_gold := 0
 	for city_name: String in ledger.cities:
