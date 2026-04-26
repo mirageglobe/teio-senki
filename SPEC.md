@@ -55,11 +55,27 @@ victory is measured by territory — one faction controls all cities. institutio
 
 ---
 
-## expectations
+## platform targets
 
-- **low pixel art aesthetic** — sprites, tiles, and UI elements use a constrained pixel palette. no high-resolution assets. art style favours clarity and period character over visual complexity.
+| platform | priority | input | notes |
+| :--- | :---: | :--- | :--- |
+| desktop (Windows / macOS / Linux) | primary | keyboard + mouse | full feature set; reference platform for development |
+| mobile (Android / iOS) | secondary | touch | same codebase; UI must be touch-friendly at 1080p portrait or landscape |
+
+mobile is a post-milestone-8 port target. do not design around mobile constraints during active development — but do not make decisions that actively block a future port (no fixed pixel coordinates, no keyboard-only flows without a touch fallback).
+
+## visual constraints
+
+- **2D only** — no 3D geometry or 3D scenes. the engine is Forward+ capable but must not be used for 3D.
+- **pseudo-3D shading permitted** — 2D normal maps and canvas lighting are allowed to give depth illusion to sprites and terrain tiles (e.g. city icons with relief shading). this is a shader trick, not a scene change.
+- **pixel art** — all sprites, tiles, and UI elements are pixel art at a constrained palette. no high-resolution or vector assets. target tile size: 16×16 or 32×32 px scaled up.
+- **low asset cost** — every visual element must be cheap to produce: flat sprites, palette-swaps for factions, minimal animation (idle shimmer, flag wave). no skeletal rigs, no particle systems beyond simple dust/smoke.
 - **speed first** — all screens must feel instant. turn resolution, scene transitions, and UI interactions target < 100ms response. no loading screens between strategic map and city/army overlays.
-- **keyboard-driven** — all core actions reachable without a mouse. mouse/touch supported as secondary input.
+
+## ux expectations
+
+- **keyboard-driven (desktop)** — all core actions reachable without a mouse. mouse supported as primary pointing device.
+- **touch-friendly (mobile)** — tap replaces click; long-press replaces right-click; panels must be large enough for finger targets (≥ 44px).
 - **minimal UI chrome** — information density over decoration. panels appear on demand; the map is always the primary surface.
 - **no tutorials** — the game communicates through design, tooltips, and the ledger log. no guided onboarding flow.
 
@@ -860,6 +876,9 @@ JSON archive loading, in-memory ledger init, bazi clock, and the turn loop in GD
 | auto-resolve battle (v1) | math formula, no tactical grid | reach playable loop sooner; grid deferred to post-release expansion |
 | single scenario lock (AD 189) | Dong Zhuo's Rise only | prevents data balancing sprawl before core loop is verified |
 | mutable state + append-only log | live tables + `ledger_log` | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring |
+| desktop primary, mobile secondary | desktop is the reference platform; mobile port after M8 | avoids designing around mobile constraints during active development while keeping the port feasible |
+| 2D only, no 3D geometry | Godot Forward+ but 2D scenes only | strategy game needs no 3D; pseudo-3D shading via 2D normal maps achieves depth without scene complexity |
+| pixel art, low asset cost | 16×16 or 32×32 tiles, palette-swaps | cheap to produce, fast to iterate, consistent with the minimalist aesthetic |
 | flatten OfficerAllegiance | loyalty + faction on Officer directly | separate row-lifecycle table is a database pattern, not a game pattern; city_id/army_id already on Officer |
 | 3-cycle turn loop | A (world) / B (commands) / C (settle) | diplomacy is just a gold-cost command; 4 cycles added complexity with no player-visible benefit |
 | no snapshot/restore | sequential delta apply in cycle C | turn-based game doesn't need transactional rollback; bugs should be fixed not hidden behind recovery logic |
