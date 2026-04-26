@@ -1,2 +1,0 @@
-brew "yq"
-cask "godot"

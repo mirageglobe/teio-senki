@@ -6,15 +6,14 @@
 help:                ## show this help menu
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-14s\033[0m %s\n", $$1, $$2}'
 
-install:             ## install dependencies (brew bundle + go mod tidy)
-	brew bundle
+install:             ## install dependencies (go mod tidy + yq via brew)
+	brew install yq
 	go mod tidy
 
-data:                ## convert yaml archives to json (assets/data + godot/data)
-	@mkdir -p assets/data godot/data
+data:                ## convert yaml archives to json (assets/data)
+	@mkdir -p assets/data
 	yq -o=json data/officers.yaml > assets/data/officers.json
 	yq -o=json data/cities.yaml   > assets/data/cities.json
-	cp assets/data/*.json godot/data/
 
 test:                ## run all Go tests headlessly
 	go test ./...
