@@ -840,57 +840,59 @@ build screens in this order — each is a concrete "done" test for the engine sy
 
 ---
 
-### milestone 0 — foundation `done`
+### milestone 0 — foundation `rewrite`
 
-| item | status |
-| :--- | :--- |
-| Godot 4 project (1280×720, pixel settings, Brewfile, Makefile) | [x] |
-| splash screen (fade, blink prompt, 5s auto-advance, key dismiss) | [x] |
-| main scene placeholder | [x] |
-| design: officer + city archives (YAML, 498 officers, 30 cities) | [x] |
-| design: bazi calendar, turn structure, ledger schema | [x] |
+> status key: `[x]` done / portable — `[>]` proven in Godot, port to Go — `[~]` partial — `[ ]` not started
 
----
-
-### milestone 1 — data + turn engine `done`
-
-JSON archive loading, in-memory ledger init, bazi clock, and the turn loop in GDScript. architecture since simplified to 3 cycles. **priority focus: AD 189 scenario.**
-
-| item | status |
-| :--- | :--- |
-| JSON archive loading + ledger seed | [x] |
-| Scenario & Sovereign selection logic | [x] |
-| bazi calendar + essence drift | [x] |
-| cycle A — seasonal deltas | [x] |
-| cycle B — diplomacy | [x] |
-| cycle C — player commands | [x] |
-| cycle D — atomic settlement | [x] |
+| item | status | notes |
+| :--- | :--- | :--- |
+| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio) | [ ] | replaces Godot project |
+| splash screen (fade, blink prompt, auto-advance, key dismiss) | [>] | logic proven; rewrite in Ebitengine draw loop |
+| main entry point (load data, init ledger, start game loop) | [>] | replaces main.gd |
+| design: officer + city archives (YAML, 498 officers, 30 cities) | [x] | fully portable; no changes needed |
+| design: bazi calendar, turn structure, ledger schema | [x] | fully portable; guides Go struct definitions |
 
 ---
 
-### milestone 2 — strategic map (cartography) `done`
+### milestone 1 — data + turn engine `rewrite`
 
-| item | status |
-| :--- | :--- |
-| TileMap layers (terrain, geography, faction territory, city nodes, UI overlay) | [x] |
-| high-fidelity China polygon map with rivers and islands | [x] |
-| city nodes with tier-based icons | [x] |
-| city labels hidden by default; revealed on hover | [x] |
-| camera pan and zoom controls | [x] |
-| faction territory colour fill | [x] |
+JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. all logic proven in GDScript prototype; port to Go. **priority focus: AD 189 scenario.**
+
+| item | status | notes |
+| :--- | :--- | :--- |
+| JSON archive loading + ledger seed | [>] | port `ledger.gd` → `internal/engine/ledger` as typed Go structs |
+| scenario & sovereign selection logic | [>] | port to Go; filter officers/cities by faction at game start |
+| bazi calendar + essence drift | [>] | port `game_clock.gd` + `essence.gd` → `internal/core/clock` + `internal/core/essence` |
+| cycle A — world update (season, essence, loyalty, supply) | [>] | port `_run_cycle_a()` to Go |
+| cycle B — player commands (city / officer / military / diplomacy) | [>] | replaces old cycle C + merged diplomacy; port command queue to Go |
+| cycle C — sequential settlement | [>] | replaces old cycle D; snapshot/restore removed; port `_run_cycle_c_settle()` |
+| `go test ./internal/...` — unit + integration tests | [ ] | replaces GDScript headless runner |
 
 ---
 
-### milestone 3 — city development & economics `done`
+### milestone 2 — strategic map (cartography) `rewrite`
 
-| item | status |
-| :--- | :--- |
-| city pillar model (AG / COM / TECH / ORD / DEF, 1–100) | [x] |
-| seasonal delta calculation per pillar | [x] |
-| TECH multiplier on AG / COM yield | [x] |
-| CP command validation (build pillar) | [x] |
-| CityScreen overlay — pillar bars display | [x] |
-| food and gold resource model (structure defined) | [x] |
+| item | status | notes |
+| :--- | :--- | :--- |
+| map draw loop (Ebitengine `Draw(*ebiten.Image)`) | [ ] | replaces Godot TileMap; draw terrain and geography per frame |
+| China map — polygon regions, rivers, coastline | [>] | geometry proven; redraw using Ebitengine vector/image primitives |
+| city nodes with tier-based icons | [>] | proven; redraw as pixel art sprites at grid coordinates |
+| city labels hidden by default; revealed on hover/click | [>] | proven; reimplement with Ebitengine input detection |
+| camera pan and zoom (keyboard + mouse) | [>] | proven; reimplement with Ebitengine camera offset + scale |
+| faction territory colour fill | [>] | proven; reimplement as tinted region overlay |
+
+---
+
+### milestone 3 — city development & economics `rewrite`
+
+| item | status | notes |
+| :--- | :--- | :--- |
+| City Go struct (AG / COM / TECH / ORD / DEF, food, gold, garrison) | [>] | port from GDScript dict to typed Go struct in `internal/models` |
+| seasonal delta calculation per pillar | [>] | port `city_economy.gd` → `internal/core/economy` |
+| TECH multiplier on AG / COM yield | [>] | formula proven; port pure functions to Go |
+| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF) | [>] | port command queue; BUILD_TECH / BUILD_ORD remain deferred |
+| food and gold stockpile per city (draw from upkeep each cycle) | [~] | structure defined; per-city tracking not yet implemented |
+| CityScreen overlay — pillar bars, food, gold display | [>] | proven in Godot; rewrite as Ebitengine panel |
 
 ---
 
