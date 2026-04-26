@@ -3,7 +3,7 @@
 > "Sovereignty through the Ledger, Strategy through the Elements."
 
 ## tldr
-A headless, turn-based grand strategy engine set in the Three Kingdoms era. Built in **Go + Ebitengine**. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (in-memory ledger + JSON persistence)** over visual spectacle.
+A headless, turn-based grand strategy engine set in the Three Kingdoms era. Built in **Go + Lua + Ebitengine**. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (in-memory ledger + JSON persistence)** over visual spectacle.
 
 ---
 
@@ -107,8 +107,7 @@ mobile is a post-milestone-8 port target. do not design around mobile constraint
 
 ## visual constraints
 
-- **2D only** — no 3D geometry or 3D scenes. the engine is Forward+ capable but must not be used for 3D.
-- **pseudo-3D shading permitted** — 2D normal maps and canvas lighting are allowed to give depth illusion to sprites and terrain tiles (e.g. city icons with relief shading). this is a shader trick, not a scene change.
+- **2D only** — no 3D geometry. Ebitengine is 2D-native; depth illusion via sprite shading is acceptable but not required.
 - **pixel art** — all sprites, tiles, and UI elements are pixel art at a constrained palette. no high-resolution or vector assets. target tile size: 16×16 or 32×32 px scaled up.
 - **low asset cost** — every visual element must be cheap to produce: flat sprites, palette-swaps for factions, minimal animation (idle shimmer, flag wave). no skeletal rigs, no particle systems beyond simple dust/smoke.
 - **speed first** — all screens must feel instant. turn resolution, scene transitions, and UI interactions target < 100ms response. no loading screens between strategic map and city/army overlays.
@@ -152,7 +151,7 @@ three engines were evaluated before committing to Godot 4. the decision is recor
 
 | package | role |
 | :--- | :--- |
-| `cmd/teio` | entry point: load JSON archives, init ledger, start Ebitengine game loop |
+| `cmd/teio` | entry point: load JSON archives, init ledger, start TUI loop (Ebitengine added at M9) |
 | `internal/models` | typed Go structs: Officer, City, Army, Element, Tag, Terrain, Stance |
 | `internal/core/clock` | bazi calendar: heavenly stem (天干) / earthly branch (地支), season and element lookup |
 | `internal/core/essence` | wu xing drift: pure functions mapping element pairs to stat multipliers |
@@ -364,7 +363,7 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 | Yi Zhou (south-west / Shu) | 益州 | x 2–8, y 2–8 | Chengdu, Hanzhong, Jiamenguan |
 | Jiao Zhou (far south) | 交州 | x 6–12, y 0–3 | Nanhai, Jianning (planned) |
 
-**map layers (Godot TileMap):**
+**map layers:**
 
 | layer | content |
 | :--- | :--- |
@@ -418,7 +417,7 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 - `armies` table: faction, general_id, troops, morale, supply, x, y, stance.
 - `map_tiles` table: x, y, terrain (for non-city tiles beyond city list).
 
-**status:** city grid and terrain types exist in archive. army model, map_tiles table, Godot TileMap rendering, and movement not yet implemented.
+**status:** city grid and terrain types exist in archive. army model, map_tiles table, TUI map rendering, and movement not yet implemented.
 
 ---
 
@@ -666,7 +665,7 @@ tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184.
 
 ### in-memory ledger + JSON save
 
-runtime state lives entirely in memory. on save, the ledger serialises to `save.json`. on load, `save.json` is deserialised back into the ledger. new game starts seed from `godot/data/*.json` (converted from YAML archives).
+runtime state lives entirely in memory. on save, the ledger serialises to `save.json`. on load, `save.json` is deserialised back into the ledger. new game starts seed from `assets/data/*.json` (converted from YAML archives).
 
 this approach is cross-platform by default — no native extensions required, works on desktop, mobile, and web exports.
 
@@ -686,44 +685,44 @@ this approach is cross-platform by default — no native extensions required, wo
 
 ## frontend
 
-all UI lives in `internal/ui`. screens are Ebitengine `Game` states drawn each frame via `Draw(*ebiten.Image)`. no external UI framework required for MVP — panels are drawn manually with pixel fonts and coloured rectangles.
+all UI lives in `internal/ui`. M2–M8 use Bubble Tea (TUI): text-only, dumb view over the engine. M9–M10 add Ebitengine pixel art rendering over the same engine — the engine API does not change.
 
 ### screens
 
-| screen | maps to system | status |
-| :--- | :--- | :--- |
-| SplashScreen | — | [ ] rewrite in Ebitengine |
-| ScenarioSelectScreen | scenario & sovereign setup | [ ] |
-| StrategicMapScreen | strategic map — tile draw, armies, faction colours | [ ] |
-| CityScreen | city development — pillar bars, officer slot, food/gold | [ ] |
-| OfficerScreen | officer management — roster, stats, assignment | [ ] |
-| ArmyScreen | army system — troop count, morale, supply, stance | [ ] |
-| BattleScreen | tactical battle — auto-resolve report | [ ] |
-| DiplomacyScreen | diplomacy — faction list, relation scores, action panel | [ ] |
-| LedgerScreen | ledger log — scrollable history, event filter | [ ] |
-| VictoryScreen | victory — unification win / defeat screen | [ ] |
+| screen | maps to system | tui (M2–M8) | gfx (M9–M10) |
+| :--- | :--- | :--- | :--- |
+| SplashScreen | — | [ ] | [ ] |
+| ScenarioSelectScreen | scenario & sovereign setup | [ ] | [ ] |
+| StrategicMapScreen | strategic map — cities, armies, faction colours | [ ] | [ ] |
+| CityScreen | city development — pillar bars, officer slot, food/gold | [ ] | [ ] |
+| OfficerScreen | officer management — roster, stats, assignment | [ ] | [ ] |
+| ArmyScreen | army system — troop count, morale, supply, stance | [ ] | [ ] |
+| BattleScreen | tactical battle — auto-resolve report | [ ] | [ ] |
+| DiplomacyScreen | diplomacy — faction list, relation scores, action panel | [ ] | [ ] |
+| LedgerScreen | ledger log — scrollable history, event filter | [ ] | [ ] |
+| VictoryScreen | victory — unification win / defeat screen | [ ] | [ ] |
 
 ---
 
 ## deployment
 
-one codebase, multiple export targets via Godot's built-in export templates. no platform-specific code branches — all platform differences are handled at the export layer.
+one Go codebase, multiple targets via cross-compilation and gomobile. no platform-specific code branches.
 
 ### target platforms
 
 | platform | format | priority | toolchain required |
 | :--- | :--- | :---: | :--- |
-| macOS | `.app` bundle (zipped) | 1 | Godot export template; Apple Developer account for notarisation |
-| Linux | self-contained binary | 2 | Godot export template; no signing required |
-| Android | `.apk` / `.aab` | 3 | Android SDK + NDK; keystore for signing |
-| iOS | Xcode project → App Store | 4 | macOS + Xcode + Apple Developer account ($99/yr) |
+| macOS | native binary | 1 | Go toolchain; Apple Developer account for notarisation |
+| Linux | native binary | 2 | Go toolchain; no signing required |
+| Android | `.apk` / `.aab` | 3 | gomobile; Android SDK + NDK; keystore for signing |
+| iOS | Xcode project | 4 | gomobile; macOS + Xcode + Apple Developer account ($99/yr) |
 
 ### build rules
 
 - **no platform-specific code** — one Go codebase compiles to all targets via cross-compilation and gomobile.
 - **no fixed pixel coordinates** — use relative layout logic so screens scale across resolutions.
 - **no keyboard-only flows** — every action needs a mouse/touch equivalent.
-- **save path via `os.UserConfigDir()`** — Go resolves to the correct per-platform path: `~/Library/Application Support` (macOS), `~/.config` (Linux), internal storage (Android/iOS).
+- **save path via `os.UserConfigDir()`** — resolves to `~/Library/Application Support` (macOS), `~/.config` (Linux), internal storage (Android/iOS).
 
 ### makefile targets
 
@@ -925,7 +924,7 @@ Bubble Tea terminal frontend over the Go engine. the full game loop must be play
 | TECH multiplier on AG / COM yield | [>] | formula proven; port pure functions to Go |
 | CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF) | [>] | port command queue; BUILD_TECH / BUILD_ORD remain deferred |
 | food and gold stockpile per city (draw from upkeep each cycle) | [~] | structure defined; per-city tracking not yet implemented |
-| CityScreen overlay — pillar bars, food, gold display | [>] | proven in Godot; rewrite as Ebitengine panel |
+| CityScreen overlay — pillar bars, food, gold display | [ ] | TUI panel first (M3); Ebitengine panel at M9 |
 
 ---
 
@@ -1031,15 +1030,14 @@ pixel art rendering layer over the verified Go engine. the engine does not chang
 | Go + Lua hybrid (gopher-lua) | Go owns engine; Lua owns content | Go: typed ledger integrity, `go test`, single binary. Lua: hot-reloadable events/AI/balance without recompile. gopher-lua is pure Go — no CGO, no deployment cost. `//go:embed lua/` bakes scripts into binary. Lua CANNOT mutate ledger directly; all output is Go-validated at the bridge layer |
 | Ebitengine over Godot / Defold | Go + Ebitengine | long-term investment; Go is primary language across the stack. typed structs beat GDScript dicts for complex simulation. `go test` is simpler than `godot --headless`. Defold ruled out: Lua as primary language with no typed core is the wrong split — Lua content over a Go engine is the right split. Godot M0–M3 prototype informs the rewrite |
 | in-memory ledger over SQLite | Dictionary + JSON serialisation | cross-platform by default — no GDExtension dependency; SQLite has no built-in Godot 4 support and breaks on web exports; snapshot/restore gives sufficient atomicity for a turn-based sim |
-| GDScript over C# | GDScript | tighter Godot 4 integration; no separate build step; sufficient for turn-based simulation pace |
-| YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON is fast to load in Godot without a parser dependency |
-| headless-first engine | `RefCounted`/`Node` classes testable via `godot --headless` | allows CI verification without the editor; separates simulation correctness from visual rendering |
+| YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON loads fast via `encoding/json` with no extra dependency |
+| headless-first engine | pure Go packages testable via `go test ./internal/...` | CI verification without any UI; separates simulation correctness from rendering |
 | auto-resolve battle (v1) | math formula, no tactical grid | reach playable loop sooner; grid deferred to post-release expansion |
 | single scenario lock (AD 189) | Dong Zhuo's Rise only | prevents data balancing sprawl before core loop is verified |
 | mutable state + append-only log | live tables + `ledger_log` | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring |
 | single codebase, Go cross-compilation | one Go codebase builds to macOS / Linux / Windows / WASM; gomobile for Android / iOS | no platform branches; `os.UserConfigDir()` handles save path per platform; Ebitengine abstracts input and rendering |
 | desktop primary, mobile secondary | desktop is the reference platform; mobile port after M8 | avoids designing around mobile constraints during active development while keeping the port feasible |
-| 2D only, no 3D geometry | Godot Forward+ but 2D scenes only | strategy game needs no 3D; pseudo-3D shading via 2D normal maps achieves depth without scene complexity |
+| 2D only, no 3D geometry | Ebitengine 2D only | strategy game needs no 3D; Ebitengine is a 2D-native library — no 3D renderer to avoid |
 | pixel art, low asset cost | 16×16 or 32×32 tiles, palette-swaps | cheap to produce, fast to iterate, consistent with the minimalist aesthetic |
 | flatten OfficerAllegiance | loyalty + faction on Officer directly | separate row-lifecycle table is a database pattern, not a game pattern; city_id/army_id already on Officer |
 | 3-cycle turn loop | A (world) / B (commands) / C (settle) | diplomacy is just a gold-cost command; 4 cycles added complexity with no player-visible benefit |
@@ -1056,11 +1054,11 @@ pixel art rendering layer over the verified Go engine. the engine does not chang
 
 | dimension | score | notes |
 | :--- | :--- | :--- |
-| overall | 3 / 5 | moderate; multi-layer simulation with in-memory ledger, headless engine, and Godot frontend |
+| overall | 3 / 5 | moderate; multi-layer simulation with in-memory ledger, headless engine, and TUI/Ebitengine frontends |
 | core (clock, essence, economy) | 2 / 5 | pure math; stateless functions; well-bounded domain |
 | engine (sovereign_engine, ledger) | 3 / 5 | three-cycle turn loop, sequential settlement, CP validation logic |
-| data pipeline (YAML → JSON → DB) | 2 / 5 | one-way conversion; `make data` is the only transform step |
-| ui (Godot scenes) | 2 / 5 | view-only; reads from ledger; no simulation logic |
+| data pipeline (YAML → JSON) | 2 / 5 | one-way conversion; `make data` is the only transform step |
+| ui (TUI / Ebitengine) | 2 / 5 | view-only; reads from ledger; no simulation logic |
 | future: army + battle system | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid |
 | future: diplomacy + events | 4 / 5 | pairwise faction state, scripted triggers, branching outcomes |
 
