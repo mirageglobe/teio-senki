@@ -83,6 +83,22 @@ mobile is a post-milestone-8 port target. do not design around mobile constraint
 
 ## architecture
 
+### engines considered
+
+three engines were evaluated before committing to Godot 4. the decision is recorded here so it is not relitigated without new information.
+
+| engine | language | type safety | headless testing | mobile | tilemap / ui | verdict |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Godot 4** ✓ | GDScript | moderate (typed GDScript) | `godot --headless` | good via export templates | built-in TileMap, Control nodes | **current choice** |
+| **Ebitengine** | Go | strong — compile-time structs | `go test ./...` natively | gomobile (functional, rough) | DIY — no built-in tilemap or UI | best long-term fit if switching; Go is primary language |
+| **Defold** | Lua | none — runtime only | manual setup | strong — commercially proven (King) | lightweight editor, component-based | best mobile story; weaker type safety and context-switch from Go |
+
+**why Godot now:** milestones 0–3 are complete and working. the headless engine, ledger, turn loop, and China map are done in GDScript. switching has a real rewrite cost.
+
+**open question:** if the project reaches a natural break point before milestone 5 (armies), Ebitengine is worth revisiting — Go's typed structs would make the simulation core (498 officers, complex stat interactions, AI logic) significantly more maintainable than GDScript dictionaries long-term. the key trade-off is Ebitengine's lack of built-in tilemap and UI systems.
+
+**Defold was ruled out** primarily because Lua offers no type safety for a complex simulation, and its main advantage (mobile) is a secondary target for this project.
+
 ### principles
 
 - **headless engine**: all simulation logic (engine, clock) is side-effect-free and testable without the frontend.
@@ -910,6 +926,7 @@ JSON archive loading, in-memory ledger init, bazi clock, and the turn loop in GD
 
 | decision | choice | why |
 | :--- | :--- | :--- |
+| Godot 4 over Ebitengine / Defold | Godot 4 + GDScript | milestones 0–3 complete; rewrite cost outweighs benefit now. Ebitengine revisit warranted before M5 if long-term Go coherence is prioritised. Defold ruled out: Lua has no type safety and mobile advantage is secondary |
 | in-memory ledger over SQLite | Dictionary + JSON serialisation | cross-platform by default — no GDExtension dependency; SQLite has no built-in Godot 4 support and breaks on web exports; snapshot/restore gives sufficient atomicity for a turn-based sim |
 | GDScript over C# | GDScript | tighter Godot 4 integration; no separate build step; sufficient for turn-based simulation pace |
 | YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON is fast to load in Godot without a parser dependency |
