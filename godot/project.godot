@@ -1,0 +1,24 @@
+; Engine configuration file.
+; Generated for Godot 4.x
+
+config_version=5
+
+[application]
+
+config/name="teio-senki"
+config/description="帝王战纪：三国録 — Sovereign Record"
+run/main_scene="res://scenes/splash.tscn"
+config/features=PackedStringArray("4.3", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/stretch/background_color=Color(0, 0, 0, 1)
+
+[rendering]
+
+renderer/rendering_method="forward_plus"
+textures/canvas_textures/default_texture_filter=0
