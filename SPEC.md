@@ -86,6 +86,44 @@ Makefile
 - **Single Scenario**: Development is locked to **AD 189 (Dong Zhuo)**. Do not balance other scenarios until the game is playable.
 - **No "Just-in-case"**: Do not implement features until the turn engine needs them.
 
+### lua bridge api (internal/vm/bridge)
+
+the bridge is the only surface Lua scripts may call. all functions are registered in `internal/vm/bridge/bridge.go` and exposed to gopher-lua as globals. Lua CANNOT import any other Go package.
+
+**read-only state accessors:**
+
+| lua function | go signature | returns |
+| :--- | :--- | :--- |
+| `state.officer(id)` | `GetOfficer(id string) OfficerView` | table: id, name, essence, strategy, valour, governance, integrity, loyalty, faction, health, age, xp, tags |
+| `state.city(id)` | `GetCity(id string) CityView` | table: id, name, faction, ag, com, tech, ord, def, food, gold, garrison, governor_id |
+| `state.army(id)` | `GetArmy(id string) ArmyView` | table: id, faction, general_id, troops, morale, supply, x, y, stance |
+| `state.faction_relation(a, b)` | `GetRelation(a, b string) int` | integer −100 to +100 |
+| `state.clock()` | `GetClock() ClockView` | table: year, month, stem, branch, season_element |
+| `state.resources(faction)` | `GetResources(faction string) ResourceView` | table: food, gold |
+| `rng.float()` | `RngFloat() float64` | float in [0.0, 1.0) — uses engine rand.Rand |
+| `rng.intn(n)` | `RngIntn(n int) int` | int in [0, n) |
+
+**command constructors (return a Command table, validated and applied by Go):**
+
+| lua function | effect |
+| :--- | :--- |
+| `cmd.march(army_id, x, y)` | queue march order |
+| `cmd.recruit(city_id, amount)` | queue recruitment (seasonal only; Go validates) |
+| `cmd.develop(city_id, pillar)` | queue pillar build |
+| `cmd.tribute(target_faction, gold)` | queue diplomatic tribute |
+| `cmd.assign(officer_id, role, target_id)` | assign officer to role |
+
+**event emission:**
+
+| lua function | effect |
+| :--- | :--- |
+| `log.event(event_type, description, effects_table)` | append to ledger log for the current turn |
+
+**constraints:**
+- all read accessors return **copies** — Lua cannot mutate Go structs.
+- `cmd.*` functions return a Lua table; Go applies the command after validating CP budget and game rules.
+- Lua scripts that call any function not in this table cause a bridge error and the script is skipped for that turn.
+
 ---
 
 ## overview
@@ -119,6 +157,35 @@ mobile is a post-milestone-8 port target. do not design around mobile constraint
 - **minimal UI chrome** — information density over decoration. panels appear on demand; the map is always the primary surface.
 - **no tutorials** — the game communicates through design, tooltips, and the ledger log. no guided onboarding flow.
 
+### keyboard bindings (TUI — cycle B)
+
+canonical keybindings for the Bubble Tea frontend. all developers must use this table; do not invent bindings ad hoc.
+
+| key | action | scope |
+| :--- | :--- | :--- |
+| `e` | end turn (advance cycle A → B → C) | global (Playing) |
+| `m` | open strategic map focus | global |
+| `c` | open city panel for selected city | map |
+| `o` | open officer roster panel | map |
+| `a` | open army panel for selected army | map |
+| `d` | open diplomacy panel | map |
+| `l` | open ledger log | global |
+| `↑ ↓ ← →` | move map cursor / scroll panel | map / panels |
+| `enter` | confirm selection / issue command | panels |
+| `esc` | close panel / cancel command | panels |
+| `b` | issue build command (pillar select) | city panel (seasonal) |
+| `r` | recruit troops | city panel (seasonal) |
+| `s` | search for officers | city panel |
+| `g` | assign governor | officer panel |
+| `h` | assign general | officer panel |
+| `v` | assign advisor | officer panel |
+| `t` | send tribute | diplomacy panel |
+| `p` | propose alliance | diplomacy panel |
+| `w` | threaten faction | diplomacy panel |
+| `q` | quit to main menu | global |
+
+mouse: clicking a city node or army token selects it and opens the relevant panel. all keyboard actions have a mouse/touch equivalent for mobile.
+
 ---
 
 ## architecture
@@ -136,6 +203,28 @@ Defold was evaluated and ruled out: Lua as primary language has no type safety �
 - **typed domain models**: Go structs with no `interface{}` or `map[string]any` crossing package boundaries. compile-time safety throughout.
 - **mutable current state + chronicle log**: `Ledger` struct holds live game state. `Logs []LogEntry` is append-only for history and victory scoring. serialised to `save.json` via `encoding/json` on save.
 - **YAML archives**: human-readable canonical data (`data/officers.yaml`, `data/cities.yaml`). converted to JSON via `make data`; loaded once at game start into the ledger.
+
+### game state machine
+
+the game UI transitions through a strict set of states. each state owns its input handlers and render logic.
+
+```
+MainMenu → ScenarioSelect → SovereignSelect → Playing ──► BattleResolution ──► Playing
+                                                    └──────────────────────────► Victory
+                                                    └──────────────────────────► Defeat
+```
+
+| state | entry condition | valid transitions |
+| :--- | :--- | :--- |
+| `MainMenu` | app start | → `ScenarioSelect` (new game), → `Playing` (load save) |
+| `ScenarioSelect` | new game | → `SovereignSelect` |
+| `SovereignSelect` | scenario chosen | → `Playing` |
+| `Playing` | sovereign selected | → `BattleResolution` (army contact), → `Victory`, → `Defeat` |
+| `BattleResolution` | armies contact in cycle C | → `Playing` (auto-resolve completes) |
+| `Victory` | one faction holds all cities | terminal |
+| `Defeat` | sovereign dead + no successor; or all cities lost | terminal |
+
+no state transition may bypass this sequence. the engine raises an error if a command is queued from a state that does not allow it.
 
 ### module responsibilities
 
@@ -392,6 +481,16 @@ two resources sustain the state, on different cadences:
 | **gold** | `COM × season_delta` per city | **seasonal** (once per season) | officer salaries, recruitment, diplomacy | **monthly** |
 
 seasonal yield lands as a lump sum at the season boundary (month 3, 6, 9, 12). monthly draws (upkeep, salaries) reduce the stockpile each turn. this creates a natural rhythm: build reserves in peaceful seasons, campaign on what you have.
+
+**officer salary formula:**
+
+salary drawn from faction gold stockpile each cycle C:
+
+```
+salary_cost_per_officer = floor(officer.strategy + officer.valour + officer.governance) ÷ 30
+```
+
+minimum 1 gold per officer per turn regardless of stats. unassigned officers in pool still draw salary. if gold stockpile < total salary obligation: officers are ranked by loyalty descending; payment fills from top until gold is exhausted. officers with loyalty < 50 whose salary is skipped trigger the "unpaid" drift penalty that turn.
 
 food deficit → army attrition (monthly). gold deficit → loyalty decay on unpaid officers (monthly).
 
@@ -828,6 +927,43 @@ tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184 (Jiǎ
 
 **defeat condition:** sovereign dies with no assigned successor, or all cities lost.
 
+**max turn limit (soft cap):** 360 turns (30 years). if no faction holds all cities at turn 360, the game ends with a score-based outcome: the faction controlling the most cities wins. ties broken by total population of held cities; further ties broken by gold stockpile.
+
+**succession mechanic:**
+
+the player may assign one eligible officer as heir at any point during cycle B:
+
+```
+assign <officer_id> successor
+```
+
+eligibility rules:
+- officer must have the **lord** tag.
+- officer must currently serve the player's faction (not captured or defected).
+- officer must have loyalty ≥ 50.
+- only one successor can be assigned at a time; issuing the command again replaces the previous heir.
+
+on sovereign death, the assigned successor immediately becomes the new sovereign:
+- inherits the faction, all cities, and all armies.
+- base CP recalculated from successor's strategy stat.
+- faction elemental alignment updates to successor's essence.
+- ledger logs a SUCCESSION event.
+
+if the sovereign dies with no valid successor: defeat is triggered immediately.
+
+**simultaneous event resolution order (cycle C):**
+
+when multiple events of the same type occur in the same cycle C, apply in this fixed priority order:
+
+1. supply and attrition checks (armies out of range take damage first)
+2. battle resolution — armies are sorted by (attacker.troops desc, attacker.general.valour desc); the largest attacking force resolves first
+3. if two armies contact each other on the same tile on the same cycle (mutual advance): the army with higher `general.valour` attacks first; if equal, resolve simultaneously (both armies take one round of damage before either retreats)
+4. city capture checks (after all battles resolve)
+5. victory / defeat check — if two factions hit 0 cities simultaneously in the same cycle, the faction that captured the last city wins; if both lost their last city to the same attacker in the same cycle, the attacker wins
+6. yield and recruitment (seasonal only)
+7. loyalty and salary settlement
+8. ledger log append
+
 ---
 
 ## persistence
@@ -971,6 +1107,20 @@ func TestRobotPlayer(t *testing.T) {
 - run a 100-turn simulation with `rand.New(rand.NewSource(42))`.
 - serialise final ledger to `testdata/golden_master.json`.
 - after any engine refactor, re-run. diff against golden master — any change is a regression flag.
+
+### 4. random source policy
+
+| context | source | rationale |
+| :--- | :--- | :--- |
+| tests (golden master, unit) | `rand.New(rand.NewSource(42))` | deterministic; reproducible across machines |
+| production (new game) | `rand.New(rand.NewSource(time.Now().UnixNano()))` | unique seed per session |
+| production (load game) | seed stored in `save.json` as `rng_seed int64` | reload continues the same RNG stream to avoid non-determinism on save/load |
+
+rules:
+- the engine accepts a `rand.Rand` argument — never calls `rand.Float64()` directly (global rand is banned in engine packages).
+- a single `rand.Rand` instance is created at game start and passed through; no package-level RNG state.
+- `rng_seed` is written to `save.json` on first save. subsequent saves update a `rng_calls int64` counter so the stream can be fast-forwarded on load (call `rand.Read` n times on a fresh source to restore position).
+- Lua scripts must not generate their own random — they call `rng.float()` / `rng.intn(n)` via the bridge, which delegates to the engine's `rand.Rand`.
 
 ---
 
