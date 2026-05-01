@@ -123,21 +123,11 @@ mobile is a post-milestone-8 port target. do not design around mobile constraint
 
 ## architecture
 
-### engines considered
+### engine choice
 
-three engines were evaluated before committing to Godot 4. the decision is recorded here so it is not relitigated without new information.
+**Go + Ebitengine** — chosen for long-term coherence with the stack. typed Go structs for 498 officers, complex stat interactions, and AI decision logic are safer and more maintainable than scripted alternatives. `go test ./...` is the only test runner needed. Ebitengine is 2D-native with gomobile support for mobile ports.
 
-| engine | language | type safety | headless testing | mobile | tilemap / ui | verdict |
-| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Ebitengine** ✓ | Go | strong — compile-time structs | `go test ./...` natively | gomobile (functional, rough) | DIY — no built-in tilemap or UI | **chosen — long-term investment** |
-| Godot 4 | GDScript | moderate (typed GDScript) | `godot --headless` | good via export templates | built-in TileMap, Control nodes | prototyped M0–M3; rewritten in favour of Go coherence |
-| Defold | Lua | none — runtime only | manual setup | strong — commercially proven (King) | lightweight editor, component-based | ruled out: Lua has no type safety; mobile advantage is secondary |
-
-**why Ebitengine:** the project is long-term (6+ months). Go is the primary language across the stack. typed Go structs for 498 officers, complex stat interactions, and AI decision logic are significantly safer and more maintainable than GDScript dictionaries. `go test ./...` replaces the `godot --headless` test runner. cross-compilation to macOS/Linux/Windows is a Go native strength.
-
-**rewrite cost:** milestones 0–3 were prototyped in Godot/GDScript. all logic (clock, essence, economy, turn engine) transfers directly to Go — the formulas and architecture are unchanged. the China map rendering needs reimplementing in Ebitengine's draw API. estimated rewrite: 1–2 weeks.
-
-**Defold was ruled out:** Lua offers no type safety for a complex simulation; its main advantage (mobile runtime) is a secondary target.
+Defold was evaluated and ruled out: Lua as primary language has no type safety — the wrong fit for a complex simulation. Lua is used in this project for content (events, AI, balance) only, not for the engine itself.
 
 ### principles
 
@@ -320,6 +310,90 @@ the player's starting territory is determined by the faction assigned to their c
 - **Main Capital**: the primary city where the sovereign is stationed.
 - **Territory**: all cities assigned to the same faction in the scenario data.
 - **Resources**: starting food and gold are calculated as the sum of controlled cities' outputs.
+
+---
+
+## game mechanics
+
+### core loop
+
+each session is a sequence of turns. one turn = one calendar month. the player's goal is to unify all cities under their faction before rival sovereigns do.
+
+```
+each turn (1 month):
+  A — world update  →  season shifts, essence drifts, loyalty decays, supply checks
+  B — player commands  →  spend CP to issue orders (city / officer / army / diplomacy)
+  C — settlement  →  apply all changes, resolve battles, advance clock
+```
+
+### command points (CP)
+
+CP is the player's action budget per turn. it limits how much can be done in a single month.
+
+| source | CP granted |
+| :--- | :--- |
+| sovereign's `strategy` stat | base CP = `strategy ÷ 10` (min 1) |
+| advisor officer attached to lord | +1–3 CP per advisor (scales with strategy) |
+
+CP is consumed by commands in cycle B. unspent CP is lost — it does not carry over.
+
+| action type | CP cost |
+| :--- | :--- |
+| develop city pillar (AG / COM / DEF) | 1 CP per command |
+| recruit troops | 1 CP |
+| search for officers | 1 CP |
+| assign / dismiss officer | 1 CP |
+| march army | 1 CP per army |
+| diplomacy (tribute / alliance / threaten) | 0 CP — gold cost only |
+
+### player actions (cycle B)
+
+each month the player selects commands from the following categories. all commands are validated against the CP budget before settlement.
+
+**city:** `develop <city_id> <pillar>` — grow AG, COM, or DEF. yield formula scales with season and governor's governance stat.
+
+**officer:** `search <city_id>` — chance to discover unrecruited officers. `assign <officer_id> <role>` — place as governor, general, or advisor. `reward <officer_id>` — spend gold to boost loyalty.
+
+**army:** `recruit <city_id> <amount>` — raise troops from city population. `march <army_id> <x> <y>` — move army; range = `general.strategy ÷ 20` tiles. `encamp <army_id>` — fortify position.
+
+**diplomacy:** `tribute <faction>` / `alliance <faction>` / `threaten <faction>` — modifies faction relation score (−100 to +100). costs gold, no CP.
+
+### elemental alignment (wu xing)
+
+every officer has an `essence` element (Wood / Fire / Earth / Metal / Water). the sovereign's essence sets the faction's elemental identity for the scenario.
+
+- **seasonal drift**: each season amplifies or dampens stat effectiveness based on element cycles. spring boosts Wood officers; winter boosts Water; etc.
+- **resonance bonus**: officers whose essence aligns with the sovereign's gain +1 to +3 loyalty per turn passively.
+- **element cycle**: the nourishing cycle (Wood → Fire → Earth → Metal → Water → Wood) and controlling cycle (Wood controls Earth; Fire controls Metal; etc.) determine drift direction and magnitude.
+- **bazi clock**: time advances through the 60-unit stem-branch cycle. the heavenly stem and earthly branch of the current month determine which elements are in ascendancy, affecting all drift calculations simultaneously.
+
+### resource economy
+
+two resources sustain the state each turn:
+
+| resource | generated by | consumed by |
+| :--- | :--- | :--- |
+| **food** | `AG × season_delta` per city | army upkeep (`troops ÷ 100` per army per turn) |
+| **gold** | `COM × season_delta` per city | officer salaries, recruitment costs, diplomacy |
+
+food deficit → army attrition. gold deficit → loyalty decay on unpaid officers.
+
+### officer loyalty
+
+officers remain loyal if treated well. loyalty drifts each turn:
+
+- unpaid salary: −1 / turn
+- salary paid: +1 / turn
+- battle won: +2 / battle lost: −3
+- elemental resonance with sovereign: +1 to +3
+- rival bribery attempt (resisted by integrity): −5 to −20
+- loyalty < 20 → defection risk next turn
+
+### victory and defeat
+
+**win:** one faction holds all cities → sovereignty victory. checked at end of every cycle C.
+
+**defeat:** sovereign dies with no assigned successor, or all cities lost.
 
 ---
 
@@ -846,7 +920,7 @@ func TestRobotPlayer(t *testing.T) {
 
 | phase | focus | milestones | status |
 | :--- | :--- | :--- | :--- |
-| **1: engine** | Go scaffold, headless core, turn loop | 0, 1 | rewrite |
+| **1: engine** | Go scaffold, headless core, turn loop | 0, 1 | [~] in progress |
 | **2: TUI shell** | Bubble Tea frontend, full game loop in terminal | 2 | [ ] |
 | **3: simulation** | city, officers, armies, battle, diplomacy, victory — engine + TUI | 3–8 | [ ] |
 | **4: rendering** | Ebitengine pixel art layer over proven engine | 9, 10 | [ ] |
@@ -855,8 +929,8 @@ func TestRobotPlayer(t *testing.T) {
 
 | milestone | focus | status |
 | :--- | :--- | :--- |
-| 0 | Go scaffold — project structure, Makefile, data pipeline | rewrite |
-| 1 | engine core — ledger, clock, essence, economy, turn loop | rewrite |
+| 0 | Go scaffold — project structure, Makefile, data pipeline | [~] in progress |
+| 1 | engine core — ledger, clock, essence, economy, turn loop | [ ] |
 | 2 | TUI shell — Bubble Tea; ASCII map; full game loop playable | [ ] |
 | 3 | city economics — Go engine + TUI city screen | [ ] |
 | 4 | officers — management & allegiance; Go engine + TUI officer screen | [ ] |
@@ -869,33 +943,33 @@ func TestRobotPlayer(t *testing.T) {
 
 ---
 
-### milestone 0 — foundation `rewrite`
+### milestone 0 — foundation `in progress`
 
-> status key: `[x]` done / portable — `[>]` proven in Godot, port to Go — `[~]` partial — `[ ]` not started
+> status key: `[x]` done — `[~]` partial — `[ ]` not started
 
 | item | status | notes |
 | :--- | :--- | :--- |
-| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio) | [ ] | replaces Godot project |
-| splash screen (fade, blink prompt, auto-advance, key dismiss) | [>] | logic proven; rewrite in Ebitengine draw loop |
-| main entry point (load data, init ledger, start game loop) | [>] | replaces main.gd |
-| design: officer + city archives (YAML, 498 officers, 30 cities) | [x] | fully portable; no changes needed |
-| design: bazi calendar, turn structure, ledger schema | [x] | fully portable; guides Go struct definitions |
+| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio) | [x] | |
+| splash screen (fade, blink prompt, auto-advance, key dismiss) | [ ] | |
+| main entry point (load data, init ledger, start game loop) | [ ] | |
+| design: officer + city archives (YAML, 498 officers, 30 cities) | [x] | |
+| design: bazi calendar, turn structure, ledger schema | [x] | |
 
 ---
 
-### milestone 1 — data + turn engine `rewrite`
+### milestone 1 — data + turn engine `not started`
 
-JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. all logic proven in GDScript prototype; port to Go. **priority focus: AD 189 scenario.**
+JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. **priority focus: AD 189 scenario.**
 
 | item | status | notes |
 | :--- | :--- | :--- |
-| JSON archive loading + ledger seed | [>] | port `ledger.gd` → `internal/engine/ledger` as typed Go structs |
-| scenario & sovereign selection logic | [>] | port to Go; filter officers/cities by faction at game start |
-| bazi calendar + essence drift | [>] | port `game_clock.gd` + `essence.gd` → `internal/core/clock` + `internal/core/essence` |
-| cycle A — world update (season, essence, loyalty, supply) | [>] | port `_run_cycle_a()` to Go |
-| cycle B — player commands (city / officer / military / diplomacy) | [>] | replaces old cycle C + merged diplomacy; port command queue to Go |
-| cycle C — sequential settlement | [>] | replaces old cycle D; snapshot/restore removed; port `_run_cycle_c_settle()` |
-| `go test ./internal/...` — unit + integration tests | [ ] | replaces GDScript headless runner |
+| JSON archive loading + ledger seed | [ ] | `internal/engine/ledger` as typed Go structs |
+| scenario & sovereign selection logic | [ ] | filter officers/cities by faction at game start |
+| bazi calendar + essence drift | [ ] | `internal/core/clock` + `internal/core/essence` |
+| cycle A — world update (season, essence, loyalty, supply) | [ ] | |
+| cycle B — player commands (city / officer / military / diplomacy) | [ ] | |
+| cycle C — sequential settlement | [ ] | sequential delta apply; no snapshot/restore |
+| `go test ./internal/...` — unit + integration tests | [ ] | |
 
 ---
 
@@ -916,14 +990,14 @@ Bubble Tea terminal frontend over the Go engine. the full game loop must be play
 
 ---
 
-### milestone 3 — city development & economics `rewrite`
+### milestone 3 — city development & economics `not started`
 
 | item | status | notes |
 | :--- | :--- | :--- |
-| City Go struct (AG / COM / TECH / ORD / DEF, food, gold, garrison) | [>] | port from GDScript dict to typed Go struct in `internal/models` |
-| seasonal delta calculation per pillar | [>] | port `city_economy.gd` → `internal/core/economy` |
-| TECH multiplier on AG / COM yield | [>] | formula proven; port pure functions to Go |
-| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF) | [>] | port command queue; BUILD_TECH / BUILD_ORD remain deferred |
+| City Go struct (AG / COM / TECH / ORD / DEF, food, gold, garrison) | [ ] | `internal/models` |
+| seasonal delta calculation per pillar | [ ] | `internal/core/economy` |
+| TECH multiplier on AG / COM yield | [ ] | pure functions |
+| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF) | [ ] | BUILD_TECH / BUILD_ORD deferred |
 | food and gold stockpile per city (draw from upkeep each cycle) | [~] | structure defined; per-city tracking not yet implemented |
 | CityScreen overlay — pillar bars, food, gold display | [ ] | TUI panel first (M3); Ebitengine panel at M9 |
 
@@ -1029,8 +1103,8 @@ pixel art rendering layer over the verified Go engine. the engine does not chang
 | :--- | :--- | :--- |
 | TUI-first (Bubble Tea), Ebitengine second | Bubble Tea → Ebitengine | verify full game loop in terminal before writing pixel art; engine API is identical for both frontends; swapping view is a one-file change |
 | Go + Lua hybrid (gopher-lua) | Go owns engine; Lua owns content | Go: typed ledger integrity, `go test`, single binary. Lua: hot-reloadable events/AI/balance without recompile. gopher-lua is pure Go — no CGO, no deployment cost. `//go:embed lua/` bakes scripts into binary. Lua CANNOT mutate ledger directly; all output is Go-validated at the bridge layer |
-| Ebitengine over Godot / Defold | Go + Ebitengine | long-term investment; Go is primary language across the stack. typed structs beat GDScript dicts for complex simulation. `go test` is simpler than `godot --headless`. Defold ruled out: Lua as primary language with no typed core is the wrong split — Lua content over a Go engine is the right split. Godot M0–M3 prototype informs the rewrite |
-| in-memory ledger over SQLite | Dictionary + JSON serialisation | cross-platform by default — no GDExtension dependency; SQLite has no built-in Godot 4 support and breaks on web exports; snapshot/restore gives sufficient atomicity for a turn-based sim |
+| Ebitengine over Defold | Go + Ebitengine | long-term investment; Go is primary language across the stack. typed structs are safer for a complex simulation. Defold ruled out: Lua as primary language has no typed core — the wrong split. Lua content over a Go engine is the right split |
+| in-memory ledger over SQLite | Dictionary + JSON serialisation | cross-platform by default — no native extension dependency; snapshot/restore gives sufficient atomicity for a turn-based sim |
 | YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON loads fast via `encoding/json` with no extra dependency |
 | headless-first engine | pure Go packages testable via `go test ./internal/...` | CI verification without any UI; separates simulation correctness from rendering |
 | auto-resolve battle (v1) | math formula, no tactical grid | reach playable loop sooner; grid deferred to post-release expansion |
