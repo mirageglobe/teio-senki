@@ -3,7 +3,7 @@
 > "Sovereignty through the Ledger, Strategy through the Elements."
 
 ## tldr
-A headless, turn-based grand strategy engine set in the Three Kingdoms era. Built in **Go + Lua + Ebitengine**. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (in-memory ledger + JSON persistence)** over visual spectacle.
+A headless, turn-based grand strategy engine set in the Three Kingdoms era. Built in **Go + Lua + Bubble Tea (TUI → Ebitengine)**. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (in-memory ledger + JSON persistence)** over visual spectacle.
 
 ---
 
@@ -152,7 +152,8 @@ Defold was evaluated and ruled out: Lua as primary language has no type safety �
 | `internal/engine/diplomacy` | faction relation scores; diplomatic command processing |
 | `internal/engine/events` | world event generator: seasonal triggers, historical events |
 | `internal/engine/ai` | AI sovereign: `ai_decide(ledger, factionID, intelligence, behaviour) []Command` |
-| `internal/ui` | Ebitengine rendering: map, panels, screens — imports engine, never vice versa |
+| `internal/ui/tui` | Bubble Tea terminal frontend (M2–M8): dumb view; reads engine state, sends commands |
+| `internal/ui/gfx` | Ebitengine rendering (M9–M10): map, panels, screens — imports engine, never vice versa |
 
 ### data flow
 
@@ -466,7 +467,7 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 - end-turn button advances all cycles and re-renders map state.
 
 **movement:**
-- `march <army_id> <x> <y>` in cycle C queues movement.
+- `march <army_id> <x> <y>` is issued in cycle B (player commands); movement is applied during cycle C settlement.
 - movement range per turn: `floor(general.strategy ÷ 20)`, min 1, max 5 tiles.
 - terrain movement costs (tiles per step):
 
@@ -480,7 +481,7 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 | pass | 2 | — |
 
 - naval armies (general has naval tag) move freely on river/coast; 3× cost on land tiles.
-- army entering a tile with an enemy army triggers battle (cycle D).
+- army entering a tile with an enemy army triggers battle (resolved in cycle C settlement).
 - army adjacent to enemy city with siege stance: DEF degrades each turn.
 
 **supply line:**
@@ -619,7 +620,7 @@ armies are the instrument of territorial expansion and defence. they are raised,
 | encamp | fortified position; −50% incoming damage; no advance |
 
 **movement:**
-- armies move via player orders in cycle C: `march <army_id> <x> <y>`.
+- armies move via player orders issued in cycle B: `march <army_id> <x> <y>`; applied in cycle C settlement.
 - movement range per turn: `general.strategy ÷ 20`, min 1, max 5 tiles.
 - entering a tile occupied by an enemy army triggers battle resolution in cycle C.
 
@@ -664,13 +665,34 @@ modifiers:
 
 ### 6. diplomacy
 
-diplomatic actions are issued in cycle B alongside other player commands. gold cost instead of CP.
+diplomatic actions are issued in cycle B alongside other player commands. gold cost only — no CP consumed.
 
 **relation score:**
-- each pair of factions has a relation score (−100 hostile to +100 allied).
+- each ordered pair of factions holds a score in [−100, +100]. scores are not symmetric: A→B and B→A are tracked separately and drift independently.
+- score floor/ceiling: clamped at −100 / +100 after every cycle C.
 
-**diplomatic actions (cost CP or gold):**
-- send tribute, propose alliance, threaten.
+**diplomatic actions:**
+
+| action | gold cost | relation effect | notes |
+| :--- | :---: | :--- | :--- |
+| send tribute | 100–500 | +10 to +30 (scales with amount) | one-way; increases target's score toward player only |
+| propose alliance | 200 | +20 if accepted; −5 if rejected | target AI accepts if relation ≥ 20; rejects if at war |
+| threaten | 0 | −20 to target; +10 self-confidence | may trigger immediate war declaration if target relation < −30 |
+
+**relation thresholds:**
+
+| score | state | effect |
+| :--- | :--- | :--- |
+| ≥ 60 | allied | non-aggression; shared border armies don't trigger battle |
+| 20–59 | friendly | tribute costs reduced 20% |
+| −19 to 19 | neutral | no effect |
+| −20 to −59 | hostile | march orders toward their cities +1 CP cost |
+| ≤ −60 | war | armies auto-battle on tile contact; no diplomatic action possible |
+
+**passive drift per turn:**
+- no active contact: −1 (relations decay toward neutral without maintenance).
+- shared border (armies adjacent): −2.
+- existing alliance: +1.
 
 **status:** not yet implemented.
 
@@ -718,13 +740,68 @@ each turn = one month. three cycles execute in strict order.
 
 ### 9. essence drift
 
-effective stat = clamp(base × drift, 1, 100).
+each officer's effective stats are modified each cycle A by a drift multiplier derived from their `essence` element and the current season's dominant element.
+
+**drift multiplier table (officer essence vs. season element):**
+
+| officer essence | resonant season | multiplier | controlling season | multiplier |
+| :--- | :--- | :---: | :--- | :---: |
+| Wood | spring | 1.20 | autumn (Metal controls Wood) | 0.85 |
+| Fire | summer | 1.20 | winter (Water controls Fire) | 0.85 |
+| Earth | late summer | 1.20 | spring (Wood controls Earth) | 0.85 |
+| Metal | autumn | 1.20 | summer (Fire controls Metal) | 0.85 |
+| Water | winter | 1.20 | late summer (Earth controls Water) | 0.85 |
+
+- neutral seasons (neither resonant nor controlling): multiplier = 1.00.
+- sovereign's essence sets faction alignment: officers whose essence matches the sovereign gain an additional +0.05 multiplier (resonance bonus).
+- effective stat = `clamp(base × drift_multiplier, 1, 100)` — applied to strategy, valour, governance for all calculations in that turn.
+
+**nourishing cycle (生, shēng):** Wood → Fire → Earth → Metal → Water → Wood
+**controlling cycle (克, kè):** Wood controls Earth; Earth controls Water; Water controls Fire; Fire controls Metal; Metal controls Wood.
 
 ---
 
 ### 10. bazi calendar (天干地支)
 
-tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184.
+tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184 (Jiǎ Zǐ year — stem 1, branch 1).
+
+**heavenly stems (天干, tiān gān) — 10 total:**
+
+| index | stem | element | polarity |
+| :---: | :--- | :--- | :--- |
+| 1 | 甲 Jiǎ | Wood | yang |
+| 2 | 乙 Yǐ | Wood | yin |
+| 3 | 丙 Bǐng | Fire | yang |
+| 4 | 丁 Dīng | Fire | yin |
+| 5 | 戊 Wù | Earth | yang |
+| 6 | 己 Jǐ | Earth | yin |
+| 7 | 庚 Gēng | Metal | yang |
+| 8 | 辛 Xīn | Metal | yin |
+| 9 | 壬 Rén | Water | yang |
+| 10 | 癸 Guǐ | Water | yin |
+
+**earthly branches (地支, dì zhī) — 12 total, map to seasons:**
+
+| index | branch | season | element |
+| :---: | :--- | :--- | :--- |
+| 1 | 子 Zǐ | winter | Water |
+| 2 | 丑 Chǒu | late winter | Earth |
+| 3 | 寅 Yín | spring | Wood |
+| 4 | 卯 Mǎo | spring | Wood |
+| 5 | 辰 Chén | late spring | Earth |
+| 6 | 巳 Sì | summer | Fire |
+| 7 | 午 Wǔ | summer | Fire |
+| 8 | 未 Wèi | late summer | Earth |
+| 9 | 申 Shēn | autumn | Metal |
+| 10 | 酉 Yǒu | autumn | Metal |
+| 11 | 戌 Xū | late autumn | Earth |
+| 12 | 亥 Hài | winter | Water |
+
+**clock mechanics:**
+- one month = one turn. the game advances one branch per turn (12 branches = 1 year).
+- stems advance every 2 branches, cycling every 10 branches. the full stem-branch pair repeats every 60 turns (5 years).
+- the season dominant element is read from the earthly branch of the current month and fed directly into the essence drift calculation.
+- `internal/core/clock` exposes: `Advance()`, `Year() int`, `Month() int`, `Stem() int`, `Branch() int`, `SeasonElement() Element`.
 
 ---
 
@@ -766,7 +843,7 @@ all UI lives in `internal/ui`. M2–M8 use Bubble Tea (TUI): text-only, dumb vie
 
 | screen | maps to system | tui (M2–M8) | gfx (M9–M10) |
 | :--- | :--- | :--- | :--- |
-| SplashScreen | — | [ ] | [ ] |
+| SplashScreen | — (M0 TUI; M9 GFX) | [ ] | [ ] |
 | ScenarioSelectScreen | scenario & sovereign setup | [ ] | [ ] |
 | StrategicMapScreen | strategic map — cities, armies, faction colours | [ ] | [ ] |
 | CityScreen | city development — pillar bars, officer slot, food/gold | [ ] | [ ] |
@@ -789,6 +866,7 @@ one Go codebase, multiple targets via cross-compilation and gomobile. no platfor
 | :--- | :--- | :---: | :--- |
 | macOS | native binary | 1 | Go toolchain; Apple Developer account for notarisation |
 | Linux | native binary | 2 | Go toolchain; no signing required |
+| Windows | native binary | 2 | Go toolchain; optional code-signing certificate |
 | Android | `.apk` / `.aab` | 3 | gomobile; Android SDK + NDK; keystore for signing |
 | iOS | Xcode project | 4 | gomobile; macOS + Xcode + Apple Developer account ($99/yr) |
 
@@ -807,6 +885,7 @@ one Go codebase, multiple targets via cross-compilation and gomobile. no platfor
 | `make build` | `go build -o dist/teio cmd/teio/main.go` | native binary, current platform |
 | `make export-mac` | `GOOS=darwin GOARCH=arm64 go build ...` | macOS binary to `dist/mac/` |
 | `make export-linux` | `GOOS=linux GOARCH=amd64 go build ...` | Linux binary to `dist/linux/` |
+| `make export-windows` | `GOOS=windows GOARCH=amd64 go build ...` | Windows binary to `dist/windows/` |
 | `make export-web` | `GOOS=js GOARCH=wasm go build ...` | WASM to `dist/web/` |
 | `make export-android` | `gomobile build -target android` | APK to `dist/android/` |
 | `make export-ios` | `gomobile build -target ios` | iOS app to `dist/ios/` (macOS only) |
@@ -816,6 +895,8 @@ one Go codebase, multiple targets via cross-compilation and gomobile. no platfor
 **macOS** — native binary via cross-compilation. for App Store / public distribution: `codesign` + `xcrun notarytool`. for personal use: right-click → open bypasses Gatekeeper.
 
 **Linux** — single binary, no signing. simplest target. distribute via itch.io or direct download.
+
+**Windows** — `GOOS=windows go build` produces a `.exe`. optional code-signing certificate for SmartScreen bypass; unsigned builds run after user confirms the prompt.
 
 **web** — Ebitengine has native WASM support. output runs in any modern browser. useful for demos.
 
@@ -1145,12 +1226,22 @@ See the [milestones section](#milestones) for the detailed implementation schedu
 
 ### near term
 
-milestones 4–8; priority order: officers → armies → battle → diplomacy → victory.
+**priority: playable combat on the China map** — armies on the strategic map, auto-resolve battle using officer stats, fight events in the ledger log. this is the vertical slice that proves the core loop end-to-end.
 
-highest dependency risk items:
-- `[engine]` historical event triggers — scripted facts vs generative logic boundary [hard]
+delivery order:
+1. `[engine]` army data model + garrison-to-army promotion [medium] — M5
+2. `[engine]` army movement on map grid (march command, terrain cost, range) [medium] — M5
+3. `[engine]` auto-resolve battle formula (valour × strategy × element × terrain → damage, morale, outcome) [medium] — M6
+4. `[engine]` duel resolution math (valour + 1d20; decisive win kills or routs) [easy] — M6
+5. `[engine]` battle outcome written to ledger log (BATTLE_RESOLVED event with round-by-round summary) [easy] — M6
+6. `[ui]` StrategicMapScreen — army tokens visible on map; movement orders issued via keyboard [hard] — M5
+7. `[ui]` LedgerScreen / log panel — scrollable fight event list with outcome and casualties [easy] — M6
+
+deferred until combat loop is stable: officer loyalty drift, diplomacy, victory check.
+
+highest dependency risk:
 - `[ui]` StrategicMapScreen army tokens + movement input [hard]
-- `[ui]` Cycle B interaction: list controlled cities, allow selection, then present city-specific actions (build, recruit, etc.) [medium]
+- `[engine]` element drift correctly feeding into battle formula at resolve time [medium]
 
 ### ideas
 
@@ -1160,7 +1251,7 @@ highest dependency risk items:
 - `[engine]` **officer lineage & health** — aging stat decay, heir system, complex wound and illness management [medium]
 - `[engine]` **naval warfare** — specialised naval units; river/sea tactical grids; boarding mechanics [hard]
 - `[engine]` **multi-era engine** — Sengoku, Roman Republic, and other eras on the same sovereign engine [hard]
-- `[engine]` **AI sovereigns** — each NPC faction runs an AI decision-maker in cycle B [medium]
+- `[engine]` **AI sovereigns** — each NPC faction runs an AI decision-maker in cycle B [medium] — design complete; see [ai sovereign design](#ai-sovereign-design) below; implementation deferred until M7 diplomacy loop is stable
 
 ---
 
