@@ -29,6 +29,21 @@ var seasonDisplay = map[string][2]string{
 const banner = "帝王战纪：三国录  —  Sovereign Record"
 const divider = "────────────────────────────────────────"
 
+const (
+	padTop    = 5
+	padBottom = 5
+	padLeft   = 3
+)
+
+func indentLines(s string) string {
+	prefix := strings.Repeat(" ", padLeft)
+	lines := strings.Split(s, "\n")
+	for i, l := range lines {
+		lines[i] = prefix + l
+	}
+	return strings.Join(lines, "\n")
+}
+
 func (m model) headerSimple() string {
 	return styleTitle.Render(banner) + "\n" + divider + "\n\n"
 }
@@ -70,16 +85,19 @@ func (m model) footer() string {
 }
 
 func (m model) withFooter(content string) string {
+	top := strings.Repeat("\n", padTop)
+	indented := indentLines(content)
+	footer := indentLines(m.footer())
 	if m.height == 0 {
-		return content + "\n" + m.footer()
+		return top + indented + "\n" + footer
 	}
-	footerHeight := 2 // divider + hints line
-	contentLines := strings.Count(content, "\n")
-	pad := m.height - contentLines - footerHeight
+	// rows: padTop + contentRows + 1(sep) + 2(footer) + padBottom = m.height
+	contentRows := strings.Count(indented, "\n") + 1
+	pad := m.height - padTop - padBottom - 3 - contentRows
 	if pad > 0 {
-		content += strings.Repeat("\n", pad)
+		indented += strings.Repeat("\n", pad)
 	}
-	return content + "\n" + m.footer()
+	return top + indented + "\n" + footer + strings.Repeat("\n", padBottom)
 }
 
 func (m model) View() string {
