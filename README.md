@@ -6,7 +6,7 @@ a headless grand strategy engine and historical simulation set during China's Th
 
 the player assumes the role of a sovereign (君主), managing cities and officers through principled statecraft and elemental alignment. victory is measured by territory — all events recorded in the ledger.
 
-see [SPEC.md](SPEC.md) for full design and architecture documentation.
+see [DESIGN.md](DESIGN.md) for game design, systems, and mechanics. see [SPEC.md](SPEC.md) for architecture and technical documentation.
 
 ---
 
