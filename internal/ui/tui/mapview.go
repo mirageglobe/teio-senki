@@ -3,7 +3,13 @@ package tui
 import (
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/mirageglobe/teio-senki/internal/models"
+)
+
+var (
+	mapStyleBorder = lipgloss.NewStyle().Foreground(lipgloss.Color("28"))  // forest green
+	mapStyleCity   = lipgloss.NewStyle().Foreground(lipgloss.Color("220")) // gold
 )
 
 const mapW, mapH = 40, 20 // braille chars; pixel grid = 80×80
@@ -27,6 +33,28 @@ var chinaBorder = [][2]float64{
 	{97.0, 49.5}, {106.5, 50.0}, {110.0, 53.0}, {119.5, 53.5},
 	{122.5, 52.5}, {126.0, 52.0}, {128.0, 50.0}, {130.5, 48.0},
 	{135.0, 48.5},
+}
+
+var taiwanBorder = [][2]float64{
+	{121.5, 25.3}, {122.0, 24.5}, {121.6, 23.0}, {120.8, 22.0},
+	{120.2, 22.8}, {120.4, 23.7}, {121.0, 24.5}, {121.5, 25.3},
+}
+
+var kyushuBorder = [][2]float64{
+	{130.2, 33.6}, {130.8, 33.9}, {131.2, 33.5}, {131.7, 32.5},
+	{131.4, 31.6}, {130.6, 31.5}, {130.0, 32.2}, {129.8, 32.9},
+	{130.2, 33.6},
+}
+
+var shikokuBorder = [][2]float64{
+	{132.6, 34.2}, {133.6, 34.3}, {134.5, 33.8}, {133.8, 33.5},
+	{132.8, 33.5}, {132.6, 34.2},
+}
+
+var honshuBorder = [][2]float64{
+	{131.0, 34.1}, {132.0, 35.0}, {133.0, 35.5}, {134.2, 35.7},
+	{135.0, 35.5}, {135.0, 34.8}, {134.2, 34.3}, {133.2, 34.6},
+	{132.0, 34.1}, {131.0, 34.1},
 }
 
 // Approximate geographic coordinates for Three Kingdoms cities [lon, lat].
@@ -112,24 +140,51 @@ func geoToPixel(lon, lat float64) (int, int) {
 	return x, y
 }
 
-// RenderMap returns a braille dot string: China outline + city dots.
-func RenderMap(cities []models.City) string {
-	c := newCanvas()
-	for i := 1; i < len(chinaBorder); i++ {
-		x0, y0 := geoToPixel(chinaBorder[i-1][0], chinaBorder[i-1][1])
-		x1, y1 := geoToPixel(chinaBorder[i][0], chinaBorder[i][1])
+func drawPoly(c *canvas, poly [][2]float64) {
+	for i := 1; i < len(poly); i++ {
+		x0, y0 := geoToPixel(poly[i-1][0], poly[i-1][1])
+		x1, y1 := geoToPixel(poly[i][0], poly[i][1])
 		c.line(x0, y0, x1, y1)
 	}
+}
+
+// RenderMap returns a coloured braille string: green outlines + gold city dots.
+func RenderMap(cities []models.City) string {
+	borders := newCanvas()
+	drawPoly(borders, chinaBorder)
+	drawPoly(borders, taiwanBorder)
+	drawPoly(borders, kyushuBorder)
+	drawPoly(borders, shikokuBorder)
+	drawPoly(borders, honshuBorder)
+
+	citydots := newCanvas()
 	for _, city := range cities {
 		if geo, ok := cityGeo[city.Name]; ok {
 			cx, cy := geoToPixel(geo[0], geo[1])
-			c.set(cx, cy)
-			c.set(cx+1, cy)
-			c.set(cx, cy+1)
-			c.set(cx+1, cy+1)
+			citydots.set(cx, cy)
+			citydots.set(cx+1, cy)
+			citydots.set(cx, cy+1)
+			citydots.set(cx+1, cy+1)
 		}
 	}
-	return c.render()
+
+	borderRunes := []rune(borders.render())
+	cityRunes := []rune(citydots.render())
+	var sb strings.Builder
+	for i, br := range borderRunes {
+		cr := cityRunes[i]
+		switch {
+		case br == '\n':
+			sb.WriteRune('\n')
+		case cr != 0x2800:
+			sb.WriteString(mapStyleCity.Render(string(cr)))
+		case br != 0x2800:
+			sb.WriteString(mapStyleBorder.Render(string(br)))
+		default:
+			sb.WriteRune(0x2800)
+		}
+	}
+	return sb.String()
 }
 
 func iabs(x int) int {

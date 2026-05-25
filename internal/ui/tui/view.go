@@ -44,6 +44,10 @@ func indentLines(s string) string {
 	return strings.Join(lines, "\n")
 }
 
+func (m model) mapBody(body string) string {
+	return joinColumns(RenderMap(m.ledger.SortedCities()), body, mapW, 4)
+}
+
 // joinColumns places left and right strings side by side, padding left to fixedW runes.
 func joinColumns(left, right string, fixedW, gap int) string {
 	ll := strings.Split(strings.TrimRight(left, "\n"), "\n")
@@ -62,7 +66,7 @@ func joinColumns(left, right string, fixedW, gap int) string {
 		if i < len(rl) {
 			r = rl[i]
 		}
-		pad := fixedW - len([]rune(l))
+		pad := fixedW - lipgloss.Width(l)
 		if pad < 0 {
 			pad = 0
 		}
@@ -179,7 +183,6 @@ func (m model) viewMenu() string {
 
 func (m model) viewScenario() string {
 	var b strings.Builder
-	b.WriteString(m.headerSimple())
 	b.WriteString(styleSeason.Render("select scenario") + "\n\n")
 	for i, s := range allScenarios {
 		cur := "  "
@@ -192,13 +195,12 @@ func (m model) viewScenario() string {
 		}
 		fmt.Fprintf(&b, "%s%s  %s%s\n", cur, s.epoch, s.name, lock)
 	}
-	return b.String()
+	return m.headerSimple() + m.mapBody(b.String())
 }
 
 func (m model) viewSovereign() string {
 	var b strings.Builder
 	sc := allScenarios[m.scenarioIdx]
-	b.WriteString(m.headerSimple())
 	fmt.Fprintf(&b, "%s  —  %s\n\n", styleSeason.Render("select sovereign"), sc.name)
 	fmt.Fprintf(&b, "  %-22s %-8s  STR  VAL  GOV\n", "name", "essence")
 	fmt.Fprintf(&b, "  %s\n", strings.Repeat("-", 50))
@@ -222,37 +224,33 @@ func (m model) viewSovereign() string {
 	if len(m.lords) > pageSize {
 		fmt.Fprintf(&b, "  page %d/%d\n", m.cursor/pageSize+1, (len(m.lords)+pageSize-1)/pageSize)
 	}
-	return b.String()
+	return m.headerSimple() + m.mapBody(b.String())
 }
 
 func (m model) viewBriefing() string {
 	sc := allScenarios[m.scenarioIdx]
-
-	var right strings.Builder
-	fmt.Fprintf(&right, "%s  —  %s\n\n", styleSeason.Render(sc.name), sc.epoch)
-	fmt.Fprintf(&right, "%s\n\n", sc.desc)
+	var body strings.Builder
+	fmt.Fprintf(&body, "%s  —  %s\n\n", styleSeason.Render(sc.name), sc.epoch)
+	fmt.Fprintf(&body, "%s\n\n", sc.desc)
 	if lord, ok := m.ledger.GetOfficer(m.chosenLord); ok {
-		fmt.Fprintf(&right, "sovereign  : %s", styleTitle.Render(lord.Name))
+		fmt.Fprintf(&body, "sovereign  : %s", styleTitle.Render(lord.Name))
 		if lord.Title != "" {
-			fmt.Fprintf(&right, " %s", styleDim.Render("("+lord.Title+")"))
+			fmt.Fprintf(&body, " %s", styleDim.Render("("+lord.Title+")"))
 		}
-		fmt.Fprintf(&right, "\nessence    : %s\n", styleElement.Render(lord.Essence))
-		fmt.Fprintf(&right, "strategy   : %d   valour: %d   governance: %d\n",
+		fmt.Fprintf(&body, "\nessence    : %s\n", styleElement.Render(lord.Essence))
+		fmt.Fprintf(&body, "strategy   : %d   valour: %d   governance: %d\n",
 			lord.Strategy, lord.Valour, lord.Governance)
 	}
-
-	body := joinColumns(RenderMap(m.ledger.SortedCities()), right.String(), mapW, 4)
-	return m.headerSimple() + body
+	return m.headerSimple() + m.mapBody(body.String())
 }
 
 func (m model) viewCycleA() string {
 	var b strings.Builder
-	b.WriteString(m.headerGame())
 	b.WriteString(styleSeason.Render("cycle A — world update") + "\n\n")
 	for _, e := range m.cycleALogs {
 		fmt.Fprintf(&b, "  %s %s\n", styleDim.Render("["+e.Type+"]"), e.Description)
 	}
-	return b.String()
+	return m.headerGame() + m.mapBody(b.String())
 }
 
 func (m model) viewHelp() string {
@@ -278,7 +276,6 @@ func (m model) viewHelp() string {
 
 func (m model) viewCycleB() string {
 	var b strings.Builder
-	b.WriteString(m.headerGame())
 	b.WriteString(styleSeason.Render("cycle B — commands") + "\n\n")
 	const pageSize = 10
 	fmt.Fprintf(&b, "  %-20s  %4s  %4s  %4s\n", "city", "ag", "com", "def")
@@ -308,15 +305,14 @@ func (m model) viewCycleB() string {
 			fmt.Fprintf(&b, "\n  %s\n", styleGood.Render(m.feedback))
 		}
 	}
-	return b.String()
+	return m.headerGame() + m.mapBody(b.String())
 }
 
 func (m model) viewCycleC() string {
 	var b strings.Builder
-	b.WriteString(m.headerGame())
 	b.WriteString(styleSeason.Render("cycle C — settlement") + "\n\n")
 	for _, e := range m.cycleCLogs {
 		fmt.Fprintf(&b, "  %s %s\n", styleDim.Render("["+e.Type+"]"), e.Description)
 	}
-	return b.String()
+	return m.headerGame() + m.mapBody(b.String())
 }
