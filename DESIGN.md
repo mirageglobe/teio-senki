@@ -12,10 +12,10 @@ victory is measured by territory — one faction controls all cities. institutio
 
 ## platform targets
 
-| platform | priority | input | notes |
-| :--- | :---: | :--- | :--- |
-| desktop (Windows / macOS / Linux) | primary | keyboard + mouse | full feature set; reference platform for development |
-| mobile (Android / iOS) | secondary | touch | same codebase; UI must be touch-friendly at 1080p portrait or landscape |
+| platform                          | priority  | input            | notes                                                                   |
+| :-------------------------------- | :-------: | :--------------- | :---------------------------------------------------------------------- |
+| desktop (Windows / macOS / Linux) | primary   | keyboard + mouse | full feature set; reference platform for development                    |
+| mobile (Android / iOS)            | secondary | touch            | same codebase; UI must be touch-friendly at 1080p portrait or landscape |
 
 mobile is a post-milestone-8 port target. do not design around mobile constraints during active development — but do not make decisions that actively block a future port (no fixed pixel coordinates, no keyboard-only flows without a touch fallback).
 
@@ -37,29 +37,29 @@ mobile is a post-milestone-8 port target. do not design around mobile constraint
 
 canonical keybindings for the Bubble Tea frontend. all developers must use this table; do not invent bindings ad hoc.
 
-| key | action | scope |
-| :--- | :--- | :--- |
-| `e` | end turn (advance cycle A → B → C) | global (Playing) |
-| `m` | open strategic map focus | global |
-| `c` | open city panel for selected city | map |
-| `o` | open officer roster panel | map |
-| `a` | open army panel for selected army | map |
-| `d` | open diplomacy panel | map |
-| `l` | open ledger log | global |
-| `↑ ↓ ← →` | move map cursor / scroll panel | map / panels |
-| `enter` | confirm selection / issue command | panels |
-| `esc` | close panel / cancel command; dismiss command bar | panels / global |
-| `b` | issue build command (pillar select) | city panel (seasonal) |
-| `r` | recruit troops | city panel (seasonal) |
-| `s` | search for officers | city panel |
-| `g` | assign governor | officer panel |
-| `h` | assign general | officer panel |
-| `v` | assign advisor | officer panel |
-| `t` | send tribute | diplomacy panel |
-| `p` | propose alliance | diplomacy panel |
-| `w` | threaten faction | diplomacy panel |
-| `q` | quit to main menu | global |
-| `:` | open command bar | global (Playing) |
+| key       | action                                            | scope                 |
+| :-------- | :------------------------------------------------ | :-------------------- |
+| `e`       | end turn (advance cycle A → B → C)                | global (Playing)      |
+| `m`       | open strategic map focus                          | global                |
+| `c`       | open city panel for selected city                 | map                   |
+| `o`       | open officer roster panel                         | map                   |
+| `a`       | open army panel for selected army                 | map                   |
+| `d`       | open diplomacy panel                              | map                   |
+| `l`       | open ledger log                                   | global                |
+| `↑ ↓ ← →` | move map cursor / scroll panel                    | map / panels          |
+| `enter`   | confirm selection / issue command                 | panels                |
+| `esc`     | close panel / cancel command; dismiss command bar | panels / global       |
+| `b`       | issue build command (pillar select)               | city panel (seasonal) |
+| `r`       | recruit troops                                    | city panel (seasonal) |
+| `s`       | search for officers                               | city panel            |
+| `g`       | assign governor                                   | officer panel         |
+| `h`       | assign general                                    | officer panel         |
+| `v`       | assign advisor                                    | officer panel         |
+| `t`       | send tribute                                      | diplomacy panel       |
+| `p`       | propose alliance                                  | diplomacy panel       |
+| `w`       | threaten faction                                  | diplomacy panel       |
+| `q`       | quit to main menu                                 | global                |
+| `:`       | open command bar                                  | global (Playing)      |
 
 mouse: clicking a city node or army token selects it and opens the relevant panel. all keyboard actions have a mouse/touch equivalent for mobile.
 
@@ -71,20 +71,20 @@ the command bar is a power-user shortcut — it does not replace panel navigatio
 
 **command reference:**
 
-| command | syntax | cp | availability | effect |
-| :--- | :--- | :---: | :--- | :--- |
-| `/develop` | `/develop <city_id> <pillar>` | 1 | seasonal | grow a pillar (AG / COM / DEF) by one tick |
-| `/recruit` | `/recruit <city_id> <amount>` | 1 | seasonal | raise troops from city population (gold cost applies) |
-| `/train` | `/train <city_id>` | 1 | monthly | increase garrison morale |
-| `/search` | `/search <city_id>` | 1 | monthly | chance to discover an unrecruited officer in the region |
-| `/assign` | `/assign <officer_id> <role> [target_id]` | 1 | monthly | assign officer as governor, general, advisor, or successor |
-| `/reward` | `/reward <officer_id>` | 0 | monthly | spend gold to boost officer loyalty |
-| `/transport` | `/transport <from_city> <to_city> <resource> <amount>` | 1 | monthly | move food or gold between cities |
-| `/march` | `/march <army_id> <x> <y>` | 1 | monthly | queue march order; applied in cycle C settlement |
-| `/encamp` | `/encamp <army_id>` | 1 | monthly | fortify position; −50% incoming damage; no advance |
-| `/tribute` | `/tribute <faction> <gold>` | 0 | monthly | send gold to improve relation score |
-| `/alliance` | `/alliance <faction>` | 0 | monthly | propose alliance (costs 200 gold; accepted if relation ≥ 20) |
-| `/threaten` | `/threaten <faction>` | 0 | monthly | threaten faction; may trigger war if relation < −30 |
+| command      | syntax                                                 | cp  | availability | effect                                                       |
+| :----------- | :----------------------------------------------------- | :-: | :----------- | :----------------------------------------------------------- |
+| `/develop`   | `/develop <city_id> <pillar>`                          | 1   | seasonal     | grow a pillar (AG / COM / DEF) by one tick                   |
+| `/recruit`   | `/recruit <city_id> <amount>`                          | 1   | seasonal     | raise troops from city population (gold cost applies)        |
+| `/train`     | `/train <city_id>`                                     | 1   | monthly      | increase garrison morale                                     |
+| `/search`    | `/search <city_id>`                                    | 1   | monthly      | chance to discover an unrecruited officer in the region      |
+| `/assign`    | `/assign <officer_id> <role> [target_id]`              | 1   | monthly      | assign officer as governor, general, advisor, or successor   |
+| `/reward`    | `/reward <officer_id>`                                 | 0   | monthly      | spend gold to boost officer loyalty                          |
+| `/transport` | `/transport <from_city> <to_city> <resource> <amount>` | 1   | monthly      | move food or gold between cities                             |
+| `/march`     | `/march <army_id> <x> <y>`                             | 1   | monthly      | queue march order; applied in cycle C settlement             |
+| `/encamp`    | `/encamp <army_id>`                                    | 1   | monthly      | fortify position; −50% incoming damage; no advance           |
+| `/tribute`   | `/tribute <faction> <gold>`                            | 0   | monthly      | send gold to improve relation score                          |
+| `/alliance`  | `/alliance <faction>`                                  | 0   | monthly      | propose alliance (costs 200 gold; accepted if relation ≥ 20) |
+| `/threaten`  | `/threaten <faction>`                                  | 0   | monthly      | threaten faction; may trigger war if relation < −30          |
 
 > commands marked **seasonal** are only available on the first turn of each season (months 1, 4, 7, 10).
 
@@ -94,60 +94,60 @@ the command bar is a power-user shortcut — it does not replace panel navigatio
 
 ### Officer
 
-| field | type | notes |
-| :--- | :--- | :--- |
-| id | string | unique identifier |
-| name | string | historical name |
-| title | string | honorific / rank |
-| essence | Element | elemental root; drives seasonal drift multiplier |
-| strategy | int 1–100 | army throughput, CP generation |
-| valour | int 1–100 | personal duels, vanguard charges |
-| governance | int 1–100 | city yield, trade efficiency |
-| integrity | int 1–100 | loyalty resilience, bribery immunity |
-| loyalty | int 1–100 | bond to current lord; drifts each turn based on salary, battles, essence |
-| faction | string | currently serving faction; update on defection |
-| health | int 1–100 | officer health; declines with age, wounds, illness |
-| age | int | current age; officers die of old age or in battle |
-| experience | int 0–9999 | accumulated XP; thresholds unlock stat growth |
-| city_id | string\|null | assigned city; null = unassigned / in pool |
-| army_id | string\|null | attached army; null = not in field |
-| tags | list[Tag] | specialist classifiers |
+| field      | type       | notes                                                                    |
+| :--------- | :--------- | :----------------------------------------------------------------------- |
+| id         | string     | unique identifier                                                        |
+| name       | string     | historical name                                                          |
+| title      | string     | honorific / rank                                                         |
+| essence    | Element    | elemental root; drives seasonal drift multiplier                         |
+| strategy   | int 1–100  | army throughput, CP generation                                           |
+| valour     | int 1–100  | personal duels, vanguard charges                                         |
+| governance | int 1–100  | city yield, trade efficiency                                             |
+| integrity  | int 1–100  | loyalty resilience, bribery immunity                                     |
+| loyalty    | int 1–100  | bond to current lord; drifts each turn based on salary, battles, essence |
+| faction    | string     | currently serving faction; update on defection                           |
+| health     | int 1–100  | officer health; declines with age, wounds, illness                       |
+| age        | int        | current age; officers die of old age or in battle                        |
+| experience | int 0–9999 | accumulated XP; thresholds unlock stat growth                            |
+| city_id    | string\    | null                                                                     |
+| army_id    | string\    | null                                                                     |
+| tags       | list[Tag]  | specialist classifiers                                                   |
 
 ### City
 
-| field | type | notes |
-| :--- | :--- | :--- |
-| id | string | unique identifier |
-| name | string | romanised name |
-| chinese | string | Han character name |
-| region | string | strategic region |
-| terrain | Terrain | terrain type |
-| x, y | int | grid position (x: 0–19, y: 0–14) |
-| population | int | static for MVP; caps recruitment per turn |
-| faction | string | controlling faction |
-| governor_id | string\|null | assigned governor officer; applies governance bonus |
-| garrison | int | troops stationed for city defence |
-| agriculture | int 1–100 | AG pillar — active |
-| commerce | int 1–100 | COM pillar — active |
-| technology | int 1–100 | TECH pillar — active in yield formula; BUILD command deferred |
-| order | int 1–100 | ORD pillar — active in corruption formula; BUILD command deferred |
-| defense | int 1–100 | DEF pillar — active |
-| food | int | food stockpile in units; army upkeep drawn here |
-| gold | int | treasury; recruitment and diplomacy costs drawn here |
+| field       | type      | notes                                                             |
+| :---------- | :-------- | :---------------------------------------------------------------- |
+| id          | string    | unique identifier                                                 |
+| name        | string    | romanised name                                                    |
+| chinese     | string    | Han character name                                                |
+| region      | string    | strategic region                                                  |
+| terrain     | Terrain   | terrain type                                                      |
+| x, y        | int       | grid position (x: 0–19, y: 0–14)                                  |
+| population  | int       | static for MVP; caps recruitment per turn                         |
+| faction     | string    | controlling faction                                               |
+| governor_id | string\   | null                                                              |
+| garrison    | int       | troops stationed for city defence                                 |
+| agriculture | int 1–100 | AG pillar — active                                                |
+| commerce    | int 1–100 | COM pillar — active                                               |
+| technology  | int 1–100 | TECH pillar — active in yield formula; BUILD command deferred     |
+| order       | int 1–100 | ORD pillar — active in corruption formula; BUILD command deferred |
+| defense     | int 1–100 | DEF pillar — active                                               |
+| food        | int       | food stockpile in units; army upkeep drawn here                   |
+| gold        | int       | treasury; recruitment and diplomacy costs drawn here              |
 
 ### Army
 
-| field | type | notes |
-| :--- | :--- | :--- |
-| id | string | unique identifier |
-| faction | string | owning faction |
-| general_id | string | commanding officer (strategy drives formation size, movement) |
-| officer_ids | list[string] | attached subordinate officers |
-| troops | int | current troop count |
-| morale | int 1–100 | battle effectiveness multiplier; drops on retreat/defeat |
-| supply | int | turns of food remaining; 0 = attrition |
-| x, y | int | current map position |
-| stance | Stance | idle / march / siege / encamp |
+| field       | type         | notes                                                         |
+| :---------- | :----------- | :------------------------------------------------------------ |
+| id          | string       | unique identifier                                             |
+| faction     | string       | owning faction                                                |
+| general_id  | string       | commanding officer (strategy drives formation size, movement) |
+| officer_ids | list[string] | attached subordinate officers                                 |
+| troops      | int          | current troop count                                           |
+| morale      | int 1–100    | battle effectiveness multiplier; drops on retreat/defeat      |
+| supply      | int          | turns of food remaining; 0 = attrition                        |
+| x, y        | int          | current map position                                          |
+| stance      | Stance       | idle / march / siege / encamp                                 |
 
 ### Element
 
@@ -161,35 +161,35 @@ Plain, Mountain, Forest, River, Coast, Pass
 
 **classification tags**:
 
-| tag | meaning |
-| :--- | :--- |
-| civil | civil administrator |
-| military | military commander |
-| lord | eligible sovereign; generates CP; +20% governance |
+| tag      | meaning                                           |
+| :------- | :------------------------------------------------ |
+| civil    | civil administrator                               |
+| military | military commander                                |
+| lord     | eligible sovereign; generates CP; +20% governance |
 
 **specialist tags**:
 
-| tag | bonus | situation |
-| :--- | :--- | :--- |
-| naval | +25% strategy | river / sea combat |
-| cavalry | +20% valour | open-terrain charge |
-| vanguard | +15% valour | duel or charge |
-| scholar | +20% governance | academy / civil admin |
-| diplomat | +20% integrity | alliance / espionage defence |
-| engineer | +20% governance | siege / infrastructure |
-| merchant | +25% governance | active trade route |
-| strategist | +15% strategy | tactical positioning |
-| loyalist | +25% integrity | enemy bribery attempt |
-| pioneer | +15% governance | newly annexed territory |
+| tag        | bonus           | situation                    |
+| :--------- | :-------------- | :--------------------------- |
+| naval      | +25% strategy   | river / sea combat           |
+| cavalry    | +20% valour     | open-terrain charge          |
+| vanguard   | +15% valour     | duel or charge               |
+| scholar    | +20% governance | academy / civil admin        |
+| diplomat   | +20% integrity  | alliance / espionage defence |
+| engineer   | +20% governance | siege / infrastructure       |
+| merchant   | +25% governance | active trade route           |
+| strategist | +15% strategy   | tactical positioning         |
+| loyalist   | +25% integrity  | enemy bribery attempt        |
+| pioneer    | +15% governance | newly annexed territory      |
 
 ---
 
 ## data archives
 
-| archive | count | notes |
-| :--- | :--- | :--- |
-| `data/officers.yaml` | 498 officers | Wei, Shu, Wu, and independent factions |
-| `data/cities.yaml` | 30 cities | fixed grid positions, all five pillars, faction assignment |
+| archive              | count        | notes                                                      |
+| :------------------- | :----------- | :--------------------------------------------------------- |
+| `data/officers.yaml` | 498 officers | Wei, Shu, Wu, and independent factions                     |
+| `data/cities.yaml`   | 30 cities    | fixed grid positions, all five pillars, faction assignment |
 
 target city count is 41–47. current 30 covers the core theatre; southern (Jiao Zhou) and far-north (Liaodong) cities are the main gaps.
 
@@ -205,13 +205,13 @@ before the game loop begins, the player must define the starting conditions of t
 
 scenarios define the historical epoch, including the distribution of cities, the status of factions, and the available pool of officers.
 
-| scenario | epoch | description |
-| :--- | :--- | :--- |
-| Yellow Turban Rebellion | AD 184 | the fall of the Han; Zhang Jiao's uprising |
-| Dong Zhuo's Rise | AD 189 | chaos in the capital; the anti-Dong Zhuo coalition forms |
-| Rivalry of Lords | AD 194 | the death of Dong Zhuo; independent lords vie for power |
-| Battle of Guandu | AD 200 | the clash between Cao Cao and Yuan Shao |
-| Three Kingdoms | AD 220 | the formal division of the empire into Wei, Shu, and Wu |
+| scenario                | epoch  | description                                              |
+| :---------------------- | :----- | :------------------------------------------------------- |
+| Yellow Turban Rebellion | AD 184 | the fall of the Han; Zhang Jiao's uprising               |
+| Dong Zhuo's Rise        | AD 189 | chaos in the capital; the anti-Dong Zhuo coalition forms |
+| Rivalry of Lords        | AD 194 | the death of Dong Zhuo; independent lords vie for power  |
+| Battle of Guandu        | AD 200 | the clash between Cao Cao and Yuan Shao                  |
+| Three Kingdoms          | AD 220 | the formal division of the empire into Wei, Shu, and Wu  |
 
 **data mapping:**
 - scenario selection filters the loaded JSON archives to set the initial `faction` ownership and officer availability in the in-memory ledger.
@@ -243,10 +243,10 @@ each session is a sequence of turns. one turn = one calendar month. the player's
 
 two cadences run simultaneously:
 
-| cadence | frequency | governs |
-| :--- | :--- | :--- |
-| **monthly** | every turn | army movement, battle resolution, supply checks, loyalty drift, essence drift |
-| **seasonal** | every 3 turns (spring / summer / autumn / winter) | city yield (food & gold), pillar development growth, troop recruitment |
+| cadence      | frequency                                         | governs                                                                       |
+| :----------- | :------------------------------------------------ | :---------------------------------------------------------------------------- |
+| **monthly**  | every turn                                        | army movement, battle resolution, supply checks, loyalty drift, essence drift |
+| **seasonal** | every 3 turns (spring / summer / autumn / winter) | city yield (food & gold), pillar development growth, troop recruitment        |
 
 this keeps tactical decisions (where to march, when to fight) active every month while preventing administrative exhaustion from managing city economics on the same cadence.
 
@@ -264,9 +264,9 @@ each turn (1 month):
 
 CP is the player's action budget per turn. it limits how much can be done in a single month.
 
-| source | CP granted |
-| :--- | :--- |
-| sovereign's `strategy` stat | base CP = `strategy ÷ 10` (min 1) |
+| source                           | CP granted                                 |
+| :------------------------------- | :----------------------------------------- |
+| sovereign's `strategy` stat      | base CP = `strategy ÷ 10` (min 1)          |
 | advisor officer attached to lord | +1–3 CP per advisor (scales with strategy) |
 
 CP is consumed by commands in cycle B. unspent CP is lost — it does not carry over. see the [command reference](#command-bar) for per-command CP costs.
@@ -288,9 +288,9 @@ every officer has an `essence` element (Wood / Fire / Earth / Metal / Water). th
 
 two resources sustain the state, on different cadences:
 
-| resource | generated | cadence | consumed | cadence |
-| :--- | :--- | :--- | :--- | :--- |
-| **food** | `AG × season_delta` per city | **seasonal** (once per season) | army upkeep (`troops ÷ 100` per army) | **monthly** |
+| resource | generated                     | cadence                        | consumed                                 | cadence     |
+| :------- | :---------------------------- | :----------------------------- | :--------------------------------------- | :---------- |
+| **food** | `AG × season_delta` per city  | **seasonal** (once per season) | army upkeep (`troops ÷ 100` per army)    | **monthly** |
 | **gold** | `COM × season_delta` per city | **seasonal** (once per season) | officer salaries, recruitment, diplomacy | **monthly** |
 
 seasonal yield lands as a lump sum at the season boundary (month 3, 6, 9, 12). monthly draws (upkeep, salaries) reduce the stockpile each turn. this creates a natural rhythm: build reserves in peaceful seasons, campaign on what you have.
@@ -353,39 +353,39 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 
 **geographic regions (九州 nine provinces):**
 
-| region | 州 | rough tile zone | key cities |
-| :--- | :--- | :--- | :--- |
-| Si Li (capital) | 司隸 | x 6–11, y 9–11 | Luoyang, Chang'an, Tongguan |
-| Ji Zhou (Hebei) | 冀州 | x 8–13, y 11–14 | Ye, Beiping |
-| You Zhou (north-east) | 幽州 | x 12–17, y 12–14 | Youzhou, Liaodong |
-| Bing Zhou (north-west) | 并州 | x 5–9, y 11–13 | Jinyang |
-| Liang Zhou (far west) | 涼州 | x 1–6, y 8–12 | Tianshui, Wuwei, Dunhuang |
-| Yu Zhou / Xu Zhou (central-east) | 豫州 / 徐州 | x 10–16, y 7–10 | Xuchang, Xuzhou, Xiapi |
-| Yang Zhou (south-east) | 揚州 | x 11–17, y 4–8 | Jianye, Hefei, Kuaiji |
-| Jing Zhou (central-south) | 荊州 | x 7–12, y 3–8 | Xiangyang, Jiangling, Changsha |
-| Yi Zhou (south-west / Shu) | 益州 | x 2–8, y 2–8 | Chengdu, Hanzhong, Jiamenguan |
-| Jiao Zhou (far south) | 交州 | x 6–12, y 0–3 | Nanhai, Jianning (planned) |
+| region                           | 州       | rough tile zone  | key cities                     |
+| :------------------------------- | :------ | :--------------- | :----------------------------- |
+| Si Li (capital)                  | 司隸      | x 6–11, y 9–11   | Luoyang, Chang'an, Tongguan    |
+| Ji Zhou (Hebei)                  | 冀州      | x 8–13, y 11–14  | Ye, Beiping                    |
+| You Zhou (north-east)            | 幽州      | x 12–17, y 12–14 | Youzhou, Liaodong              |
+| Bing Zhou (north-west)           | 并州      | x 5–9, y 11–13   | Jinyang                        |
+| Liang Zhou (far west)            | 涼州      | x 1–6, y 8–12    | Tianshui, Wuwei, Dunhuang      |
+| Yu Zhou / Xu Zhou (central-east) | 豫州 / 徐州 | x 10–16, y 7–10  | Xuchang, Xuzhou, Xiapi         |
+| Yang Zhou (south-east)           | 揚州      | x 11–17, y 4–8   | Jianye, Hefei, Kuaiji          |
+| Jing Zhou (central-south)        | 荊州      | x 7–12, y 3–8    | Xiangyang, Jiangling, Changsha |
+| Yi Zhou (south-west / Shu)       | 益州      | x 2–8, y 2–8     | Chengdu, Hanzhong, Jiamenguan  |
+| Jiao Zhou (far south)            | 交州      | x 6–12, y 0–3    | Nanhai, Jianning (planned)     |
 
 **map layers:**
 
-| layer | content |
-| :--- | :--- |
-| terrain | base tile per cell: plain, mountain, forest, river, coast, pass |
-| geography | fixed overlays: Yellow River, Yangtze, Qinling range, Taihang range |
-| faction territory | coloured region fill per controlling faction; updates on city capture |
-| city nodes | icon at city tile: size = population tier (small/medium/large); colour = faction |
-| army tokens | unit marker at army position; number = troop count tier |
-| season overlay | tint shift per season: green (spring), amber (summer), gold (autumn), grey (winter) |
-| ui overlay | city name labels, army faction flags, selected unit highlight |
+| layer             | content                                                                             |
+| :---------------- | :---------------------------------------------------------------------------------- |
+| terrain           | base tile per cell: plain, mountain, forest, river, coast, pass                     |
+| geography         | fixed overlays: Yellow River, Yangtze, Qinling range, Taihang range                 |
+| faction territory | coloured region fill per controlling faction; updates on city capture               |
+| city nodes        | icon at city tile: size = population tier (small/medium/large); colour = faction    |
+| army tokens       | unit marker at army position; number = troop count tier                             |
+| season overlay    | tint shift per season: green (spring), amber (summer), gold (autumn), grey (winter) |
+| ui overlay        | city name labels, army faction flags, selected unit highlight                       |
 
 **city node tiers (population):**
 
-| tier | population | visual |
-| :--- | :--- | :--- |
-| village | < 100k | small dot |
-| town | 100k–250k | medium icon |
-| city | 250k–400k | large icon |
-| capital | > 400k | large icon + wall ring |
+| tier    | population | visual                 |
+| :------ | :--------- | :--------------------- |
+| village | < 100k     | small dot              |
+| town    | 100k–250k  | medium icon            |
+| city    | 250k–400k  | large icon             |
+| capital | > 400k     | large icon + wall ring |
 
 **navigation:**
 - camera pans with arrow keys or drag; zooms with scroll wheel.
@@ -399,14 +399,14 @@ the map shows all cities, armies, terrain, and faction territories. all player c
 - movement range per turn: `floor(general.strategy ÷ 20)`, min 1, max 5 tiles.
 - terrain movement costs (tiles per step):
 
-| terrain | land army | naval army |
-| :--- | :---: | :---: |
-| plain | 1 | — |
-| forest | 2 | — |
-| river | 2 | 1 |
-| coast | 2 | 1 |
-| mountain | 3 | — |
-| pass | 2 | — |
+| terrain  | land army | naval army |
+| :------- | :-------: | :--------: |
+| plain    | 1         | —          |
+| forest   | 2         | —          |
+| river    | 2         | 1          |
+| coast    | 2         | 1          |
+| mountain | 3         | —          |
+| pass     | 2         | —          |
 
 - naval armies (general has naval tag) move freely on river/coast; 3× cost on land tiles.
 - army entering a tile with an enemy army triggers battle (resolved in cycle C settlement).
@@ -430,14 +430,14 @@ each city is an economic unit that generates food, gold, and manpower each turn.
 
 **core city actions:**
 
-| action | cost | effect | strategic value |
-| :--- | :--- | :--- | :--- |
-| **Develop (AG/COM/DEF)** | 1 CP | pillar growth | core long-term growth |
-| **Recruit** | 1 CP + gold | increases garrison | essential for expansion/defense |
-| **Train** | 1 CP | increases garrison morale | vital for battle readiness |
-| **Search** | 1 CP | discover unrecruited officers | adds personality & talent pool |
-| **Reward** | gold | +loyalty to governor/assigned | prevents defection |
-| **Transport** | 1 CP | moves food/gold to other city | allows logistical depth |
+| action                   | cost        | effect                        | strategic value                 |
+| :----------------------- | :---------- | :---------------------------- | :------------------------------ |
+| **Develop (AG/COM/DEF)** | 1 CP        | pillar growth                 | core long-term growth           |
+| **Recruit**              | 1 CP + gold | increases garrison            | essential for expansion/defense |
+| **Train**                | 1 CP        | increases garrison morale     | vital for battle readiness      |
+| **Search**               | 1 CP        | discover unrecruited officers | adds personality & talent pool  |
+| **Reward**               | gold        | +loyalty to governor/assigned | prevents defection              |
+| **Transport**            | 1 CP        | moves food/gold to other city | allows logistical depth         |
 
 **derived outputs:**
 - **seasonal** (month 3 / 6 / 9 / 12): `food += AG × season_delta`; `gold += COM × season_delta`
@@ -480,33 +480,33 @@ officers are the primary asset of any state. they are recruited, assigned to rol
 
 **assignment roles:**
 
-| role | effect |
-| :--- | :--- |
-| governor | applies governance bonus to city pillars; manages food/gold output |
-| general | commands an army; strategy drives CP allowance for battle commands |
-| advisor | attached to lord; provides passive bonus to CP budget |
-| unassigned | in the officer pool; earns salary but provides no bonus |
+| role       | effect                                                             |
+| :--------- | :----------------------------------------------------------------- |
+| governor   | applies governance bonus to city pillars; manages food/gold output |
+| general    | commands an army; strategy drives CP allowance for battle commands |
+| advisor    | attached to lord; provides passive bonus to CP budget              |
+| unassigned | in the officer pool; earns salary but provides no bonus            |
 
 **experience (XP):**
 - officers gain XP through active service; unassigned officers gain nothing.
 - XP sources:
 
-| action | XP gained |
-| :--- | :--- |
-| battle won (as general) | +200 |
-| battle won (as subordinate) | +80 |
-| duel won | +150 |
-| governing a city for 1 year (12 turns) | +50 |
-| successful search / diplomacy action | +30 |
-| city developed under governance | +10 per pillar raised |
+| action                                 | XP gained             |
+| :------------------------------------- | :-------------------- |
+| battle won (as general)                | +200                  |
+| battle won (as subordinate)            | +80                   |
+| duel won                               | +150                  |
+| governing a city for 1 year (12 turns) | +50                   |
+| successful search / diplomacy action   | +30                   |
+| city developed under governance        | +10 per pillar raised |
 
 - XP thresholds unlock +1 to a relevant stat (strategy for generals, governance for governors) and may trigger a rank promotion event in the ledger.
 
-| threshold | tier | reward |
-| :--- | :--- | :--- |
-| 500 | novice | +1 to primary stat |
-| 1500 | veteran | +2 to primary stat |
-| 3500 | master | +3 to primary stat; new tag eligible |
+| threshold | tier    | reward                               |
+| :-------- | :------ | :----------------------------------- |
+| 500       | novice  | +1 to primary stat                   |
+| 1500      | veteran | +2 to primary stat                   |
+| 3500      | master  | +3 to primary stat; new tag eligible |
 
 **search mechanic:**
 - `/search <city_id>` command: costs 1 CP; chance to discover an unrecruited officer in the region.
@@ -540,11 +540,11 @@ armies are the instrument of territorial expansion and defence. they are raised,
 
 **army stances:**
 
-| stance | effect |
-| :--- | :--- |
-| idle | stationed; no movement; full resupply |
-| march | moving toward target tile |
-| siege | attacking a city; DEF degrades each turn |
+| stance | effect                                               |
+| :----- | :--------------------------------------------------- |
+| idle   | stationed; no movement; full resupply                |
+| march  | moving toward target tile                            |
+| siege  | attacking a city; DEF degrades each turn             |
 | encamp | fortified position; −50% incoming damage; no advance |
 
 **movement:**
@@ -601,21 +601,21 @@ diplomatic actions are issued in cycle B alongside other player commands. gold c
 
 **diplomatic actions:**
 
-| action | gold cost | relation effect | notes |
-| :--- | :---: | :--- | :--- |
-| send tribute | 100–500 | +10 to +30 (scales with amount) | one-way; increases target's score toward player only |
-| propose alliance | 200 | +20 if accepted; −5 if rejected | target AI accepts if relation ≥ 20; rejects if at war |
-| threaten | 0 | −20 to target; +10 self-confidence | may trigger immediate war declaration if target relation < −30 |
+| action           | gold cost | relation effect                    | notes                                                          |
+| :--------------- | :-------: | :--------------------------------- | :------------------------------------------------------------- |
+| send tribute     | 100–500   | +10 to +30 (scales with amount)    | one-way; increases target's score toward player only           |
+| propose alliance | 200       | +20 if accepted; −5 if rejected    | target AI accepts if relation ≥ 20; rejects if at war          |
+| threaten         | 0         | −20 to target; +10 self-confidence | may trigger immediate war declaration if target relation < −30 |
 
 **relation thresholds:**
 
-| score | state | effect |
-| :--- | :--- | :--- |
-| ≥ 60 | allied | non-aggression; shared border armies don't trigger battle |
-| 20–59 | friendly | tribute costs reduced 20% |
-| −19 to 19 | neutral | no effect |
-| −20 to −59 | hostile | march orders toward their cities +1 CP cost |
-| ≤ −60 | war | armies auto-battle on tile contact; no diplomatic action possible |
+| score      | state    | effect                                                            |
+| :--------- | :------- | :---------------------------------------------------------------- |
+| ≥ 60       | allied   | non-aggression; shared border armies don't trigger battle         |
+| 20–59      | friendly | tribute costs reduced 20%                                         |
+| −19 to 19  | neutral  | no effect                                                         |
+| −20 to −59 | hostile  | march orders toward their cities +1 CP cost                       |
+| ≤ −60      | war      | armies auto-battle on tile contact; no diplomatic action possible |
 
 **passive drift per turn:**
 - no active contact: −1 (relations decay toward neutral without maintenance).
@@ -673,13 +673,13 @@ each officer's effective stats are modified each cycle A by a drift multiplier d
 
 **drift multiplier table (officer essence vs. season element):**
 
-| officer essence | resonant season | multiplier | controlling season | multiplier |
-| :--- | :--- | :---: | :--- | :---: |
-| Wood | spring | 1.20 | autumn (Metal controls Wood) | 0.85 |
-| Fire | summer | 1.20 | winter (Water controls Fire) | 0.85 |
-| Earth | late summer | 1.20 | spring (Wood controls Earth) | 0.85 |
-| Metal | autumn | 1.20 | summer (Fire controls Metal) | 0.85 |
-| Water | winter | 1.20 | late summer (Earth controls Water) | 0.85 |
+| officer essence | resonant season | multiplier | controlling season                 | multiplier |
+| :-------------- | :-------------- | :--------: | :--------------------------------- | :--------: |
+| Wood            | spring          | 1.20       | autumn (Metal controls Wood)       | 0.85       |
+| Fire            | summer          | 1.20       | winter (Water controls Fire)       | 0.85       |
+| Earth           | late summer     | 1.20       | spring (Wood controls Earth)       | 0.85       |
+| Metal           | autumn          | 1.20       | summer (Fire controls Metal)       | 0.85       |
+| Water           | winter          | 1.20       | late summer (Earth controls Water) | 0.85       |
 
 - neutral seasons (neither resonant nor controlling): multiplier = 1.00.
 - sovereign's essence sets faction alignment: officers whose essence matches the sovereign gain an additional +0.05 multiplier (resonance bonus).
@@ -696,35 +696,35 @@ tracks time using the traditional 60-unit stem-branch cycle. epoch: AD 184 (Jiǎ
 
 **heavenly stems (天干, tiān gān) — 10 total:**
 
-| index | stem | element | polarity |
-| :---: | :--- | :--- | :--- |
-| 1 | 甲 Jiǎ | Wood | yang |
-| 2 | 乙 Yǐ | Wood | yin |
-| 3 | 丙 Bǐng | Fire | yang |
-| 4 | 丁 Dīng | Fire | yin |
-| 5 | 戊 Wù | Earth | yang |
-| 6 | 己 Jǐ | Earth | yin |
-| 7 | 庚 Gēng | Metal | yang |
-| 8 | 辛 Xīn | Metal | yin |
-| 9 | 壬 Rén | Water | yang |
-| 10 | 癸 Guǐ | Water | yin |
+| index | stem   | element | polarity |
+| :---: | :----- | :------ | :------- |
+| 1     | 甲 Jiǎ  | Wood    | yang     |
+| 2     | 乙 Yǐ   | Wood    | yin      |
+| 3     | 丙 Bǐng | Fire    | yang     |
+| 4     | 丁 Dīng | Fire    | yin      |
+| 5     | 戊 Wù   | Earth   | yang     |
+| 6     | 己 Jǐ   | Earth   | yin      |
+| 7     | 庚 Gēng | Metal   | yang     |
+| 8     | 辛 Xīn  | Metal   | yin      |
+| 9     | 壬 Rén  | Water   | yang     |
+| 10    | 癸 Guǐ  | Water   | yin      |
 
 **earthly branches (地支, dì zhī) — 12 total, map to seasons:**
 
-| index | branch | season | element |
-| :---: | :--- | :--- | :--- |
-| 1 | 子 Zǐ | winter | Water |
-| 2 | 丑 Chǒu | late winter | Earth |
-| 3 | 寅 Yín | spring | Wood |
-| 4 | 卯 Mǎo | spring | Wood |
-| 5 | 辰 Chén | late spring | Earth |
-| 6 | 巳 Sì | summer | Fire |
-| 7 | 午 Wǔ | summer | Fire |
-| 8 | 未 Wèi | late summer | Earth |
-| 9 | 申 Shēn | autumn | Metal |
-| 10 | 酉 Yǒu | autumn | Metal |
-| 11 | 戌 Xū | late autumn | Earth |
-| 12 | 亥 Hài | winter | Water |
+| index | branch | season      | element |
+| :---: | :----- | :---------- | :------ |
+| 1     | 子 Zǐ   | winter      | Water   |
+| 2     | 丑 Chǒu | late winter | Earth   |
+| 3     | 寅 Yín  | spring      | Wood    |
+| 4     | 卯 Mǎo  | spring      | Wood    |
+| 5     | 辰 Chén | late spring | Earth   |
+| 6     | 巳 Sì   | summer      | Fire    |
+| 7     | 午 Wǔ   | summer      | Fire    |
+| 8     | 未 Wèi  | late summer | Earth   |
+| 9     | 申 Shēn | autumn      | Metal   |
+| 10    | 酉 Yǒu  | autumn      | Metal   |
+| 11    | 戌 Xū   | late autumn | Earth   |
+| 12    | 亥 Hài  | winter      | Water   |
 
 **clock mechanics:**
 - one month = one turn. the game advances one branch per turn (12 branches = 1 year).
@@ -785,30 +785,30 @@ every faction not controlled by the player is governed by an AI sovereign. the A
 
 **faction ai record (two fields on ledger faction entry):**
 
-| field | type | notes |
-| :--- | :--- | :--- |
+| field             | type    | notes                                    |
+| :---------------- | :------ | :--------------------------------------- |
 | `ai_intelligence` | int 1–4 | how well the AI evaluates the game state |
-| `ai_behaviour` | string | primary decision-making priority |
+| `ai_behaviour`    | string  | primary decision-making priority         |
 
 **intelligence levels:**
 
-| level | name | description |
-| :---: | :--- | :--- |
-| 1 | reckless | random command selection; ignores supply and debt; no planning horizon |
-| 2 | standard | basic heuristics — build economy when safe, recruit before attacking, target weakest neighbour |
-| 3 | shrewd | evaluates city values, maintains supply lines, coordinates army timing across turns |
-| 4 | brilliant | optimises essence drift timing, anticipates player moves, defers attack until overwhelming advantage |
+| level | name      | description                                                                                          |
+| :---: | :-------- | :--------------------------------------------------------------------------------------------------- |
+| 1     | reckless  | random command selection; ignores supply and debt; no planning horizon                               |
+| 2     | standard  | basic heuristics — build economy when safe, recruit before attacking, target weakest neighbour       |
+| 3     | shrewd    | evaluates city values, maintains supply lines, coordinates army timing across turns                  |
+| 4     | brilliant | optimises essence drift timing, anticipates player moves, defers attack until overwhelming advantage |
 
 **behaviour profiles (priority weights):**
 
-| behaviour | military | economy | diplomacy | character |
-| :--- | :---: | :---: | :---: | :--- |
-| aggressive | high | low | low | attacks first; strikes before enemy consolidates |
-| defensive | low | high | medium | fortifies DEF; avoids offensive wars; counter-attacks only |
-| expansionist | high | medium | low | rapid territory grab; spreads resources thin |
-| diplomatic | low | medium | high | prefers alliances and tribute; fights only when cornered |
-| economic | low | high | medium | maximises AG/COM before raising armies; slow but powerful late |
-| opportunistic | medium | medium | low | targets the weakest neighbour each turn; retreats when losing |
+| behaviour     | military | economy | diplomacy | character                                                      |
+| :------------ | :------: | :-----: | :-------: | :------------------------------------------------------------- |
+| aggressive    | high     | low     | low       | attacks first; strikes before enemy consolidates               |
+| defensive     | low      | high    | medium    | fortifies DEF; avoids offensive wars; counter-attacks only     |
+| expansionist  | high     | medium  | low       | rapid territory grab; spreads resources thin                   |
+| diplomatic    | low      | medium  | high      | prefers alliances and tribute; fights only when cornered       |
+| economic      | low      | high    | medium    | maximises AG/COM before raising armies; slow but powerful late |
+| opportunistic | medium   | medium  | low       | targets the weakest neighbour each turn; retreats when losing  |
 
 **decision function (pseudo-code):**
 ```
@@ -823,12 +823,12 @@ ai_decide(ledger, faction_id, intelligence, behaviour) -> List[Command]:
 
 **preset ai profiles (AD 189 scenario):**
 
-| faction | intelligence | behaviour |
-| :--- | :---: | :--- |
-| Dong Zhuo | 3 | aggressive |
-| Cao Cao | 4 | opportunistic |
-| Yuan Shao | 3 | expansionist |
-| Liu Biao | 2 | defensive |
-| Sun Jian | 3 | aggressive |
-| Liu Zhang | 2 | economic |
-| independent lords | 1–2 | defensive |
+| faction           | intelligence | behaviour     |
+| :---------------- | :----------: | :------------ |
+| Dong Zhuo         | 3            | aggressive    |
+| Cao Cao           | 4            | opportunistic |
+| Yuan Shao         | 3            | expansionist  |
+| Liu Biao          | 2            | defensive     |
+| Sun Jian          | 3            | aggressive    |
+| Liu Zhang         | 2            | economic      |
+| independent lords | 1–2          | defensive     |
