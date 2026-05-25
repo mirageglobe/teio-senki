@@ -186,9 +186,10 @@ func (m model) viewBriefing() string {
 			fmt.Fprintf(&b, " %s", styleDim.Render("("+lord.Title+")"))
 		}
 		fmt.Fprintf(&b, "\nessence    : %s\n", styleElement.Render(lord.Essence))
-		fmt.Fprintf(&b, "strategy   : %d   valour: %d   governance: %d\n",
+		fmt.Fprintf(&b, "strategy   : %d   valour: %d   governance: %d\n\n",
 			lord.Strategy, lord.Valour, lord.Governance)
 	}
+	b.WriteString(styleDim.Render(RenderMap(m.ledger.SortedCities())))
 	return b.String()
 }
 
