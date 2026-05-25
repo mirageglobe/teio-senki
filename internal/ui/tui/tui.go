@@ -51,6 +51,8 @@ type model struct {
 	height       int
 	charIdx      int
 	showHelp     bool
+	tickCount    int
+	mapPulse     bool
 }
 
 // Run initialises the Bubble Tea program and blocks until the player exits.
@@ -68,10 +70,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 	case tickMsg:
+		m.tickCount++
+		m.mapPulse = (m.tickCount/15)%2 == 0 // ~500 ms half-cycle at 35 ms/tick
 		if m.screen == screenSplash && m.charIdx < len(splashFull) {
 			m.charIdx++
-			return m, tick()
 		}
+		return m, tick()
 	case tea.KeyMsg:
 		if msg.String() == "ctrl+c" || msg.String() == "q" {
 			return m, tea.Quit

@@ -7,10 +7,16 @@ import (
 	"github.com/mirageglobe/teio-senki/internal/models"
 )
 
-var (
-	mapStyleBorder = lipgloss.NewStyle().Foreground(lipgloss.Color("28"))  // forest green
-	mapStyleCity   = lipgloss.NewStyle().Foreground(lipgloss.Color("220")) // gold
-)
+var mapStyleCityBright = lipgloss.NewStyle().Foreground(lipgloss.Color("220")) // gold
+var mapStyleCityDim    = lipgloss.NewStyle().Foreground(lipgloss.Color("58"))  // dark olive
+
+var seasonBorderColour = map[string]lipgloss.Color{
+	"Spring":     "34",  // green  (Wood)
+	"Summer":     "196", // red    (Fire)
+	"Autumn":     "136", // gold   (Metal)
+	"Winter":     "33",  // blue   (Water)
+	"Transition": "130", // brown  (Earth)
+}
 
 const mapW, mapH = 40, 20 // braille chars; pixel grid = 80×80
 const pw, ph = mapW * 2, mapH * 4
@@ -148,8 +154,8 @@ func drawPoly(c *canvas, poly [][2]float64) {
 	}
 }
 
-// RenderMap returns a coloured braille string: green outlines + gold city dots.
-func RenderMap(cities []models.City) string {
+// RenderMap returns a coloured braille string: season-tinted outlines + pulsing gold city dots.
+func RenderMap(cities []models.City, pulse bool, season string) string {
 	borders := newCanvas()
 	drawPoly(borders, chinaBorder)
 	drawPoly(borders, taiwanBorder)
@@ -168,6 +174,16 @@ func RenderMap(cities []models.City) string {
 		}
 	}
 
+	borderColour := lipgloss.Color("28") // default: forest green
+	if c, ok := seasonBorderColour[season]; ok {
+		borderColour = c
+	}
+	styleBorder := lipgloss.NewStyle().Foreground(borderColour)
+	styleCity := mapStyleCityBright
+	if !pulse {
+		styleCity = mapStyleCityDim
+	}
+
 	borderRunes := []rune(borders.render())
 	cityRunes := []rune(citydots.render())
 	var sb strings.Builder
@@ -177,9 +193,9 @@ func RenderMap(cities []models.City) string {
 		case br == '\n':
 			sb.WriteRune('\n')
 		case cr != 0x2800:
-			sb.WriteString(mapStyleCity.Render(string(cr)))
+			sb.WriteString(styleCity.Render(string(cr)))
 		case br != 0x2800:
-			sb.WriteString(mapStyleBorder.Render(string(br)))
+			sb.WriteString(styleBorder.Render(string(br)))
 		default:
 			sb.WriteRune(0x2800)
 		}

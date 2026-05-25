@@ -45,7 +45,11 @@ func indentLines(s string) string {
 }
 
 func (m model) mapBody(body string) string {
-	return joinColumns(RenderMap(m.ledger.SortedCities()), body, mapW, 4)
+	var season string
+	if m.engine != nil {
+		season = m.engine.GetState().Season
+	}
+	return joinColumns(RenderMap(m.ledger.SortedCities(), m.mapPulse, season), body, mapW, 4)
 }
 
 // joinColumns places left and right strings side by side, padding left to fixedW runes.
