@@ -21,8 +21,8 @@ var seasonBorderColour = map[string]lipgloss.Color{
 const mapW, mapH = 40, 20 // braille chars; pixel grid = 80×80
 const pw, ph = mapW * 2, mapH * 4
 
-const lonMin, lonMax = 73.0, 135.0
-const latMin, latMax = 18.0, 53.0
+const lonMin, lonMax = 100.0, 136.0
+const latMin, latMax = 20.0, 48.0
 
 // Simplified China border polygon (lon, lat), clockwise.
 var chinaBorder = [][2]float64{

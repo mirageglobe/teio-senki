@@ -71,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 	case tickMsg:
 		m.tickCount++
-		m.mapPulse = (m.tickCount/15)%2 == 0 // ~500 ms half-cycle at 35 ms/tick
+		m.mapPulse = (m.tickCount/30)%2 == 0 // ~1 s half-cycle at 35 ms/tick
 		if m.screen == screenSplash && m.charIdx < len(splashFull) {
 			m.charIdx++
 		}
