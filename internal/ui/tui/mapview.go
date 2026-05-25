@@ -6,7 +6,7 @@ import (
 	"github.com/mirageglobe/teio-senki/internal/models"
 )
 
-const mapW, mapH = 26, 11 // braille chars; pixel grid = 52×44
+const mapW, mapH = 40, 20 // braille chars; pixel grid = 80×80
 const pw, ph = mapW * 2, mapH * 4
 
 const lonMin, lonMax = 73.0, 135.0
