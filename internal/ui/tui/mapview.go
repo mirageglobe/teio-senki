@@ -8,31 +8,32 @@ import (
 )
 
 // City pulse gradient: bold; index 0 = brightest, 5 = dimmest; ping-pong for fluid glow.
+// Range stays bright yellow→white — never dips into terrain brown/tan territory.
 var mapStyleCity = [6]lipgloss.Style{
+	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("255")),
+	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("253")),
+	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("230")),
+	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("228")),
 	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("226")),
-	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("220")),
-	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("214")),
-	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("178")),
-	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("136")),
-	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("58")),
+	lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("228")),
 }
 
 var (
 	mapStyleWave     = lipgloss.NewStyle().Foreground(lipgloss.Color("27"))  // ocean blue
 	mapStyleMountain = lipgloss.NewStyle().Foreground(lipgloss.Color("130")) // brown
 	mapStyleHills    = lipgloss.NewStyle().Foreground(lipgloss.Color("179")) // tan
-	mapStyleForest   = lipgloss.NewStyle().Foreground(lipgloss.Color("64"))  // medium green
+	mapStyleForest   = lipgloss.NewStyle().Foreground(lipgloss.Color("107")) // light sage green
 	mapStyleRiver    = lipgloss.NewStyle().Foreground(lipgloss.Color("38"))  // cyan-blue
 	mapStyleMarsh    = lipgloss.NewStyle().Foreground(lipgloss.Color("66"))  // muted teal
 	mapStyleSteppe   = lipgloss.NewStyle().Foreground(lipgloss.Color("143")) // olive
 )
 
 var seasonBorderColour = map[string]lipgloss.Color{
-	"Spring":     "34",  // green  (Wood)
-	"Summer":     "196", // red    (Fire)
-	"Autumn":     "136", // gold   (Metal)
-	"Winter":     "33",  // blue   (Water)
-	"Transition": "130", // brown  (Earth)
+	"Spring":     "46",  // bright green  (Wood)
+	"Summer":     "196", // bright red    (Fire)
+	"Autumn":     "220", // bright gold   (Metal)
+	"Winter":     "51",  // bright cyan   (Water)
+	"Transition": "172", // bright amber  (Earth)
 }
 
 const mapW, mapH = 60, 23 // braille chars; pixel grid = 120×92
@@ -187,13 +188,12 @@ var rivers = [][][2]float64{
 }
 
 // Sea regions [lonMin, latMin, lonMax, latMax] — land pixels excluded via pointInPoly.
-// SW quadrant (lon 73–109°, lat 18–25°) is India/Myanmar/Indochina — not sea; excluded.
 var seaRegions = [][4]float64{
 	{119.5, 18.0, 136.0, 40.5}, // East China Sea + Yellow Sea + western Pacific south
 	{118.0, 38.0, 126.0, 42.5}, // Bohai Sea
 	{127.5, 32.0, 136.0, 50.0}, // Sea of Japan + north approaches
-	{121.0, 40.0, 136.0, 53.0}, // Sea of Okhotsk approach
 	{110.0, 18.0, 122.5, 25.0}, // South China Sea (east of Vietnam coast)
+	{107.0, 18.0, 111.0, 21.5}, // Gulf of Tonkin / Beibu Gulf (北部湾)
 }
 
 type canvas struct{ dots []bool }
@@ -470,7 +470,7 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 	if c, ok := seasonBorderColour[season]; ok {
 		borderColour = c
 	}
-	styleBorder := lipgloss.NewStyle().Foreground(borderColour)
+	styleBorder := lipgloss.NewStyle().Bold(true).Foreground(borderColour)
 
 	// ping-pong 6 gradient steps: 0→5→0
 	step := cityPhase % 10
