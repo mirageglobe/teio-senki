@@ -11,17 +11,17 @@ For game rules, systems, and mechanics see [DESIGN.md](DESIGN.md).
 
 ## tech stack
 
-| layer | tool | role |
-| :--- | :--- | :--- |
-| **language** | Go | all simulation logic, engine, and UI wiring |
-| **scripting** | Lua via `gopher-lua` | content layer: events, AI scripts, balance tables — hot-reloadable without recompile |
-| **TUI frontend** | Bubble Tea | terminal UI — dumb view over engine; full game loop before pixel art |
-| **GFX frontend** | Ebitengine | 2D rendering layer added after game is verified in TUI |
-| **data (edit)** | YAML (`data/`) | human-readable master archive for officers and cities |
-| **data (runtime)** | JSON (`assets/data/`) | converted from YAML via `make data`; loaded at game start |
-| **persistence** | `save.json` via `os.UserConfigDir()` | cross-platform save path |
-| **testing** | `go test ./...` | standard Go test runner; no UI dependency for engine logic |
-| **build** | GNU Make + Go toolchain | `make run`, `make tui`, `make test`, `make build`, `make export-*` |
+| layer              | tool                                 | role                                                                                 |
+| :----------------- | :----------------------------------- | :----------------------------------------------------------------------------------- |
+| **language**       | Go                                   | all simulation logic, engine, and UI wiring                                          |
+| **scripting**      | Lua via `gopher-lua`                 | content layer: events, AI scripts, balance tables — hot-reloadable without recompile |
+| **TUI frontend**   | Bubble Tea                           | terminal UI — dumb view over engine; full game loop before pixel art                 |
+| **GFX frontend**   | Ebitengine                           | 2D rendering layer added after game is verified in TUI                               |
+| **data (edit)**    | YAML (`data/`)                       | human-readable master archive for officers and cities                                |
+| **data (runtime)** | JSON (`assets/data/`)                | converted from YAML via `make data`; loaded at game start                            |
+| **persistence**    | `save.json` via `os.UserConfigDir()` | cross-platform save path                                                             |
+| **testing**        | `go test ./...`                      | standard Go test runner; no UI dependency for engine logic                           |
+| **build**          | GNU Make + Go toolchain              | `make run`, `make tui`, `make test`, `make build`, `make export-*`                   |
 
 ## project structure
 
@@ -94,31 +94,31 @@ the bridge is the only surface Lua scripts may call. all functions are registere
 
 **read-only state accessors:**
 
-| lua function | go signature | returns |
-| :--- | :--- | :--- |
-| `state.officer(id)` | `GetOfficer(id string) OfficerView` | table: id, name, essence, strategy, valour, governance, integrity, loyalty, faction, health, age, xp, tags |
-| `state.city(id)` | `GetCity(id string) CityView` | table: id, name, faction, ag, com, tech, ord, def, food, gold, garrison, governor_id |
-| `state.army(id)` | `GetArmy(id string) ArmyView` | table: id, faction, general_id, troops, morale, supply, x, y, stance |
-| `state.faction_relation(a, b)` | `GetRelation(a, b string) int` | integer −100 to +100 |
-| `state.clock()` | `GetClock() ClockView` | table: year, month, stem, branch, season_element |
-| `state.resources(faction)` | `GetResources(faction string) ResourceView` | table: food, gold |
-| `rng.float()` | `RngFloat() float64` | float in [0.0, 1.0) — uses engine rand.Rand |
-| `rng.intn(n)` | `RngIntn(n int) int` | int in [0, n) |
+| lua function                   | go signature                                | returns                                                                                                    |
+| :----------------------------- | :------------------------------------------ | :--------------------------------------------------------------------------------------------------------- |
+| `state.officer(id)`            | `GetOfficer(id string) OfficerView`         | table: id, name, essence, strategy, valour, governance, integrity, loyalty, faction, health, age, xp, tags |
+| `state.city(id)`               | `GetCity(id string) CityView`               | table: id, name, faction, ag, com, tech, ord, def, food, gold, garrison, governor_id                       |
+| `state.army(id)`               | `GetArmy(id string) ArmyView`               | table: id, faction, general_id, troops, morale, supply, x, y, stance                                       |
+| `state.faction_relation(a, b)` | `GetRelation(a, b string) int`              | integer −100 to +100                                                                                       |
+| `state.clock()`                | `GetClock() ClockView`                      | table: year, month, stem, branch, season_element                                                           |
+| `state.resources(faction)`     | `GetResources(faction string) ResourceView` | table: food, gold                                                                                          |
+| `rng.float()`                  | `RngFloat() float64`                        | float in [0.0, 1.0) — uses engine rand.Rand                                                                |
+| `rng.intn(n)`                  | `RngIntn(n int) int`                        | int in [0, n)                                                                                              |
 
 **command constructors (return a Command table, validated and applied by Go):**
 
-| lua function | effect |
-| :--- | :--- |
-| `cmd.march(army_id, x, y)` | queue march order |
-| `cmd.recruit(city_id, amount)` | queue recruitment (seasonal only; Go validates) |
-| `cmd.develop(city_id, pillar)` | queue pillar build |
-| `cmd.tribute(target_faction, gold)` | queue diplomatic tribute |
-| `cmd.assign(officer_id, role, target_id)` | assign officer to role |
+| lua function                              | effect                                          |
+| :---------------------------------------- | :---------------------------------------------- |
+| `cmd.march(army_id, x, y)`                | queue march order                               |
+| `cmd.recruit(city_id, amount)`            | queue recruitment (seasonal only; Go validates) |
+| `cmd.develop(city_id, pillar)`            | queue pillar build                              |
+| `cmd.tribute(target_faction, gold)`       | queue diplomatic tribute                        |
+| `cmd.assign(officer_id, role, target_id)` | assign officer to role                          |
 
 **event emission:**
 
-| lua function | effect |
-| :--- | :--- |
+| lua function                                        | effect                                    |
+| :-------------------------------------------------- | :---------------------------------------- |
 | `log.event(event_type, description, effects_table)` | append to ledger log for the current turn |
 
 **constraints:**
@@ -154,35 +154,35 @@ MainMenu → ScenarioSelect → SovereignSelect → Playing ──► BattleReso
                                                     └──────────────────────────► Defeat
 ```
 
-| state | entry condition | valid transitions |
-| :--- | :--- | :--- |
-| `MainMenu` | app start | → `ScenarioSelect` (new game), → `Playing` (load save) |
-| `ScenarioSelect` | new game | → `SovereignSelect` |
-| `SovereignSelect` | scenario chosen | → `Playing` |
-| `Playing` | sovereign selected | → `BattleResolution` (army contact), → `Victory`, → `Defeat` |
-| `BattleResolution` | armies contact in cycle C | → `Playing` (auto-resolve completes) |
-| `Victory` | one faction holds all cities | terminal |
-| `Defeat` | sovereign dead + no successor; or all cities lost | terminal |
+| state              | entry condition                                   | valid transitions                                            |
+| :----------------- | :------------------------------------------------ | :----------------------------------------------------------- |
+| `MainMenu`         | app start                                         | → `ScenarioSelect` (new game), → `Playing` (load save)       |
+| `ScenarioSelect`   | new game                                          | → `SovereignSelect`                                          |
+| `SovereignSelect`  | scenario chosen                                   | → `Playing`                                                  |
+| `Playing`          | sovereign selected                                | → `BattleResolution` (army contact), → `Victory`, → `Defeat` |
+| `BattleResolution` | armies contact in cycle C                         | → `Playing` (auto-resolve completes)                         |
+| `Victory`          | one faction holds all cities                      | terminal                                                     |
+| `Defeat`           | sovereign dead + no successor; or all cities lost | terminal                                                     |
 
 no state transition may bypass this sequence. the engine raises an error if a command is queued from a state that does not allow it.
 
 ### module responsibilities
 
-| package | role |
-| :--- | :--- |
-| `cmd/teio` | entry point: load JSON archives, init ledger, start TUI loop (Ebitengine added at M9) |
-| `internal/models` | typed Go structs: Officer, City, Army, Element, Tag, Terrain, Stance |
-| `internal/core/clock` | bazi calendar: heavenly stem (天干) / earthly branch (地支), season and element lookup |
-| `internal/core/essence` | wu xing drift: pure functions mapping element pairs to stat multipliers |
-| `internal/core/economy` | city yield formulas: grain, gold, corruption — pure stateless functions |
-| `internal/engine/ledger` | in-memory state store: officers, cities, clock, resources, append-only log; serialises to `save.json` |
-| `internal/engine/sovereign` | three-cycle turn processor: cycle A (world), B (commands), C (settle); CP budget |
-| `internal/engine/battle` | auto-resolve battle math: damage formula, duel resolution, morale, outcome log |
-| `internal/engine/diplomacy` | faction relation scores; diplomatic command processing |
-| `internal/engine/events` | world event generator: seasonal triggers, historical events |
-| `internal/engine/ai` | AI sovereign: `ai_decide(ledger, factionID, intelligence, behaviour) []Command` |
-| `internal/ui/tui` | Bubble Tea terminal frontend (M2–M8): dumb view; reads engine state, sends commands |
-| `internal/ui/gfx` | Ebitengine rendering (M9–M10): map, panels, screens — imports engine, never vice versa |
+| package                     | role                                                                                                  |
+| :-------------------------- | :---------------------------------------------------------------------------------------------------- |
+| `cmd/teio`                  | entry point: load JSON archives, init ledger, start TUI loop (Ebitengine added at M9)                 |
+| `internal/models`           | typed Go structs: Officer, City, Army, Element, Tag, Terrain, Stance                                  |
+| `internal/core/clock`       | bazi calendar: heavenly stem (天干) / earthly branch (地支), season and element lookup                    |
+| `internal/core/essence`     | wu xing drift: pure functions mapping element pairs to stat multipliers                               |
+| `internal/core/economy`     | city yield formulas: grain, gold, corruption — pure stateless functions                               |
+| `internal/engine/ledger`    | in-memory state store: officers, cities, clock, resources, append-only log; serialises to `save.json` |
+| `internal/engine/sovereign` | three-cycle turn processor: cycle A (world), B (commands), C (settle); CP budget                      |
+| `internal/engine/battle`    | auto-resolve battle math: damage formula, duel resolution, morale, outcome log                        |
+| `internal/engine/diplomacy` | faction relation scores; diplomatic command processing                                                |
+| `internal/engine/events`    | world event generator: seasonal triggers, historical events                                           |
+| `internal/engine/ai`        | AI sovereign: `ai_decide(ledger, factionID, intelligence, behaviour) []Command`                       |
+| `internal/ui/tui`           | Bubble Tea terminal frontend (M2–M8): dumb view; reads engine state, sends commands                   |
+| `internal/ui/gfx`           | Ebitengine rendering (M9–M10): map, panels, screens — imports engine, never vice versa                |
 
 ### data flow
 
@@ -206,15 +206,15 @@ runtime state lives entirely in memory. on save, the ledger serialises to `save.
 
 this approach is cross-platform by default — no native extensions required, works on desktop, mobile, and web exports.
 
-| ledger key | type | purpose |
-| :--- | :--- | :--- |
-| `officers` | Dictionary | officer records: stats, essence, health, age, experience, tags |
-| `cities` | Dictionary | city records: pillars, governor_id, garrison, food, gold |
-| `armies` | Dictionary | army records: general, troops, morale, supply, position, stance |
-| `faction_relations` | Dictionary | pairwise relation scores between factions |
-| `game_clock` | Dictionary | current year, month |
-| `resources` | Dictionary | player-faction grain and gold totals |
-| `logs` | Array[Dictionary] | append-only event log: year, month, cycle, event_type, description, effects |
+| ledger key          | type              | purpose                                                                     |
+| :------------------ | :---------------- | :-------------------------------------------------------------------------- |
+| `officers`          | Dictionary        | officer records: stats, essence, health, age, experience, tags              |
+| `cities`            | Dictionary        | city records: pillars, governor_id, garrison, food, gold                    |
+| `armies`            | Dictionary        | army records: general, troops, morale, supply, position, stance             |
+| `faction_relations` | Dictionary        | pairwise relation scores between factions                                   |
+| `game_clock`        | Dictionary        | current year, month                                                         |
+| `resources`         | Dictionary        | player-faction grain and gold totals                                        |
+| `logs`              | Array[Dictionary] | append-only event log: year, month, cycle, event_type, description, effects |
 
 **settlement:** cycle C applies deltas sequentially. no snapshot/restore — keep it simple and fix bugs at the source.
 
@@ -226,18 +226,18 @@ all UI lives in `internal/ui`. M2–M8 use Bubble Tea (TUI): text-only, dumb vie
 
 ### screens
 
-| screen | maps to system | tui (M2–M8) | gfx (M9–M10) |
-| :--- | :--- | :--- | :--- |
-| SplashScreen | — (M0 TUI; M9 GFX) | [ ] | [ ] |
-| ScenarioSelectScreen | scenario & sovereign setup | [ ] | [ ] |
-| StrategicMapScreen | strategic map — cities, armies, faction colours | [ ] | [ ] |
-| CityScreen | city development — pillar bars, officer slot, food/gold | [ ] | [ ] |
-| OfficerScreen | officer management — roster, stats, assignment | [ ] | [ ] |
-| ArmyScreen | army system — troop count, morale, supply, stance | [ ] | [ ] |
-| BattleScreen | tactical battle — auto-resolve report | [ ] | [ ] |
-| DiplomacyScreen | diplomacy — faction list, relation scores, action panel | [ ] | [ ] |
-| LedgerScreen | ledger log — scrollable history, event filter | [ ] | [ ] |
-| VictoryScreen | victory — unification win / defeat screen | [ ] | [ ] |
+| screen               | maps to system                                          | tui (M2–M8) | gfx (M9–M10) |
+| :------------------- | :------------------------------------------------------ | :---------- | :----------- |
+| SplashScreen         | — (M0 TUI; M9 GFX)                                      | [ ]         | [ ]          |
+| ScenarioSelectScreen | scenario & sovereign setup                              | [ ]         | [ ]          |
+| StrategicMapScreen   | strategic map — cities, armies, faction colours         | [ ]         | [ ]          |
+| CityScreen           | city development — pillar bars, officer slot, food/gold | [ ]         | [ ]          |
+| OfficerScreen        | officer management — roster, stats, assignment          | [ ]         | [ ]          |
+| ArmyScreen           | army system — troop count, morale, supply, stance       | [ ]         | [ ]          |
+| BattleScreen         | tactical battle — auto-resolve report                   | [ ]         | [ ]          |
+| DiplomacyScreen      | diplomacy — faction list, relation scores, action panel | [ ]         | [ ]          |
+| LedgerScreen         | ledger log — scrollable history, event filter           | [ ]         | [ ]          |
+| VictoryScreen        | victory — unification win / defeat screen               | [ ]         | [ ]          |
 
 ---
 
@@ -247,13 +247,13 @@ one Go codebase, multiple targets via cross-compilation and gomobile. no platfor
 
 ### target platforms
 
-| platform | format | priority | toolchain required |
-| :--- | :--- | :---: | :--- |
-| macOS | native binary | 1 | Go toolchain; Apple Developer account for notarisation |
-| Linux | native binary | 2 | Go toolchain; no signing required |
-| Windows | native binary | 2 | Go toolchain; optional code-signing certificate |
-| Android | `.apk` / `.aab` | 3 | gomobile; Android SDK + NDK; keystore for signing |
-| iOS | Xcode project | 4 | gomobile; macOS + Xcode + Apple Developer account ($99/yr) |
+| platform | format          | priority | toolchain required                                         |
+| :------- | :-------------- | :------: | :--------------------------------------------------------- |
+| macOS    | native binary   | 1        | Go toolchain; Apple Developer account for notarisation     |
+| Linux    | native binary   | 2        | Go toolchain; no signing required                          |
+| Windows  | native binary   | 2        | Go toolchain; optional code-signing certificate            |
+| Android  | `.apk` / `.aab` | 3        | gomobile; Android SDK + NDK; keystore for signing          |
+| iOS      | Xcode project   | 4        | gomobile; macOS + Xcode + Apple Developer account ($99/yr) |
 
 ### build rules
 
@@ -264,16 +264,16 @@ one Go codebase, multiple targets via cross-compilation and gomobile. no platfor
 
 ### makefile targets
 
-| target | command | output |
-| :--- | :--- | :--- |
-| `make run` | `go run cmd/teio/main.go` | dev run, current platform |
-| `make build` | `go build -o dist/teio cmd/teio/main.go` | native binary, current platform |
-| `make export-mac` | `GOOS=darwin GOARCH=arm64 go build ...` | macOS binary to `dist/mac/` |
-| `make export-linux` | `GOOS=linux GOARCH=amd64 go build ...` | Linux binary to `dist/linux/` |
-| `make export-windows` | `GOOS=windows GOARCH=amd64 go build ...` | Windows binary to `dist/windows/` |
-| `make export-web` | `GOOS=js GOARCH=wasm go build ...` | WASM to `dist/web/` |
-| `make export-android` | `gomobile build -target android` | APK to `dist/android/` |
-| `make export-ios` | `gomobile build -target ios` | iOS app to `dist/ios/` (macOS only) |
+| target                | command                                  | output                              |
+| :-------------------- | :--------------------------------------- | :---------------------------------- |
+| `make run`            | `go run cmd/teio/main.go`                | dev run, current platform           |
+| `make build`          | `go build -o dist/teio cmd/teio/main.go` | native binary, current platform     |
+| `make export-mac`     | `GOOS=darwin GOARCH=arm64 go build ...`  | macOS binary to `dist/mac/`         |
+| `make export-linux`   | `GOOS=linux GOARCH=amd64 go build ...`   | Linux binary to `dist/linux/`       |
+| `make export-windows` | `GOOS=windows GOARCH=amd64 go build ...` | Windows binary to `dist/windows/`   |
+| `make export-web`     | `GOOS=js GOARCH=wasm go build ...`       | WASM to `dist/web/`                 |
+| `make export-android` | `gomobile build -target android`         | APK to `dist/android/`              |
+| `make export-ios`     | `gomobile build -target ios`             | iOS app to `dist/ios/` (macOS only) |
 
 ### platform notes
 
@@ -303,15 +303,15 @@ make test  →  go test ./internal/...
 
 each package has its own `_test.go` file covering pure functions:
 
-| package | what to test |
-| :--- | :--- |
-| `core/clock` | 60-unit stem-branch cycle; seasonal transitions; year rollover |
-| `core/essence` | every wu xing pair (nourishing, controlling, etc.) produces correct multiplier |
-| `core/economy` | grain/gold yield formula; corruption loss; non-negative floor |
-| `engine/ledger` | load from JSON; get/set officer and city; log append |
-| `engine/sovereign` | cycle A/B/C progression; CP budget; command validation; stat clamping |
-| `engine/battle` | 10,000 auto-resolve loops — no negative troops, consistent win ratio by stat delta |
-| `engine/ai` | each behaviour profile generates commands consistent with its priority weights |
+| package            | what to test                                                                       |
+| :----------------- | :--------------------------------------------------------------------------------- |
+| `core/clock`       | 60-unit stem-branch cycle; seasonal transitions; year rollover                     |
+| `core/essence`     | every wu xing pair (nourishing, controlling, etc.) produces correct multiplier     |
+| `core/economy`     | grain/gold yield formula; corruption loss; non-negative floor                      |
+| `engine/ledger`    | load from JSON; get/set officer and city; log append                               |
+| `engine/sovereign` | cycle A/B/C progression; CP budget; command validation; stat clamping              |
+| `engine/battle`    | 10,000 auto-resolve loops — no negative troops, consistent win ratio by stat delta |
+| `engine/ai`        | each behaviour profile generates commands consistent with its priority weights     |
 
 ### 2. integration test — "robot player"
 
@@ -342,11 +342,11 @@ func TestRobotPlayer(t *testing.T) {
 
 ### 4. random source policy
 
-| context | source | rationale |
-| :--- | :--- | :--- |
-| tests (golden master, unit) | `rand.New(rand.NewSource(42))` | deterministic; reproducible across machines |
-| production (new game) | `rand.New(rand.NewSource(time.Now().UnixNano()))` | unique seed per session |
-| production (load game) | seed stored in `save.json` as `rng_seed int64` | reload continues the same RNG stream to avoid non-determinism on save/load |
+| context                     | source                                            | rationale                                                                  |
+| :-------------------------- | :------------------------------------------------ | :------------------------------------------------------------------------- |
+| tests (golden master, unit) | `rand.New(rand.NewSource(42))`                    | deterministic; reproducible across machines                                |
+| production (new game)       | `rand.New(rand.NewSource(time.Now().UnixNano()))` | unique seed per session                                                    |
+| production (load game)      | seed stored in `save.json` as `rng_seed int64`    | reload continues the same RNG stream to avoid non-determinism on save/load |
 
 rules:
 - the engine accepts a `rand.Rand` argument — never calls `rand.Float64()` directly (global rand is banned in engine packages).
@@ -372,54 +372,54 @@ rules:
 
 **TUI screens (M2–M8)** — text-based, full game loop:
 
-| order | screen | milestone | what it proves |
-| :---: | :--- | :---: | :--- |
-| 1 | TUI map | 2 | ASCII map renders; cities and factions visible; turn advances |
-| 2 | TUI city panel | 3 | pillar data reads from ledger; build commands fire |
-| 3 | TUI officer panel | 4 | assignment, loyalty, XP readable; commands work |
-| 4 | TUI army panel | 5 | army data visible; movement orders queue |
-| 5 | TUI battle report | 6 | auto-resolve fires; result and log displayed |
-| 6 | TUI diplomacy panel | 7 | relation scores visible; tribute/alliance fire |
-| 7 | TUI victory screen | 8 | win / defeat state detected and shown |
+| order | screen              | milestone | what it proves                                                |
+| :---: | :------------------ | :-------: | :------------------------------------------------------------ |
+| 1     | TUI map             | 2         | ASCII map renders; cities and factions visible; turn advances |
+| 2     | TUI city panel      | 3         | pillar data reads from ledger; build commands fire            |
+| 3     | TUI officer panel   | 4         | assignment, loyalty, XP readable; commands work               |
+| 4     | TUI army panel      | 5         | army data visible; movement orders queue                      |
+| 5     | TUI battle report   | 6         | auto-resolve fires; result and log displayed                  |
+| 6     | TUI diplomacy panel | 7         | relation scores visible; tribute/alliance fire                |
+| 7     | TUI victory screen  | 8         | win / defeat state detected and shown                         |
 
 **Ebitengine screens (M9–M10)** — pixel art, same engine beneath:
 
-| order | screen | milestone | replaces |
-| :---: | :--- | :---: | :--- |
-| 1 | StrategicMapScreen | 9 | TUI map |
-| 2 | CityScreen | 9 | TUI city panel |
-| 3 | OfficerScreen | 9 | TUI officer panel |
-| 4 | ArmyScreen | 9 | TUI army panel |
-| 5 | BattleScreen | 10 | TUI battle report |
-| 6 | DiplomacyScreen | 10 | TUI diplomacy panel |
-| 7 | ScenarioSelectScreen | 10 | TUI scenario select |
-| 8 | VictoryScreen | 10 | TUI victory screen |
-| 9 | LedgerScreen | 10 | TUI ledger log |
+| order | screen               | milestone | replaces            |
+| :---: | :------------------- | :-------: | :------------------ |
+| 1     | StrategicMapScreen   | 9         | TUI map             |
+| 2     | CityScreen           | 9         | TUI city panel      |
+| 3     | OfficerScreen        | 9         | TUI officer panel   |
+| 4     | ArmyScreen           | 9         | TUI army panel      |
+| 5     | BattleScreen         | 10        | TUI battle report   |
+| 6     | DiplomacyScreen      | 10        | TUI diplomacy panel |
+| 7     | ScenarioSelectScreen | 10        | TUI scenario select |
+| 8     | VictoryScreen        | 10        | TUI victory screen  |
+| 9     | LedgerScreen         | 10        | TUI ledger log      |
 
 ### development phases
 
-| phase | focus | milestones | status |
-| :--- | :--- | :--- | :--- |
-| **1: engine** | Go scaffold, headless core, turn loop | 0, 1 | [~] in progress |
-| **2: TUI shell** | Bubble Tea frontend, full game loop in terminal | 2 | [ ] |
-| **3: simulation** | city, officers, armies, battle, diplomacy, victory — engine + TUI | 3–8 | [ ] |
-| **4: rendering** | Ebitengine pixel art layer over proven engine | 9, 10 | [ ] |
+| phase             | focus                                                             | milestones | status          |
+| :---------------- | :---------------------------------------------------------------- | :--------- | :-------------- |
+| **1: engine**     | Go scaffold, headless core, turn loop                             | 0, 1       | [~] in progress |
+| **2: TUI shell**  | Bubble Tea frontend, full game loop in terminal                   | 2          | [ ]             |
+| **3: simulation** | city, officers, armies, battle, diplomacy, victory — engine + TUI | 3–8        | [ ]             |
+| **4: rendering**  | Ebitengine pixel art layer over proven engine                     | 9, 10      | [ ]             |
 
 ### milestone tracking
 
-| milestone | focus | status |
-| :--- | :--- | :--- |
-| 0 | Go scaffold — project structure, Makefile, data pipeline | [~] in progress |
-| 1 | engine core — ledger, clock, essence, economy, turn loop | [ ] |
-| 2 | TUI shell — Bubble Tea; ASCII map; full game loop playable | [ ] |
-| 3 | city economics — Go engine + TUI city screen | [ ] |
-| 4 | officers — management & allegiance; Go engine + TUI officer screen | [ ] |
-| 5 | army system — raising & movement; Go engine + TUI army screen | [ ] |
-| 6 | battle — auto-resolve math; Go engine + TUI battle report | [ ] |
-| 7 | diplomacy + events; Go engine + TUI diplomacy screen | [ ] |
-| 8 | victory — win/defeat; Go engine + TUI victory screen | [ ] |
-| 9 | Ebitengine rendering — map, city, officer, army screens | [ ] |
-| 10 | Ebitengine rendering — battle, diplomacy, victory; polish; mobile | [ ] |
+| milestone | focus                                                              | status          |
+| :-------- | :----------------------------------------------------------------- | :-------------- |
+| 0         | Go scaffold — project structure, Makefile, data pipeline           | [~] in progress |
+| 1         | engine core — ledger, clock, essence, economy, turn loop           | [ ]             |
+| 2         | TUI shell — Bubble Tea; ASCII map; full game loop playable         | [ ]             |
+| 3         | city economics — Go engine + TUI city screen                       | [ ]             |
+| 4         | officers — management & allegiance; Go engine + TUI officer screen | [ ]             |
+| 5         | army system — raising & movement; Go engine + TUI army screen      | [ ]             |
+| 6         | battle — auto-resolve math; Go engine + TUI battle report          | [ ]             |
+| 7         | diplomacy + events; Go engine + TUI diplomacy screen               | [ ]             |
+| 8         | victory — win/defeat; Go engine + TUI victory screen               | [ ]             |
+| 9         | Ebitengine rendering — map, city, officer, army screens            | [ ]             |
+| 10        | Ebitengine rendering — battle, diplomacy, victory; polish; mobile  | [ ]             |
 
 ---
 
@@ -427,13 +427,13 @@ rules:
 
 > status key: `[x]` done — `[~]` partial — `[ ]` not started
 
-| item | status | notes |
-| :--- | :--- | :--- |
-| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio) | [x] | |
-| splash screen (fade, blink prompt, auto-advance, key dismiss) | [ ] | |
-| main entry point (load data, init ledger, start game loop) | [ ] | |
-| design: officer + city archives (YAML, 498 officers, 30 cities) | [x] | |
-| design: bazi calendar, turn structure, ledger schema | [x] | |
+| item                                                            | status | notes |
+| :-------------------------------------------------------------- | :----- | :---- |
+| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio)   | [x]    |       |
+| splash screen (fade, blink prompt, auto-advance, key dismiss)   | [ ]    |       |
+| main entry point (load data, init ledger, start game loop)      | [ ]    |       |
+| design: officer + city archives (YAML, 498 officers, 30 cities) | [x]    |       |
+| design: bazi calendar, turn structure, ledger schema            | [x]    |       |
 
 ---
 
@@ -441,15 +441,15 @@ rules:
 
 JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. **priority focus: AD 189 scenario.**
 
-| item | status | notes |
-| :--- | :--- | :--- |
-| JSON archive loading + ledger seed | [ ] | `internal/engine/ledger` as typed Go structs |
-| scenario & sovereign selection logic | [ ] | filter officers/cities by faction at game start |
-| bazi calendar + essence drift | [ ] | `internal/core/clock` + `internal/core/essence` |
-| cycle A — world update (season, essence, loyalty, supply) | [ ] | |
-| cycle B — player commands (city / officer / military / diplomacy) | [ ] | |
-| cycle C — sequential settlement | [ ] | sequential delta apply; no snapshot/restore |
-| `go test ./internal/...` — unit + integration tests | [ ] | |
+| item                                                              | status | notes                                           |
+| :---------------------------------------------------------------- | :----- | :---------------------------------------------- |
+| JSON archive loading + ledger seed                                | [ ]    | `internal/engine/ledger` as typed Go structs    |
+| scenario & sovereign selection logic                              | [ ]    | filter officers/cities by faction at game start |
+| bazi calendar + essence drift                                     | [ ]    | `internal/core/clock` + `internal/core/essence` |
+| cycle A — world update (season, essence, loyalty, supply)         | [ ]    |                                                 |
+| cycle B — player commands (city / officer / military / diplomacy) | [ ]    |                                                 |
+| cycle C — sequential settlement                                   | [ ]    | sequential delta apply; no snapshot/restore     |
+| `go test ./internal/...` — unit + integration tests               | [ ]    |                                                 |
 
 ---
 
@@ -457,97 +457,97 @@ JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. **pri
 
 Bubble Tea terminal frontend over the Go engine. the full game loop must be playable end-to-end in the terminal before any Ebitengine work begins.
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| Bubble Tea app scaffold (model / update / view loop) | `[ui]` `[easy]` | [ ] |
-| ASCII strategic map — cities, factions, turn counter | `[ui]` `[medium]` | [ ] |
-| scenario + sovereign selection screen | `[ui]` `[easy]` | [ ] |
-| command input (keyboard: build / recruit / march / end turn) | `[ui]` `[medium]` | [ ] |
-| city panel — pillars, food, gold, governor slot | `[ui]` `[medium]` | [ ] |
-| officer panel — roster, stats, loyalty, assignment | `[ui]` `[medium]` | [ ] |
-| ledger log panel — scrollable event history | `[ui]` `[easy]` | [ ] |
-| full turn loop playable: A → B → C → repeat | `[ui]` `[medium]` | [ ] |
+| item                                                         | tags              | status |
+| :----------------------------------------------------------- | :---------------- | :----- |
+| Bubble Tea app scaffold (model / update / view loop)         | `[ui]` `[easy]`   | [ ]    |
+| ASCII strategic map — cities, factions, turn counter         | `[ui]` `[medium]` | [ ]    |
+| scenario + sovereign selection screen                        | `[ui]` `[easy]`   | [ ]    |
+| command input (keyboard: build / recruit / march / end turn) | `[ui]` `[medium]` | [ ]    |
+| city panel — pillars, food, gold, governor slot              | `[ui]` `[medium]` | [ ]    |
+| officer panel — roster, stats, loyalty, assignment           | `[ui]` `[medium]` | [ ]    |
+| ledger log panel — scrollable event history                  | `[ui]` `[easy]`   | [ ]    |
+| full turn loop playable: A → B → C → repeat                  | `[ui]` `[medium]` | [ ]    |
 
 ---
 
 ### milestone 3 — city development & economics `not started`
 
-| item | status | notes |
-| :--- | :--- | :--- |
-| City Go struct (AG / COM / TECH / ORD / DEF, food, gold, garrison) | [ ] | `internal/models` |
-| seasonal delta calculation per pillar | [ ] | `internal/core/economy` |
-| TECH multiplier on AG / COM yield | [ ] | pure functions |
-| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF) | [ ] | BUILD_TECH / BUILD_ORD deferred |
-| food and gold stockpile per city (draw from upkeep each cycle) | [~] | structure defined; per-city tracking not yet implemented |
-| CityScreen overlay — pillar bars, food, gold display | [ ] | TUI panel first (M3); Ebitengine panel at M9 |
+| item                                                               | status | notes                                                    |
+| :----------------------------------------------------------------- | :----- | :------------------------------------------------------- |
+| City Go struct (AG / COM / TECH / ORD / DEF, food, gold, garrison) | [ ]    | `internal/models`                                        |
+| seasonal delta calculation per pillar                              | [ ]    | `internal/core/economy`                                  |
+| TECH multiplier on AG / COM yield                                  | [ ]    | pure functions                                           |
+| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF)             | [ ]    | BUILD_TECH / BUILD_ORD deferred                          |
+| food and gold stockpile per city (draw from upkeep each cycle)     | [~]    | structure defined; per-city tracking not yet implemented |
+| CityScreen overlay — pillar bars, food, gold display               | [ ]    | TUI panel first (M3); Ebitengine panel at M9             |
 
 ---
 
 ### milestone 4 — officer management & allegiance `not started`
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| officer assignment (governor / general / advisor roles) | `[engine]` `[medium]` | [ ] |
-| loyalty drift per turn (salary, battles, essence resonance) | `[engine]` `[medium]` | [ ] |
-| rival bribery resistance (integrity check) | `[engine]` `[easy]` | [ ] |
-| officer search mechanic (`search <city_id>`) | `[engine]` `[easy]` | [ ] |
-| XP system — 3 tiers (novice / veteran / master) | `[engine]` `[easy]` | [ ] |
-| age and health degradation; officer death | `[engine]` `[medium]` | [ ] |
-| defection — update loyalty, faction, city_id, army_id in place; log event | `[engine]` `[medium]` | [ ] |
-| OfficerScreen — roster, stats, assignment panel | `[ui]` `[medium]` | [ ] |
+| item                                                                      | tags                  | status |
+| :------------------------------------------------------------------------ | :-------------------- | :----- |
+| officer assignment (governor / general / advisor roles)                   | `[engine]` `[medium]` | [ ]    |
+| loyalty drift per turn (salary, battles, essence resonance)               | `[engine]` `[medium]` | [ ]    |
+| rival bribery resistance (integrity check)                                | `[engine]` `[easy]`   | [ ]    |
+| officer search mechanic (`search <city_id>`)                              | `[engine]` `[easy]`   | [ ]    |
+| XP system — 3 tiers (novice / veteran / master)                           | `[engine]` `[easy]`   | [ ]    |
+| age and health degradation; officer death                                 | `[engine]` `[medium]` | [ ]    |
+| defection — update loyalty, faction, city_id, army_id in place; log event | `[engine]` `[medium]` | [ ]    |
+| OfficerScreen — roster, stats, assignment panel                           | `[ui]` `[medium]`     | [ ]    |
 
 ---
 
 ### milestone 5 — army system `not started`
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| army data model (general, troops, morale, supply, stance) | `[engine]` `[medium]` | [ ] |
-| troop recruitment command | `[engine]` `[easy]` | [ ] |
-| supply logistics calculation (food draw per turn) | `[engine]` `[medium]` | [ ] |
-| army movement range calculation | `[engine]` `[medium]` | [ ] |
-| supply check (Chebyshev distance ≤ 5 to nearest friendly city) | `[engine]` `[easy]` | [ ] |
-| attrition when supply cut | `[engine]` `[easy]` | [ ] |
-| StrategicMapScreen — army tokens and movement orders | `[ui]` `[hard]` | [ ] |
-| ArmyScreen — troop count, morale, supply, stance | `[ui]` `[medium]` | [ ] |
+| item                                                           | tags                  | status |
+| :------------------------------------------------------------- | :-------------------- | :----- |
+| army data model (general, troops, morale, supply, stance)      | `[engine]` `[medium]` | [ ]    |
+| troop recruitment command                                      | `[engine]` `[easy]`   | [ ]    |
+| supply logistics calculation (food draw per turn)              | `[engine]` `[medium]` | [ ]    |
+| army movement range calculation                                | `[engine]` `[medium]` | [ ]    |
+| supply check (Chebyshev distance ≤ 5 to nearest friendly city) | `[engine]` `[easy]`   | [ ]    |
+| attrition when supply cut                                      | `[engine]` `[easy]`   | [ ]    |
+| StrategicMapScreen — army tokens and movement orders           | `[ui]` `[hard]`       | [ ]    |
+| ArmyScreen — troop count, morale, supply, stance               | `[ui]` `[medium]`     | [ ]    |
 
 ---
 
 ### milestone 6 — tactical battle (auto-resolve) `not started`
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| auto-resolve formula (valour vs strategy) | `[engine]` `[medium]` | [ ] |
-| casualty and morale calculation | `[engine]` `[easy]` | [ ] |
-| duel resolution math | `[engine]` `[easy]` | [ ] |
-| outcome report (ledger log) | `[engine]` `[easy]` | [ ] |
-| BattleScreen — auto-resolve report display | `[ui]` `[easy]` | [ ] |
-| tactical grid (visual) | — | [-] |
+| item                                       | tags                  | status |
+| :----------------------------------------- | :-------------------- | :----- |
+| auto-resolve formula (valour vs strategy)  | `[engine]` `[medium]` | [ ]    |
+| casualty and morale calculation            | `[engine]` `[easy]`   | [ ]    |
+| duel resolution math                       | `[engine]` `[easy]`   | [ ]    |
+| outcome report (ledger log)                | `[engine]` `[easy]`   | [ ]    |
+| BattleScreen — auto-resolve report display | `[ui]` `[easy]`       | [ ]    |
+| tactical grid (visual)                     | —                     | [-]    |
 
 ---
 
 ### milestone 7 — diplomacy & events `not started`
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| faction relation score table (−100 to +100 per pair) | `[engine]` `[easy]` | [ ] |
-| diplomatic actions — tribute, alliance, threaten | `[engine]` `[medium]` | [ ] |
-| diplomacy command processing in cycle B | `[engine]` `[medium]` | [ ] |
-| random event generator | `[engine]` `[medium]` | [ ] |
-| historical event triggers (scripted) | `[engine]` `[hard]` | [ ] |
-| DiplomacyScreen — faction list, relation scores, action panel | `[ui]` `[medium]` | [ ] |
+| item                                                          | tags                  | status |
+| :------------------------------------------------------------ | :-------------------- | :----- |
+| faction relation score table (−100 to +100 per pair)          | `[engine]` `[easy]`   | [ ]    |
+| diplomatic actions — tribute, alliance, threaten              | `[engine]` `[medium]` | [ ]    |
+| diplomacy command processing in cycle B                       | `[engine]` `[medium]` | [ ]    |
+| random event generator                                        | `[engine]` `[medium]` | [ ]    |
+| historical event triggers (scripted)                          | `[engine]` `[hard]`   | [ ]    |
+| DiplomacyScreen — faction list, relation scores, action panel | `[ui]` `[medium]`     | [ ]    |
 
 ---
 
 ### milestone 8 — victory `not started`
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| unification victory check (one faction holds all cities) | `[engine]` `[easy]` | [ ] |
-| defeat check (sovereign dead, no successor; or all cities lost) | `[engine]` `[easy]` | [ ] |
-| TUI victory screen — win / defeat state | `[ui]` `[easy]` | [ ] |
-| TUI ledger screen — scrollable event history and filter | `[ui]` `[easy]` | [ ] |
-| full game playable end-to-end in TUI ← gate for M9 | — | [ ] |
+| item                                                            | tags                | status |
+| :-------------------------------------------------------------- | :------------------ | :----- |
+| unification victory check (one faction holds all cities)        | `[engine]` `[easy]` | [ ]    |
+| defeat check (sovereign dead, no successor; or all cities lost) | `[engine]` `[easy]` | [ ]    |
+| TUI victory screen — win / defeat state                         | `[ui]` `[easy]`     | [ ]    |
+| TUI ledger screen — scrollable event history and filter         | `[ui]` `[easy]`     | [ ]    |
+| full game playable end-to-end in TUI ← gate for M9              | —                   | [ ]    |
 
 ---
 
@@ -555,68 +555,68 @@ Bubble Tea terminal frontend over the Go engine. the full game loop must be play
 
 pixel art rendering layer over the verified Go engine. the engine does not change — only the view layer is added.
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| Ebitengine app scaffold (game loop, window, asset loading) | `[ui]` `[medium]` | [ ] |
-| StrategicMapScreen — China map, city nodes, faction colours, camera | `[ui]` `[hard]` | [ ] |
-| CityScreen — pillar bars, food, gold, governor slot | `[ui]` `[medium]` | [ ] |
-| OfficerScreen — roster, stats, assignment panel | `[ui]` `[medium]` | [ ] |
-| ArmyScreen — troop count, morale, supply, stance | `[ui]` `[medium]` | [ ] |
-| ScenarioSelectScreen — scenario and sovereign selection | `[ui]` `[medium]` | [ ] |
+| item                                                                | tags              | status |
+| :------------------------------------------------------------------ | :---------------- | :----- |
+| Ebitengine app scaffold (game loop, window, asset loading)          | `[ui]` `[medium]` | [ ]    |
+| StrategicMapScreen — China map, city nodes, faction colours, camera | `[ui]` `[hard]`   | [ ]    |
+| CityScreen — pillar bars, food, gold, governor slot                 | `[ui]` `[medium]` | [ ]    |
+| OfficerScreen — roster, stats, assignment panel                     | `[ui]` `[medium]` | [ ]    |
+| ArmyScreen — troop count, morale, supply, stance                    | `[ui]` `[medium]` | [ ]    |
+| ScenarioSelectScreen — scenario and sovereign selection             | `[ui]` `[medium]` | [ ]    |
 
 ---
 
 ### milestone 10 — Ebitengine rendering (remaining screens) + polish `not started`
 
-| item | tags | status |
-| :--- | :--- | :--- |
-| BattleScreen — auto-resolve report display | `[ui]` `[easy]` | [ ] |
-| DiplomacyScreen — faction list, relation scores, action panel | `[ui]` `[medium]` | [ ] |
-| VictoryScreen — win / defeat screen | `[ui]` `[easy]` | [ ] |
-| LedgerScreen — scrollable event history and filter | `[ui]` `[easy]` | [ ] |
-| full pixel art asset pass (sprites, tiles, fonts) | `[ui]` `[hard]` | [ ] |
-| mobile port — gomobile Android + iOS | `[ui]` `[hard]` | [ ] |
+| item                                                          | tags              | status |
+| :------------------------------------------------------------ | :---------------- | :----- |
+| BattleScreen — auto-resolve report display                    | `[ui]` `[easy]`   | [ ]    |
+| DiplomacyScreen — faction list, relation scores, action panel | `[ui]` `[medium]` | [ ]    |
+| VictoryScreen — win / defeat screen                           | `[ui]` `[easy]`   | [ ]    |
+| LedgerScreen — scrollable event history and filter            | `[ui]` `[easy]`   | [ ]    |
+| full pixel art asset pass (sprites, tiles, fonts)             | `[ui]` `[hard]`   | [ ]    |
+| mobile port — gomobile Android + iOS                          | `[ui]` `[hard]`   | [ ]    |
 
 ## decisions
 
-| decision | choice | why |
-| :--- | :--- | :--- |
-| TUI-first (Bubble Tea), Ebitengine second | Bubble Tea → Ebitengine | verify full game loop in terminal before writing pixel art; engine API is identical for both frontends; swapping view is a one-file change |
-| Go + Lua hybrid (gopher-lua) | Go owns engine; Lua owns content | Go: typed ledger integrity, `go test`, single binary. Lua: hot-reloadable events/AI/balance without recompile. gopher-lua is pure Go — no CGO, no deployment cost. `//go:embed lua/` bakes scripts into binary. Lua CANNOT mutate ledger directly; all output is Go-validated at the bridge layer |
-| Ebitengine over Defold | Go + Ebitengine | long-term investment; Go is primary language across the stack. typed structs are safer for a complex simulation. Defold ruled out: Lua as primary language has no typed core — the wrong split. Lua content over a Go engine is the right split |
-| in-memory ledger over SQLite | Dictionary + JSON serialisation | cross-platform by default — no native extension dependency; snapshot/restore gives sufficient atomicity for a turn-based sim |
-| YAML archives, JSON runtime | YAML → JSON via `make data` | YAML is human-readable and diffable; JSON loads fast via `encoding/json` with no extra dependency |
-| headless-first engine | pure Go packages testable via `go test ./internal/...` | CI verification without any UI; separates simulation correctness from rendering |
-| auto-resolve battle (v1) | math formula, no tactical grid | reach playable loop sooner; grid deferred to post-release expansion |
-| single scenario lock (AD 189) | Dong Zhuo's Rise only | prevents data balancing sprawl before core loop is verified |
-| mutable state + append-only log | live tables + `ledger_log` | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring |
-| single codebase, Go cross-compilation | one Go codebase builds to macOS / Linux / Windows / WASM; gomobile for Android / iOS | no platform branches; `os.UserConfigDir()` handles save path per platform; Ebitengine abstracts input and rendering |
-| desktop primary, mobile secondary | desktop is the reference platform; mobile port after M8 | avoids designing around mobile constraints during active development while keeping the port feasible |
-| 2D only, no 3D geometry | Ebitengine 2D only | strategy game needs no 3D; Ebitengine is a 2D-native library — no 3D renderer to avoid |
-| pixel art, low asset cost | 16×16 or 32×32 tiles, palette-swaps | cheap to produce, fast to iterate, consistent with the minimalist aesthetic |
-| flatten OfficerAllegiance | loyalty + faction on Officer directly | separate row-lifecycle table is a database pattern, not a game pattern; city_id/army_id already on Officer |
-| 3-cycle turn loop | A (world) / B (commands) / C (settle) | diplomacy is just a gold-cost command; 4 cycles added complexity with no player-visible benefit |
-| dual cadence (monthly combat / seasonal economy) | movement and battle every month; city yield and recruitment every season (3 turns) | keeps tactical decisions active each turn; prevents administrative exhaustion from managing city economics at the same frequency as armies; mirrors historical reality where campaigns moved faster than harvests |
-| no snapshot/restore | sequential delta apply in cycle C | turn-based game doesn't need transactional rollback; bugs should be fixed not hidden behind recovery logic |
-| 3 active pillars (AG/COM/DEF) | TECH and ORD deferred | 5 interacting pillars are hard to balance before the core loop is proven |
-| static population | no growth/decline for MVP | population dynamics multiply balancing complexity; static cap on recruitment is sufficient |
-| territory-only victory | one faction holds all cities | multi-dimension legacy scoring requires tuning three systems before the game loop exists |
-| distance-based supply | Chebyshev ≤ 5 tiles to friendly city | path-finding on faction-owned tile graph is [hard] and a source of edge-case bugs |
-| 3-tier XP | 500 / 1500 / 3500 | 5 tiers with differentiated rewards per tier requires playtesting to balance; 3 flat tiers are clear and testable |
+| decision                                         | choice                                                                               | why                                                                                                                                                                                                                                                                                               |
+| :----------------------------------------------- | :----------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| TUI-first (Bubble Tea), Ebitengine second        | Bubble Tea → Ebitengine                                                              | verify full game loop in terminal before writing pixel art; engine API is identical for both frontends; swapping view is a one-file change                                                                                                                                                        |
+| Go + Lua hybrid (gopher-lua)                     | Go owns engine; Lua owns content                                                     | Go: typed ledger integrity, `go test`, single binary. Lua: hot-reloadable events/AI/balance without recompile. gopher-lua is pure Go — no CGO, no deployment cost. `//go:embed lua/` bakes scripts into binary. Lua CANNOT mutate ledger directly; all output is Go-validated at the bridge layer |
+| Ebitengine over Defold                           | Go + Ebitengine                                                                      | long-term investment; Go is primary language across the stack. typed structs are safer for a complex simulation. Defold ruled out: Lua as primary language has no typed core — the wrong split. Lua content over a Go engine is the right split                                                   |
+| in-memory ledger over SQLite                     | Dictionary + JSON serialisation                                                      | cross-platform by default — no native extension dependency; snapshot/restore gives sufficient atomicity for a turn-based sim                                                                                                                                                                      |
+| YAML archives, JSON runtime                      | YAML → JSON via `make data`                                                          | YAML is human-readable and diffable; JSON loads fast via `encoding/json` with no extra dependency                                                                                                                                                                                                 |
+| headless-first engine                            | pure Go packages testable via `go test ./internal/...`                               | CI verification without any UI; separates simulation correctness from rendering                                                                                                                                                                                                                   |
+| auto-resolve battle (v1)                         | math formula, no tactical grid                                                       | reach playable loop sooner; grid deferred to post-release expansion                                                                                                                                                                                                                               |
+| single scenario lock (AD 189)                    | Dong Zhuo's Rise only                                                                | prevents data balancing sprawl before core loop is verified                                                                                                                                                                                                                                       |
+| mutable state + append-only log                  | live tables + `ledger_log`                                                           | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring                                                                                                                                                                                                   |
+| single codebase, Go cross-compilation            | one Go codebase builds to macOS / Linux / Windows / WASM; gomobile for Android / iOS | no platform branches; `os.UserConfigDir()` handles save path per platform; Ebitengine abstracts input and rendering                                                                                                                                                                               |
+| desktop primary, mobile secondary                | desktop is the reference platform; mobile port after M8                              | avoids designing around mobile constraints during active development while keeping the port feasible                                                                                                                                                                                              |
+| 2D only, no 3D geometry                          | Ebitengine 2D only                                                                   | strategy game needs no 3D; Ebitengine is a 2D-native library — no 3D renderer to avoid                                                                                                                                                                                                            |
+| pixel art, low asset cost                        | 16×16 or 32×32 tiles, palette-swaps                                                  | cheap to produce, fast to iterate, consistent with the minimalist aesthetic                                                                                                                                                                                                                       |
+| flatten OfficerAllegiance                        | loyalty + faction on Officer directly                                                | separate row-lifecycle table is a database pattern, not a game pattern; city_id/army_id already on Officer                                                                                                                                                                                        |
+| 3-cycle turn loop                                | A (world) / B (commands) / C (settle)                                                | diplomacy is just a gold-cost command; 4 cycles added complexity with no player-visible benefit                                                                                                                                                                                                   |
+| dual cadence (monthly combat / seasonal economy) | movement and battle every month; city yield and recruitment every season (3 turns)   | keeps tactical decisions active each turn; prevents administrative exhaustion from managing city economics at the same frequency as armies; mirrors historical reality where campaigns moved faster than harvests                                                                                 |
+| no snapshot/restore                              | sequential delta apply in cycle C                                                    | turn-based game doesn't need transactional rollback; bugs should be fixed not hidden behind recovery logic                                                                                                                                                                                        |
+| 3 active pillars (AG/COM/DEF)                    | TECH and ORD deferred                                                                | 5 interacting pillars are hard to balance before the core loop is proven                                                                                                                                                                                                                          |
+| static population                                | no growth/decline for MVP                                                            | population dynamics multiply balancing complexity; static cap on recruitment is sufficient                                                                                                                                                                                                        |
+| territory-only victory                           | one faction holds all cities                                                         | multi-dimension legacy scoring requires tuning three systems before the game loop exists                                                                                                                                                                                                          |
+| distance-based supply                            | Chebyshev ≤ 5 tiles to friendly city                                                 | path-finding on faction-owned tile graph is [hard] and a source of edge-case bugs                                                                                                                                                                                                                 |
+| 3-tier XP                                        | 500 / 1500 / 3500                                                                    | 5 tiers with differentiated rewards per tier requires playtesting to balance; 3 flat tiers are clear and testable                                                                                                                                                                                 |
 
 ---
 
 ## complexity score
 
-| dimension | score | notes |
-| :--- | :--- | :--- |
-| overall | 3 / 5 | moderate; multi-layer simulation with in-memory ledger, headless engine, and TUI/Ebitengine frontends |
-| core (clock, essence, economy) | 2 / 5 | pure math; stateless functions; well-bounded domain |
-| engine (sovereign_engine, ledger) | 3 / 5 | three-cycle turn loop, sequential settlement, CP validation logic |
-| data pipeline (YAML → JSON) | 2 / 5 | one-way conversion; `make data` is the only transform step |
-| ui (TUI / Ebitengine) | 2 / 5 | view-only; reads from ledger; no simulation logic |
-| future: army + battle system | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid |
-| future: diplomacy + events | 4 / 5 | pairwise faction state, scripted triggers, branching outcomes |
+| dimension                         | score | notes                                                                                                 |
+| :-------------------------------- | :---- | :---------------------------------------------------------------------------------------------------- |
+| overall                           | 3 / 5 | moderate; multi-layer simulation with in-memory ledger, headless engine, and TUI/Ebitengine frontends |
+| core (clock, essence, economy)    | 2 / 5 | pure math; stateless functions; well-bounded domain                                                   |
+| engine (sovereign_engine, ledger) | 3 / 5 | three-cycle turn loop, sequential settlement, CP validation logic                                     |
+| data pipeline (YAML → JSON)       | 2 / 5 | one-way conversion; `make data` is the only transform step                                            |
+| ui (TUI / Ebitengine)             | 2 / 5 | view-only; reads from ledger; no simulation logic                                                     |
+| future: army + battle system      | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid                                 |
+| future: diplomacy + events        | 4 / 5 | pairwise faction state, scripted triggers, branching outcomes                                         |
 
 ---
 
