@@ -9,6 +9,7 @@ import (
 	"github.com/mirageglobe/teio-senki/internal/engine/ledger"
 	"github.com/mirageglobe/teio-senki/internal/engine/sovereign"
 	"github.com/mirageglobe/teio-senki/internal/models"
+	"github.com/mirageglobe/teio-senki/internal/version"
 )
 
 type tickMsg struct{}
@@ -19,7 +20,7 @@ func tick() tea.Cmd {
 
 const splashDivider = "────────────────────────────────────────"
 
-var splashFull = []rune(banner + "\n" + splashDivider + "\n\n" +
+var splashFull = []rune(banner + "  v" + version.Current + "\n" + splashDivider + "\n\n" +
 	`"Sovereignty through the Ledger, Strategy through the Elements."` +
 	"\n\n[ press enter ]\n")
 
