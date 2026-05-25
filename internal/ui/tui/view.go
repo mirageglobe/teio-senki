@@ -44,6 +44,39 @@ func indentLines(s string) string {
 	return strings.Join(lines, "\n")
 }
 
+// joinColumns places left and right strings side by side, padding left to fixedW runes.
+func joinColumns(left, right string, fixedW, gap int) string {
+	ll := strings.Split(strings.TrimRight(left, "\n"), "\n")
+	rl := strings.Split(strings.TrimRight(right, "\n"), "\n")
+	h := len(ll)
+	if len(rl) > h {
+		h = len(rl)
+	}
+	sep := strings.Repeat(" ", gap)
+	var sb strings.Builder
+	for i := range h {
+		var l, r string
+		if i < len(ll) {
+			l = ll[i]
+		}
+		if i < len(rl) {
+			r = rl[i]
+		}
+		pad := fixedW - len([]rune(l))
+		if pad < 0 {
+			pad = 0
+		}
+		sb.WriteString(styleDim.Render(l))
+		sb.WriteString(strings.Repeat(" ", pad))
+		sb.WriteString(sep)
+		sb.WriteString(r)
+		if i < h-1 {
+			sb.WriteRune('\n')
+		}
+	}
+	return sb.String()
+}
+
 func (m model) headerSimple() string {
 	return styleTitle.Render(banner) + "\n" + divider + "\n\n"
 }
@@ -193,22 +226,23 @@ func (m model) viewSovereign() string {
 }
 
 func (m model) viewBriefing() string {
-	var b strings.Builder
 	sc := allScenarios[m.scenarioIdx]
-	b.WriteString(m.headerSimple())
-	fmt.Fprintf(&b, "%s  —  %s\n\n", styleSeason.Render(sc.name), sc.epoch)
-	fmt.Fprintf(&b, "%s\n\n", sc.desc)
+
+	var right strings.Builder
+	fmt.Fprintf(&right, "%s  —  %s\n\n", styleSeason.Render(sc.name), sc.epoch)
+	fmt.Fprintf(&right, "%s\n\n", sc.desc)
 	if lord, ok := m.ledger.GetOfficer(m.chosenLord); ok {
-		fmt.Fprintf(&b, "sovereign  : %s", styleTitle.Render(lord.Name))
+		fmt.Fprintf(&right, "sovereign  : %s", styleTitle.Render(lord.Name))
 		if lord.Title != "" {
-			fmt.Fprintf(&b, " %s", styleDim.Render("("+lord.Title+")"))
+			fmt.Fprintf(&right, " %s", styleDim.Render("("+lord.Title+")"))
 		}
-		fmt.Fprintf(&b, "\nessence    : %s\n", styleElement.Render(lord.Essence))
-		fmt.Fprintf(&b, "strategy   : %d   valour: %d   governance: %d\n\n",
+		fmt.Fprintf(&right, "\nessence    : %s\n", styleElement.Render(lord.Essence))
+		fmt.Fprintf(&right, "strategy   : %d   valour: %d   governance: %d\n",
 			lord.Strategy, lord.Valour, lord.Governance)
 	}
-	b.WriteString(styleDim.Render(RenderMap(m.ledger.SortedCities())))
-	return b.String()
+
+	body := joinColumns(RenderMap(m.ledger.SortedCities()), right.String(), mapW, 4)
+	return m.headerSimple() + body
 }
 
 func (m model) viewCycleA() string {
