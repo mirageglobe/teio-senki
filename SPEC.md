@@ -239,6 +239,30 @@ all UI lives in `internal/ui`. M2–M8 use Bubble Tea (TUI): text-only, dumb vie
 | LedgerScreen         | ledger log — scrollable history, event filter           | [ ]         | [ ]          |
 | VictoryScreen        | victory — unification win / defeat screen               | [ ]         | [ ]          |
 
+### terrain
+
+terrain type is set per city in `data/cities.yaml`. it affects movement cost, combat modifiers, and visual representation.
+
+| terrain    | tui art (braille)                          | gfx tile (M9)          | movement | notes                              |
+| :--------- | :----------------------------------------- | :--------------------- | :------- | :--------------------------------- |
+| `plain`    | empty (background colour)                  | flat grass tile        | 1×       | default; most cities               |
+| `mountain` | dense checkerboard braille `⣿`            | rocky peak tile        | 3×       | blocks fast march                  |
+| `forest`   | sparse organic braille scatter             | tree canopy tile       | 2×       | ambush bonus                       |
+| `river`    | horizontal braille line `⠒`               | water flow tile        | 2×       | crossing penalty; ford bonus       |
+| `coast`    | dotted edge braille                        | shoreline tile         | 1×       | naval access; trade bonus          |
+| `pass`     | narrow braille gap between mountain blocks | mountain-gap tile      | 2×       | choke point; defence bonus         |
+| `marsh`    | dense dotted low braille `⠤`              | wetland tile           | 3×       | disease risk; cavalry penalty      |
+| `hills`    | medium braille scatter `⠶`               | rolling hill tile      | 2×       | buffer between plain and mountain  |
+| `steppe`   | empty with dot-dash braille `⠄`           | dry grassland tile     | 1×       | cavalry bonus; nomad faction zone  |
+
+**tui rendering notes:**
+- mountain and forest are currently procedural (braille pattern fill inside the china border); not yet driven by per-city terrain tags.
+- next step: query ledger city terrain at render time and place the correct braille symbol at each city's map coordinate.
+
+**gfx rendering notes (M9):**
+- each terrain maps to a 16×16 pixel tile in `assets/sprites/terrain/`.
+- cities render their terrain tile as the base layer; city icon overlaid on top.
+
 ---
 
 ## deployment

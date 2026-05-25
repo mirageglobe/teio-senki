@@ -1,7 +1,7 @@
 # 帝王战纪：三国录 — World Ledger: Cities
 #
 # Grid: x 0–19 (west → east), y 0–14 (south → north)
-# Terrain: plain | mountain | forest | river | coast | pass
+# Terrain: plain | mountain | forest | river | coast | pass | marsh | hills | steppe
 # Faction: starting controller at scenario open (190 AD — Dong Zhuo Chaos)
 #
 # Four Economic Pillars (1–100):
@@ -445,3 +445,79 @@ cities:
     technology: 52
     order: 62
     faction: "Sun Ce"
+
+  # ── Nanzhong / South (南中) ─────────────────────────────────────────────────
+  # Shu Han's southern frontier — pacified by Zhuge Liang in 225 AD.
+
+  - name: "Yuesui"
+    chinese: "越嶲"
+    region: "Yi Zhou"
+    terrain: mountain
+    x: 3
+    y: 3
+    population: 60000
+    defense: 65
+    agriculture: 55
+    commerce: 30
+    technology: 28
+    order: 40
+    faction: "Liu Zhang"
+
+  - name: "Jianning"
+    chinese: "建寧"
+    region: "Yi Zhou"
+    terrain: plain
+    x: 4
+    y: 2
+    population: 80000
+    defense: 55
+    agriculture: 60
+    commerce: 45
+    technology: 35
+    order: 38
+    faction: "Liu Zhang"
+
+  - name: "Yongchang"
+    chinese: "永昌"
+    region: "Yi Zhou"
+    terrain: forest
+    x: 2
+    y: 2
+    population: 50000
+    defense: 60
+    agriculture: 65
+    commerce: 35
+    technology: 25
+    order: 35
+    faction: "Liu Zhang"
+
+  # ── Jiao Province (交州) ────────────────────────────────────────────────────
+  # Wu's southernmost territory — governed by Shi Xie (士燮) until 226 AD.
+
+  - name: "Panyu"
+    chinese: "番禺"
+    region: "Jiao Zhou"
+    terrain: coast
+    x: 9
+    y: 1
+    population: 150000
+    defense: 55
+    agriculture: 65
+    commerce: 80
+    technology: 58
+    order: 55
+    faction: "Shi Xie"
+
+  - name: "Jiaozhi"
+    chinese: "交趾"
+    region: "Jiao Zhou"
+    terrain: river
+    x: 5
+    y: 0
+    population: 100000
+    defense: 50
+    agriculture: 70
+    commerce: 55
+    technology: 40
+    order: 45
+    faction: "Shi Xie"
