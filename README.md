@@ -12,12 +12,13 @@ see [DESIGN.md](DESIGN.md) for game design, systems, and mechanics. see [SPEC.md
 
 ## stack
 
-| layer | tool | role |
-| :--- | :--- | :--- |
-| engine | Go | simulation core, turn loop, ledger |
-| scripting | Lua (gopher-lua) | AI behaviours, balance rules, hot-reloadable |
-| ui | Bubble Tea (TUI) | terminal frontend; Ebitengine pixel art added at M9 |
-| data | YAML → JSON | human-readable archives converted for runtime |
+| layer      | tool                        | role                                              |
+| :--------- | :-------------------------- | :------------------------------------------------ |
+| language   | TypeScript (strict)         | simulation core, turn loop, ledger                |
+| ui         | HTML + Canvas (rot.js)      | browser-native rendering; dumb view over engine   |
+| packaging  | Capacitor / Tauri           | mobile (Android, iOS) and desktop wrapping        |
+| data       | YAML → JSON                 | human-readable archives converted for runtime     |
+| build      | Vite + Vitest               | dev server, production bundle, headless tests     |
 
 ---
 

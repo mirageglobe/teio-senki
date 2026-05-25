@@ -3,7 +3,8 @@
 > "Sovereignty through the Ledger, Strategy through the Elements."
 
 ## tldr
-A headless, turn-based grand strategy engine set in the Three Kingdoms era. Built in **Go + Lua + Bubble Tea (TUI → Ebitengine)**. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (in-memory ledger + JSON persistence)** over visual spectacle.
+
+A headless, turn-based grand strategy engine set in the Three Kingdoms era. Built in **TypeScript + Canvas (browser-first)**. Architecture prioritises **simulation purity (headless-first)** and **cross-platform portability (static files + Capacitor/Tauri)** over visual spectacle. Runs locally by opening `index.html` — no install, no runtime required.
 
 For game rules, systems, and mechanics see [DESIGN.md](DESIGN.md).
 
@@ -11,59 +12,52 @@ For game rules, systems, and mechanics see [DESIGN.md](DESIGN.md).
 
 ## tech stack
 
-| layer              | tool                                 | role                                                                                 |
-| :----------------- | :----------------------------------- | :----------------------------------------------------------------------------------- |
-| **language**       | Go                                   | all simulation logic, engine, and UI wiring                                          |
-| **scripting**      | Lua via `gopher-lua`                 | content layer: events, AI scripts, balance tables — hot-reloadable without recompile |
-| **TUI frontend**   | Bubble Tea                           | terminal UI — dumb view over engine; full game loop before pixel art                 |
-| **GFX frontend**   | Ebitengine                           | 2D rendering layer added after game is verified in TUI                               |
-| **data (edit)**    | YAML (`data/`)                       | human-readable master archive for officers and cities                                |
-| **data (runtime)** | JSON (`assets/data/`)                | converted from YAML via `make data`; loaded at game start                            |
-| **persistence**    | `save.json` via `os.UserConfigDir()` | cross-platform save path                                                             |
-| **testing**        | `go test ./...`                      | standard Go test runner; no UI dependency for engine logic                           |
-| **build**          | GNU Make + Go toolchain              | `make run`, `make tui`, `make test`, `make build`, `make export-*`                   |
+| layer              | tool                              | role                                                                   |
+| :----------------- | :-------------------------------- | :--------------------------------------------------------------------- |
+| **language**       | TypeScript (strict)               | all simulation logic, engine, and UI wiring                            |
+| **ui**             | HTML + Canvas (rot.js)            | browser-native rendering; dumb view over engine                        |
+| **data (edit)**    | YAML (`data/`)                    | human-readable master archive for officers and cities                  |
+| **data (runtime)** | JSON (`assets/data/`)             | converted from YAML via `make data`; loaded at game start              |
+| **persistence**    | `localStorage` + JSON export      | browser-native; exportable to `save.json` for local backup             |
+| **testing**        | Vitest                            | headless unit + integration tests; no DOM/Canvas dependency for engine |
+| **build**          | Vite                              | dev server, production bundle, WASM-ready                              |
+| **packaging**      | Capacitor (mobile)                | wraps the web app for Android + iOS; no code changes required          |
+| **packaging**      | Tauri (desktop)                   | wraps the web app for macOS / Windows / Linux; native binary output    |
+| **task runner**    | GNU Make                          | `make run`, `make test`, `make build`, `make data`, `make export-*`    |
 
 ## project structure
 
 ```text
-cmd/
-  teio/
-    main.go             # entry point: load data, init ledger, run TUI (later: swap to Ebitengine)
-internal/
-  models/               # typed domain structs: Officer, City, Army, Element, Tag
-  core/                 # pure simulation — zero Ebitengine imports
-    clock/              # bazi calendar: heavenly stems / earthly branches
-    essence/            # wu xing drift multipliers
-    economy/            # city yield formulas
-  engine/               # turn loop — zero Ebitengine imports
-    ledger/             # in-memory state store; serialises to save.json
-    sovereign/          # 3-cycle turn processor (A: world, B: commands, C: settle)
-  vm/                   # Lua VM binding layer — exposes typed Go API to Lua content
-    loader/             # script discovery, hot-reload watcher, embed fallback
-    bridge/             # Go↔Lua type adapters: GameState table, Command table
-  ui/
-    tui/                # Bubble Tea terminal frontend — dumb view, zero game logic
-      map/              # ASCII strategic map
-      panels/           # city, officer, army, diplomacy text panels
-      screens/          # battle report, victory, scenario select, ledger log
-    gfx/                # Ebitengine rendering — added after TUI game loop is verified
-      map/              # pixel art strategic map (permanent primary surface)
-      panels/           # city, officer, army, diplomacy overlays
-      screens/          # battle, victory, scenario select, ledger
-lua/                    # Lua content layer (//go:embed into binary at build time)
-  events/               # narrative event scripts (e.g. burning_of_luoyang.lua)
-  ai/                   # ai behaviour scripts per profile (aggressive.lua, etc.)
-  balance/              # tunable constants: drift weights, CP formula, XP thresholds
+src/
+  core/               # pure TS simulation — zero DOM/Canvas imports
+    clock/            # bazi calendar: heavenly stems / earthly branches
+    essence/          # wu xing drift multipliers
+    economy/          # city yield formulas
+  engine/             # turn loop — zero DOM imports
+    ledger/           # in-memory state store; serialises to localStorage / save.json
+    sovereign/        # 3-cycle turn processor (A: world, B: commands, C: settle)
+    battle/           # auto-resolve battle math
+    diplomacy/        # faction relation scores; diplomatic command processing
+    events/           # world event generator: seasonal triggers, historical events
+    ai/               # AI sovereign decision maker
+  models/             # typed interfaces: Officer, City, Army, Element, Tag, Terrain
+  ui/                 # all DOM/Canvas rendering — dumb view over engine
+    screens/          # game screens (map, city, officer, army, battle, diplomacy)
+    components/       # reusable UI components (panels, bars, log)
 assets/
-  data/                 # converted JSON archives (generated by make data)
-  sprites/              # pixel art tiles, unit icons, UI elements
-data/                   # YAML master archive (source of truth — edit here)
+  data/               # converted JSON archives (generated by make data)
+  sprites/            # pixel art tiles, unit icons, UI elements
+data/                 # YAML master archive (source of truth — edit here)
+index.html            # entry point — open locally or serve via Vite dev server
+vite.config.ts
+package.json
 Makefile
 ```
 
 ## development principles
 
 ### simplicity first
+
 - **flat over relational** — game state lives in flat dictionaries on domain models. no row-lifecycle tables, no FK references, no separate join records.
 - **sequential over transactional** — apply deltas in order. if something breaks, fix the bug. no snapshot/restore, no rollback machinery.
 - **no new pillar systems** — AG/COM/TECH/ORD are active in yield formulas (set by scenario data). DEF is active for sieges. player BUILD commands for TECH and ORD are deferred until the core loop is balanced.
@@ -72,59 +66,22 @@ Makefile
 - **territory wins** — victory is one faction holding all cities. multi-dimension scoring is deferred.
 
 ### ease of development
-- **TUI-first, graphics second** — build the full game loop as a Bubble Tea terminal app before writing a single Ebitengine frame. the TUI is a dumb view: it reads engine state, sends commands, renders text. once the game is fully playable in the terminal, add the Ebitengine rendering layer over the same engine.
-- **headless-first** — all engine logic (`internal/core`, `internal/engine`) is testable via `go test ./internal/...` with zero UI dependency.
-- **Lua for content, Go for engine** — events, AI scripts, and balance tables live in `lua/`. they can be hot-reloaded via `make reload` during development. `//go:embed lua/` bakes them into the binary at build time — no loose files in the shipped artefact. Go owns ledger integrity; Lua owns narrative and balance authoring.
+
+- **browser-first** — the game runs by opening `index.html`. no install required for players. contributors fork, edit a `.ts` file, and run `make run` to see changes immediately via Vite HMR.
+- **headless-first** — all engine logic (`src/core`, `src/engine`) is testable via `make test` with zero DOM or Canvas dependency.
+- **TypeScript strict mode** — all simulation types are explicit interfaces. no `any` crossing module boundaries. compile-time safety throughout.
 - **vertical slice** — AD 189 scenario only. one lord tag subset (~50 officers). do not balance other scenarios until the game loop is playable end-to-end.
 - **no just-in-case** — do not implement a feature until the turn engine needs it. espionage waits until diplomacy works; population dynamics wait until the economy is stable.
 - **auto-resolve first** — no tactical grid in V1. the auto-resolve math formula is the battle system.
 - **test before polish** — verify engine logic headlessly before committing to pixel art assets.
 
 ## scope containment (no-drift)
-- **Engine/UI Separation**: Logic MUST be testable in `make test` without initializing the UI.
+
+- **Engine/UI Separation**: Logic MUST be testable in `make test` without initialising the DOM or Canvas.
 - **Ledger Boundary**: If a feature doesn't write state to the ledger, it is not part of the core simulation.
-- **Lua Boundary**: Lua scripts MAY read a `GameState` table and return `Command` tables. They MUST NOT directly mutate ledger structs or call Go functions outside `internal/vm/bridge/`. All Lua output is validated by Go before application.
 - **No Tactical Grid (V1)**: The grid battle is deferred to expansions. Stick to the auto-resolve formula.
 - **Single Scenario**: Development is locked to **AD 189 (Dong Zhuo)**. Do not balance other scenarios until the game is playable.
 - **No "Just-in-case"**: Do not implement features until the turn engine needs them.
-
-### lua bridge api (internal/vm/bridge)
-
-the bridge is the only surface Lua scripts may call. all functions are registered in `internal/vm/bridge/bridge.go` and exposed to gopher-lua as globals. Lua CANNOT import any other Go package.
-
-**read-only state accessors:**
-
-| lua function                   | go signature                                | returns                                                                                                    |
-| :----------------------------- | :------------------------------------------ | :--------------------------------------------------------------------------------------------------------- |
-| `state.officer(id)`            | `GetOfficer(id string) OfficerView`         | table: id, name, essence, strategy, valour, governance, integrity, loyalty, faction, health, age, xp, tags |
-| `state.city(id)`               | `GetCity(id string) CityView`               | table: id, name, faction, ag, com, tech, ord, def, food, gold, garrison, governor_id                       |
-| `state.army(id)`               | `GetArmy(id string) ArmyView`               | table: id, faction, general_id, troops, morale, supply, x, y, stance                                       |
-| `state.faction_relation(a, b)` | `GetRelation(a, b string) int`              | integer −100 to +100                                                                                       |
-| `state.clock()`                | `GetClock() ClockView`                      | table: year, month, stem, branch, season_element                                                           |
-| `state.resources(faction)`     | `GetResources(faction string) ResourceView` | table: food, gold                                                                                          |
-| `rng.float()`                  | `RngFloat() float64`                        | float in [0.0, 1.0) — uses engine rand.Rand                                                                |
-| `rng.intn(n)`                  | `RngIntn(n int) int`                        | int in [0, n)                                                                                              |
-
-**command constructors (return a Command table, validated and applied by Go):**
-
-| lua function                              | effect                                          |
-| :---------------------------------------- | :---------------------------------------------- |
-| `cmd.march(army_id, x, y)`                | queue march order                               |
-| `cmd.recruit(city_id, amount)`            | queue recruitment (seasonal only; Go validates) |
-| `cmd.develop(city_id, pillar)`            | queue pillar build                              |
-| `cmd.tribute(target_faction, gold)`       | queue diplomatic tribute                        |
-| `cmd.assign(officer_id, role, target_id)` | assign officer to role                          |
-
-**event emission:**
-
-| lua function                                        | effect                                    |
-| :-------------------------------------------------- | :---------------------------------------- |
-| `log.event(event_type, description, effects_table)` | append to ledger log for the current turn |
-
-**constraints:**
-- all read accessors return **copies** — Lua cannot mutate Go structs.
-- `cmd.*` functions return a Lua table; Go applies the command after validating CP budget and game rules.
-- Lua scripts that call any function not in this table cause a bridge error and the script is skipped for that turn.
 
 ---
 
@@ -132,16 +89,16 @@ the bridge is the only surface Lua scripts may call. all functions are registere
 
 ### engine choice
 
-**Go + Ebitengine** — chosen for long-term coherence with the stack. typed Go structs for 498 officers, complex stat interactions, and AI decision logic are safer and more maintainable than scripted alternatives. `go test ./...` is the only test runner needed. Ebitengine is 2D-native with gomobile support for mobile ports.
+**TypeScript + Canvas** — chosen for browser-first deployment and open source contributor accessibility. strict TypeScript interfaces for 498 officers, complex stat interactions, and AI decision logic are safe and maintainable. Vitest is the only test runner needed. the browser runtime handles cross-platform without any native toolchain.
 
-Defold was evaluated and ruled out: Lua as primary language has no type safety — the wrong fit for a complex simulation. Lua is used in this project for content (events, AI, balance) only, not for the engine itself.
+Capacitor wraps the same web app for Android and iOS — no platform-specific code. Tauri provides native desktop binaries. one codebase, no forks.
 
 ### principles
 
-- **headless engine**: all simulation logic (`internal/core`, `internal/engine`) has zero UI imports — no Bubble Tea, no Ebitengine. testable with `go test ./internal/...`.
-- **dumb frontend contract**: both TUI and Ebitengine frontends talk to the engine through the same interface — `QueueCommand(cmd)`, `SettleTurn() []LogEntry`, `GetState() GameState`. no game logic lives in either frontend. swapping TUI for Ebitengine is a view swap only.
-- **typed domain models**: Go structs with no `interface{}` or `map[string]any` crossing package boundaries. compile-time safety throughout.
-- **mutable current state + chronicle log**: `Ledger` struct holds live game state. `Logs []LogEntry` is append-only for history and victory scoring. serialised to `save.json` via `encoding/json` on save.
+- **headless engine**: all simulation logic (`src/core`, `src/engine`) has zero DOM or Canvas imports. testable with `vitest run`.
+- **dumb frontend contract**: UI screens read engine state through a typed interface — `queueCommand(cmd)`, `settleTurn(): LogEntry[]`, `getState(): GameState`. no game logic lives in the UI layer.
+- **typed domain models**: TypeScript interfaces with no `any` or `unknown` crossing module boundaries. compile-time safety throughout.
+- **mutable current state + chronicle log**: `Ledger` object holds live game state. `logs: LogEntry[]` is append-only for history and victory scoring. serialised to `localStorage` on save; exportable to `save.json`.
 - **YAML archives**: human-readable canonical data (`data/officers.yaml`, `data/cities.yaml`). converted to JSON via `make data`; loaded once at game start into the ledger.
 
 ### game state machine
@@ -168,43 +125,41 @@ no state transition may bypass this sequence. the engine raises an error if a co
 
 ### module responsibilities
 
-| package                     | role                                                                                                  |
-| :-------------------------- | :---------------------------------------------------------------------------------------------------- |
-| `cmd/teio`                  | entry point: load JSON archives, init ledger, start TUI loop (Ebitengine added at M9)                 |
-| `internal/models`           | typed Go structs: Officer, City, Army, Element, Tag, Terrain, Stance                                  |
-| `internal/core/clock`       | bazi calendar: heavenly stem (天干) / earthly branch (地支), season and element lookup                    |
-| `internal/core/essence`     | wu xing drift: pure functions mapping element pairs to stat multipliers                               |
-| `internal/core/economy`     | city yield formulas: grain, gold, corruption — pure stateless functions                               |
-| `internal/engine/ledger`    | in-memory state store: officers, cities, clock, resources, append-only log; serialises to `save.json` |
-| `internal/engine/sovereign` | three-cycle turn processor: cycle A (world), B (commands), C (settle); CP budget                      |
-| `internal/engine/battle`    | auto-resolve battle math: damage formula, duel resolution, morale, outcome log                        |
-| `internal/engine/diplomacy` | faction relation scores; diplomatic command processing                                                |
-| `internal/engine/events`    | world event generator: seasonal triggers, historical events                                           |
-| `internal/engine/ai`        | AI sovereign: `ai_decide(ledger, factionID, intelligence, behaviour) []Command`                       |
-| `internal/ui/tui`           | Bubble Tea terminal frontend (M2–M8): dumb view; reads engine state, sends commands                   |
-| `internal/ui/gfx`           | Ebitengine rendering (M9–M10): map, panels, screens — imports engine, never vice versa                |
+| module                 | role                                                                                                     |
+| :--------------------- | :------------------------------------------------------------------------------------------------------- |
+| `src/models`           | typed TS interfaces: Officer, City, Army, Element, Tag, Terrain, Stance                                  |
+| `src/core/clock`       | bazi calendar: heavenly stem (天干) / earthly branch (地支), season and element lookup                    |
+| `src/core/essence`     | wu xing drift: pure functions mapping element pairs to stat multipliers                                  |
+| `src/core/economy`     | city yield formulas: grain, gold, corruption — pure stateless functions                                  |
+| `src/engine/ledger`    | in-memory state store: officers, cities, clock, resources, append-only log; serialises to localStorage   |
+| `src/engine/sovereign` | three-cycle turn processor: cycle A (world), B (commands), C (settle); CP budget                        |
+| `src/engine/battle`    | auto-resolve battle math: damage formula, duel resolution, morale, outcome log                           |
+| `src/engine/diplomacy` | faction relation scores; diplomatic command processing                                                   |
+| `src/engine/events`    | world event generator: seasonal triggers, historical events                                              |
+| `src/engine/ai`        | AI sovereign: `aiDecide(ledger, factionId, intelligence, behaviour): Command[]`                          |
+| `src/ui`               | all DOM/Canvas rendering: screens, components — reads engine state, sends commands; never vice versa     |
 
 ### data flow
 
 ```
-data/*.yaml  ──(make data)──▶  assets/data/*.json  ──(ledger.Load)──▶  in-memory Ledger struct
+data/*.yaml  ──(make data)──▶  assets/data/*.json  ──(ledger.load)──▶  in-memory Ledger object
                                                                                 │
-    ui (Ebitengine) ──> engine (cycle A/B/C) ──────────────> ledger ───────────┘
-                    └──> battle / diplomacy / events / ai         │
-                                                     (SettleTurn; sequential delta apply)
-                                                                  │
-                                                           save ──▶  save.json (os.UserConfigDir)
+    ui (Canvas) ──> engine (cycle A/B/C) ──────────────> ledger ───────────────┘
+                └──> battle / diplomacy / events / ai         │
+                                                 (settleTurn; sequential delta apply)
+                                                              │
+                                           save ──▶  localStorage / save.json export
 ```
 
 ---
 
 ## persistence
 
-### in-memory ledger + JSON save
+### in-memory ledger + localStorage save
 
-runtime state lives entirely in memory. on save, the ledger serialises to `save.json`. on load, `save.json` is deserialised back into the ledger. new game starts seed from `assets/data/*.json` (converted from YAML archives).
+runtime state lives entirely in memory. on save, the ledger serialises to `localStorage`. on load, `localStorage` is deserialised back into the ledger. new game starts seed from `assets/data/*.json` (converted from YAML archives). players may export/import `save.json` for backup or transfer.
 
-this approach is cross-platform by default — no native extensions required, works on desktop, mobile, and web exports.
+this approach is cross-platform by default — works in browser, Capacitor (mobile), and Tauri (desktop) without path configuration.
 
 | ledger key          | type              | purpose                                                                     |
 | :------------------ | :---------------- | :-------------------------------------------------------------------------- |
@@ -222,88 +177,85 @@ this approach is cross-platform by default — no native extensions required, wo
 
 ## frontend
 
-all UI lives in `internal/ui`. M2–M8 use Bubble Tea (TUI): text-only, dumb view over the engine. M9–M10 add Ebitengine pixel art rendering over the same engine — the engine API does not change.
+all UI lives in `src/ui`. the game renders in a browser Canvas with HTML panels for text data. the engine API does not change between development phases — only the rendering layer is added or improved.
 
 ### screens
 
-| screen               | maps to system                                          | tui (M2–M8) | gfx (M9–M10) |
-| :------------------- | :------------------------------------------------------ | :---------- | :----------- |
-| SplashScreen         | — (M0 TUI; M9 GFX)                                      | [ ]         | [ ]          |
-| ScenarioSelectScreen | scenario & sovereign setup                              | [ ]         | [ ]          |
-| StrategicMapScreen   | strategic map — cities, armies, faction colours         | [ ]         | [ ]          |
-| CityScreen           | city development — pillar bars, officer slot, food/gold | [ ]         | [ ]          |
-| OfficerScreen        | officer management — roster, stats, assignment          | [ ]         | [ ]          |
-| ArmyScreen           | army system — troop count, morale, supply, stance       | [ ]         | [ ]          |
-| BattleScreen         | tactical battle — auto-resolve report                   | [ ]         | [ ]          |
-| DiplomacyScreen      | diplomacy — faction list, relation scores, action panel | [ ]         | [ ]          |
-| LedgerScreen         | ledger log — scrollable history, event filter           | [ ]         | [ ]          |
-| VictoryScreen        | victory — unification win / defeat screen               | [ ]         | [ ]          |
+| screen               | maps to system                                          | status |
+| :------------------- | :------------------------------------------------------ | :----- |
+| SplashScreen         | — (entry point)                                         | [ ]    |
+| ScenarioSelectScreen | scenario & sovereign setup                              | [ ]    |
+| StrategicMapScreen   | strategic map — cities, armies, faction colours         | [ ]    |
+| CityScreen           | city development — pillar bars, officer slot, food/gold | [ ]    |
+| OfficerScreen        | officer management — roster, stats, assignment          | [ ]    |
+| ArmyScreen           | army system — troop count, morale, supply, stance       | [ ]    |
+| BattleScreen         | tactical battle — auto-resolve report                   | [ ]    |
+| DiplomacyScreen      | diplomacy — faction list, relation scores, action panel | [ ]    |
+| LedgerScreen         | ledger log — scrollable history, event filter           | [ ]    |
+| VictoryScreen        | victory — unification win / defeat screen               | [ ]    |
 
 ---
 
 ## deployment
 
-one Go codebase, multiple targets via cross-compilation and gomobile. no platform-specific code branches.
+one TypeScript codebase, multiple targets via Vite (browser), Capacitor (mobile), and Tauri (desktop). no platform-specific code branches.
 
 ### target platforms
 
-| platform | format          | priority | toolchain required                                         |
-| :------- | :-------------- | :------: | :--------------------------------------------------------- |
-| macOS    | native binary   | 1        | Go toolchain; Apple Developer account for notarisation     |
-| Linux    | native binary   | 2        | Go toolchain; no signing required                          |
-| Windows  | native binary   | 2        | Go toolchain; optional code-signing certificate            |
-| Android  | `.apk` / `.aab` | 3        | gomobile; Android SDK + NDK; keystore for signing          |
-| iOS      | Xcode project   | 4        | gomobile; macOS + Xcode + Apple Developer account ($99/yr) |
+| platform | format                | priority | toolchain required                                         |
+| :------- | :-------------------- | :------: | :--------------------------------------------------------- |
+| browser  | static files          | 1        | none (open `index.html`); Vite dev server for development  |
+| macOS    | Tauri native binary   | 2        | Rust + Tauri CLI; Apple Developer account for notarisation |
+| Linux    | Tauri native binary   | 2        | Rust + Tauri CLI; no signing required                      |
+| Windows  | Tauri native binary   | 2        | Rust + Tauri CLI; optional code-signing certificate        |
+| Android  | Capacitor `.apk`      | 3        | Android SDK; Capacitor CLI; keystore for signing           |
+| iOS      | Capacitor Xcode proj  | 4        | macOS + Xcode + Apple Developer account ($99/yr)           |
 
 ### build rules
 
-- **no platform-specific code** — one Go codebase compiles to all targets via cross-compilation and gomobile.
+- **no platform-specific code** — one TypeScript codebase; Capacitor and Tauri wrap the same `dist/` output.
 - **no fixed pixel coordinates** — use relative layout logic so screens scale across resolutions.
-- **no keyboard-only flows** — every action needs a mouse/touch equivalent.
-- **save path via `os.UserConfigDir()`** — resolves to `~/Library/Application Support` (macOS), `~/.config` (Linux), internal storage (Android/iOS).
+- **no keyboard-only flows** — every action needs a mouse/touch equivalent for mobile.
+- **save via `localStorage`** — works in browser, Capacitor, and Tauri without path configuration.
 
 ### makefile targets
 
-| target                | command                                  | output                              |
-| :-------------------- | :--------------------------------------- | :---------------------------------- |
-| `make run`            | `go run cmd/teio/main.go`                | dev run, current platform           |
-| `make build`          | `go build -o dist/teio cmd/teio/main.go` | native binary, current platform     |
-| `make export-mac`     | `GOOS=darwin GOARCH=arm64 go build ...`  | macOS binary to `dist/mac/`         |
-| `make export-linux`   | `GOOS=linux GOARCH=amd64 go build ...`   | Linux binary to `dist/linux/`       |
-| `make export-windows` | `GOOS=windows GOARCH=amd64 go build ...` | Windows binary to `dist/windows/`   |
-| `make export-web`     | `GOOS=js GOARCH=wasm go build ...`       | WASM to `dist/web/`                 |
-| `make export-android` | `gomobile build -target android`         | APK to `dist/android/`              |
-| `make export-ios`     | `gomobile build -target ios`             | iOS app to `dist/ios/` (macOS only) |
+| target                | command                                     | output                               |
+| :-------------------- | :------------------------------------------ | :----------------------------------- |
+| `make run`            | `vite`                                      | dev server at `localhost:5173`       |
+| `make build`          | `vite build`                                | production bundle to `dist/`         |
+| `make test`           | `vitest run`                                | headless unit + integration tests    |
+| `make data`           | convert `data/*.yaml` → `assets/data/*.json` | runtime JSON archives               |
+| `make export-web`     | `vite build`                                | static files to `dist/`              |
+| `make export-desktop` | `tauri build`                               | native binary via Tauri              |
+| `make export-android` | `npx cap build android`                     | APK to `android/app/build/outputs/` |
+| `make export-ios`     | `npx cap build ios`                         | Xcode project in `ios/`              |
 
 ### platform notes
 
-**macOS** — native binary via cross-compilation. for App Store / public distribution: `codesign` + `xcrun notarytool`. for personal use: right-click → open bypasses Gatekeeper.
+**browser** — open `dist/index.html` directly or host as static files. zero install for players. simplest distribution path.
 
-**Linux** — single binary, no signing. simplest target. distribute via itch.io or direct download.
+**macOS / Linux / Windows** — Tauri wraps the Vite output in a native window. produces a native binary (~5MB) without bundling a full Chromium runtime (unlike Electron).
 
-**Windows** — `GOOS=windows go build` produces a `.exe`. optional code-signing certificate for SmartScreen bypass; unsigned builds run after user confirms the prompt.
+**Android** — Capacitor wraps `dist/` as a WebView app. requires Android SDK and `npx cap sync` after each build. keystore required for Play Store release signing.
 
-**web** — Ebitengine has native WASM support. output runs in any modern browser. useful for demos.
-
-**Android** — gomobile generates an APK. requires Android SDK + NDK. minimum target: Android 8.0 (API 26). keystore required for release signing.
-
-**iOS** — gomobile requires macOS + Xcode + Apple Developer account. most complex target — defer until macOS and Android are validated.
+**iOS** — Capacitor requires macOS + Xcode + Apple Developer account. most complex target — defer until browser and Android are validated.
 
 ---
 
 ## headless testing strategy
 
-`internal/core` and `internal/engine` have zero Ebitengine imports. they are plain Go packages tested with the standard toolchain. no game loop, no window, no graphics context required.
+`src/core` and `src/engine` have zero DOM or Canvas imports. they are plain TypeScript modules tested with Vitest. no browser context, no game loop, no window required.
 
 ```
-make test  →  go test ./internal/...
+make test  →  vitest run
 ```
 
-### 1. unit tests (per package)
+### 1. unit tests (per module)
 
-each package has its own `_test.go` file covering pure functions:
+each module has its own `*.test.ts` file covering pure functions:
 
-| package            | what to test                                                                       |
+| module             | what to test                                                                       |
 | :----------------- | :--------------------------------------------------------------------------------- |
 | `core/clock`       | 60-unit stem-branch cycle; seasonal transitions; year rollover                     |
 | `core/essence`     | every wu xing pair (nourishing, controlling, etc.) produces correct multiplier     |
@@ -315,44 +267,43 @@ each package has its own `_test.go` file covering pure functions:
 
 ### 2. integration test — "robot player"
 
-```go
-// internal/engine/sovereign/integration_test.go
-func TestRobotPlayer(t *testing.T) {
-    ledger := ledger.LoadFromJSON("testdata/ad189.json")
-    engine := sovereign.New(ledger, "Cao Cao")
+```typescript
+// src/engine/sovereign/sovereign.integration.test.ts
+test('robot player — 12-turn simulation', () => {
+  const ledger = loadFromJSON('testdata/ad189.json')
+  const engine = new SovereignEngine(ledger, 'Cao Cao')
 
-    for turn := range 12 {
-        engine.StartTurn()                                    // cycle A
-        engine.QueueCommand("BUILD_AG", Params{"city": "Luoyang"}, 1)  // cycle B
-        engine.SettleTurn()                                   // cycle C
+  for (let turn = 0; turn < 12; turn++) {
+    engine.startTurn()                                              // cycle A
+    engine.queueCommand({ type: 'BUILD_AG', cityId: 'luoyang' })  // cycle B
+    engine.settleTurn()                                            // cycle C
 
-        assert year/month progressed
-        assert city pillars changed by expected delta
-        assert officer stats clamped 1–100
-        assert ledger.Logs has entry for every cycle event
-    }
-}
+    // assert year/month progressed
+    // assert city pillars changed by expected delta
+    // assert officer stats clamped 1–100
+    // assert ledger.logs has entry for every cycle event
+  }
+})
 ```
 
 ### 3. golden master regression
 
-- run a 100-turn simulation with `rand.New(rand.NewSource(42))`.
+- run a 100-turn simulation with a fixed seed (`rngSeed = 42`).
 - serialise final ledger to `testdata/golden_master.json`.
 - after any engine refactor, re-run. diff against golden master — any change is a regression flag.
 
 ### 4. random source policy
 
-| context                     | source                                            | rationale                                                                  |
-| :-------------------------- | :------------------------------------------------ | :------------------------------------------------------------------------- |
-| tests (golden master, unit) | `rand.New(rand.NewSource(42))`                    | deterministic; reproducible across machines                                |
-| production (new game)       | `rand.New(rand.NewSource(time.Now().UnixNano()))` | unique seed per session                                                    |
-| production (load game)      | seed stored in `save.json` as `rng_seed int64`    | reload continues the same RNG stream to avoid non-determinism on save/load |
+| context                     | source                               | rationale                                                                  |
+| :-------------------------- | :----------------------------------- | :------------------------------------------------------------------------- |
+| tests (golden master, unit) | `seedrandom('42')`                   | deterministic; reproducible across machines                                |
+| production (new game)       | `seedrandom(Date.now().toString())`  | unique seed per session                                                    |
+| production (load game)      | seed stored in `localStorage`        | reload continues the same RNG stream to avoid non-determinism on save/load |
 
 rules:
-- the engine accepts a `rand.Rand` argument — never calls `rand.Float64()` directly (global rand is banned in engine packages).
-- a single `rand.Rand` instance is created at game start and passed through; no package-level RNG state.
-- `rng_seed` is written to `save.json` on first save. subsequent saves update a `rng_calls int64` counter so the stream can be fast-forwarded on load (call `rand.Read` n times on a fresh source to restore position).
-- Lua scripts must not generate their own random — they call `rng.float()` / `rng.intn(n)` via the bridge, which delegates to the engine's `rand.Rand`.
+- the engine accepts an `RNG` argument — never calls `Math.random()` directly (global random is banned in engine modules).
+- a single `RNG` instance is created at game start and passed through; no module-level RNG state.
+- `rngSeed` is written to `localStorage` on first save. subsequent saves update an `rngCalls` counter so the stream can be fast-forwarded on load.
 
 ---
 
@@ -362,76 +313,62 @@ rules:
 
 ### development strategy
 
-- **TUI-first**: build the full game loop as a Bubble Tea terminal app (M2) before writing Ebitengine frames. the TUI is a dumb view — all logic stays in the engine.
-- **engine before screen**: every simulation milestone (M3–M8) delivers working engine code first, then updates the TUI screens. Ebitengine rendering (M9–M10) comes after the game is fully playable in terminal.
+- **browser-first**: the game runs by opening `index.html`. first playable is a Canvas-rendered browser page.
+- **engine before screen**: every simulation milestone delivers working engine code first, then updates the UI screens.
 - **auto-resolve first**: battle (M6) is a math resolver — no tactical grid. grid deferred to ideas.
 - **canonical scenario**: AD 189 (Dong Zhuo) only until the game loop is verified end-to-end.
 - **vertical slice**: lord-tagged officers + primary generals only for initial seeding.
 
 ### screen development sequence
 
-**TUI screens (M2–M8)** — text-based, full game loop:
-
-| order | screen              | milestone | what it proves                                                |
-| :---: | :------------------ | :-------: | :------------------------------------------------------------ |
-| 1     | TUI map             | 2         | ASCII map renders; cities and factions visible; turn advances |
-| 2     | TUI city panel      | 3         | pillar data reads from ledger; build commands fire            |
-| 3     | TUI officer panel   | 4         | assignment, loyalty, XP readable; commands work               |
-| 4     | TUI army panel      | 5         | army data visible; movement orders queue                      |
-| 5     | TUI battle report   | 6         | auto-resolve fires; result and log displayed                  |
-| 6     | TUI diplomacy panel | 7         | relation scores visible; tribute/alliance fire                |
-| 7     | TUI victory screen  | 8         | win / defeat state detected and shown                         |
-
-**Ebitengine screens (M9–M10)** — pixel art, same engine beneath:
-
-| order | screen               | milestone | replaces            |
-| :---: | :------------------- | :-------: | :------------------ |
-| 1     | StrategicMapScreen   | 9         | TUI map             |
-| 2     | CityScreen           | 9         | TUI city panel      |
-| 3     | OfficerScreen        | 9         | TUI officer panel   |
-| 4     | ArmyScreen           | 9         | TUI army panel      |
-| 5     | BattleScreen         | 10        | TUI battle report   |
-| 6     | DiplomacyScreen      | 10        | TUI diplomacy panel |
-| 7     | ScenarioSelectScreen | 10        | TUI scenario select |
-| 8     | VictoryScreen        | 10        | TUI victory screen  |
-| 9     | LedgerScreen         | 10        | TUI ledger log      |
+| order | screen          | milestone | what it proves                                                  |
+| :---: | :-------------- | :-------: | :-------------------------------------------------------------- |
+| 1     | map screen      | 2         | canvas map renders; cities and factions visible; turn advances  |
+| 2     | city panel      | 3         | pillar data reads from ledger; build commands fire              |
+| 3     | officer panel   | 4         | assignment, loyalty, XP readable; commands work                 |
+| 4     | army panel      | 5         | army data visible; movement orders queue                        |
+| 5     | battle report   | 6         | auto-resolve fires; result and log displayed                    |
+| 6     | diplomacy panel | 7         | relation scores visible; tribute/alliance fire                  |
+| 7     | victory screen  | 8         | win / defeat state detected and shown                           |
+| 8     | pixel art pass  | 9         | sprites replace ASCII; visual polish                            |
 
 ### development phases
 
-| phase             | focus                                                             | milestones | status          |
-| :---------------- | :---------------------------------------------------------------- | :--------- | :-------------- |
-| **1: engine**     | Go scaffold, headless core, turn loop                             | 0, 1       | [~] in progress |
-| **2: TUI shell**  | Bubble Tea frontend, full game loop in terminal                   | 2          | [ ]             |
-| **3: simulation** | city, officers, armies, battle, diplomacy, victory — engine + TUI | 3–8        | [ ]             |
-| **4: rendering**  | Ebitengine pixel art layer over proven engine                     | 9, 10      | [ ]             |
+| phase             | focus                                                            | milestones | status |
+| :---------------- | :--------------------------------------------------------------- | :--------- | :----- |
+| **1: engine**     | TS scaffold, headless core, turn loop                            | 0, 1       | [ ]    |
+| **2: browser UI** | Canvas + HTML frontend, full game loop in browser                | 2          | [ ]    |
+| **3: simulation** | city, officers, armies, battle, diplomacy, victory — engine + UI | 3–8        | [ ]    |
+| **4: polish**     | pixel art, mobile (Capacitor), desktop (Tauri) packaging         | 9, 10      | [ ]    |
 
 ### milestone tracking
 
-| milestone | focus                                                              | status          |
-| :-------- | :----------------------------------------------------------------- | :-------------- |
-| 0         | Go scaffold — project structure, Makefile, data pipeline           | [~] in progress |
-| 1         | engine core — ledger, clock, essence, economy, turn loop           | [ ]             |
-| 2         | TUI shell — Bubble Tea; ASCII map; full game loop playable         | [ ]             |
-| 3         | city economics — Go engine + TUI city screen                       | [ ]             |
-| 4         | officers — management & allegiance; Go engine + TUI officer screen | [ ]             |
-| 5         | army system — raising & movement; Go engine + TUI army screen      | [ ]             |
-| 6         | battle — auto-resolve math; Go engine + TUI battle report          | [ ]             |
-| 7         | diplomacy + events; Go engine + TUI diplomacy screen               | [ ]             |
-| 8         | victory — win/defeat; Go engine + TUI victory screen               | [ ]             |
-| 9         | Ebitengine rendering — map, city, officer, army screens            | [ ]             |
-| 10        | Ebitengine rendering — battle, diplomacy, victory; polish; mobile  | [ ]             |
+| milestone | focus                                                        | status |
+| :-------- | :----------------------------------------------------------- | :----- |
+| 0         | TS scaffold — Vite, Vitest, Makefile, data pipeline          | [ ]    |
+| 1         | engine core — ledger, clock, essence, economy, turn loop     | [ ]    |
+| 2         | browser UI shell — Canvas map; full game loop playable       | [ ]    |
+| 3         | city economics — engine + city screen                        | [ ]    |
+| 4         | officers — management & allegiance; engine + officer screen  | [ ]    |
+| 5         | army system — raising & movement; engine + army screen       | [ ]    |
+| 6         | battle — auto-resolve math; engine + battle report           | [ ]    |
+| 7         | diplomacy + events; engine + diplomacy screen                | [ ]    |
+| 8         | victory — win/defeat; engine + victory screen                | [ ]    |
+| 9         | pixel art pass + packaging (Capacitor mobile, Tauri desktop) | [ ]    |
+| 10        | polish; iOS + Play Store release; performance tuning         | [ ]    |
 
 ---
 
-### milestone 0 — foundation `in progress`
+### milestone 0 — foundation `not started`
 
 > status key: `[x]` done — `[~]` partial — `[ ]` not started
 
 | item                                                            | status | notes |
 | :-------------------------------------------------------------- | :----- | :---- |
-| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio)   | [x]    |       |
-| splash screen (fade, blink prompt, auto-advance, key dismiss)   | [ ]    |       |
-| main entry point (load data, init ledger, start game loop)      | [ ]    |       |
+| TypeScript + Vite project scaffold (package.json, vite.config)  | [ ]    |       |
+| Vitest setup + `make test` wired                                | [ ]    |       |
+| Makefile with help, run, test, build, data targets              | [ ]    |       |
+| data pipeline: YAML → JSON via `make data`                      | [ ]    |       |
 | design: officer + city archives (YAML, 498 officers, 30 cities) | [x]    |       |
 | design: bazi calendar, turn structure, ledger schema            | [x]    |       |
 
@@ -441,45 +378,45 @@ rules:
 
 JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. **priority focus: AD 189 scenario.**
 
-| item                                                              | status | notes                                           |
-| :---------------------------------------------------------------- | :----- | :---------------------------------------------- |
-| JSON archive loading + ledger seed                                | [ ]    | `internal/engine/ledger` as typed Go structs    |
-| scenario & sovereign selection logic                              | [ ]    | filter officers/cities by faction at game start |
-| bazi calendar + essence drift                                     | [ ]    | `internal/core/clock` + `internal/core/essence` |
-| cycle A — world update (season, essence, loyalty, supply)         | [ ]    |                                                 |
-| cycle B — player commands (city / officer / military / diplomacy) | [ ]    |                                                 |
-| cycle C — sequential settlement                                   | [ ]    | sequential delta apply; no snapshot/restore     |
-| `go test ./internal/...` — unit + integration tests               | [ ]    |                                                 |
+| item                                                              | status | notes                                            |
+| :---------------------------------------------------------------- | :----- | :----------------------------------------------- |
+| JSON archive loading + ledger seed                                | [ ]    | `src/engine/ledger` as typed TS interfaces        |
+| scenario & sovereign selection logic                              | [ ]    | filter officers/cities by faction at game start  |
+| bazi calendar + essence drift                                     | [ ]    | `src/core/clock` + `src/core/essence`            |
+| cycle A — world update (season, essence, loyalty, supply)         | [ ]    |                                                  |
+| cycle B — player commands (city / officer / military / diplomacy) | [ ]    |                                                  |
+| cycle C — sequential settlement                                   | [ ]    | sequential delta apply; no snapshot/restore      |
+| `vitest run` — unit + integration tests                           | [ ]    |                                                  |
 
 ---
 
-### milestone 2 — TUI shell `not started`
+### milestone 2 — browser UI shell `not started`
 
-Bubble Tea terminal frontend over the Go engine. the full game loop must be playable end-to-end in the terminal before any Ebitengine work begins.
+Canvas + HTML frontend over the engine. the full game loop must be playable end-to-end in the browser before pixel art work begins.
 
-| item                                                         | tags              | status |
-| :----------------------------------------------------------- | :---------------- | :----- |
-| Bubble Tea app scaffold (model / update / view loop)         | `[ui]` `[easy]`   | [ ]    |
-| ASCII strategic map — cities, factions, turn counter         | `[ui]` `[medium]` | [ ]    |
-| scenario + sovereign selection screen                        | `[ui]` `[easy]`   | [ ]    |
-| command input (keyboard: build / recruit / march / end turn) | `[ui]` `[medium]` | [ ]    |
-| city panel — pillars, food, gold, governor slot              | `[ui]` `[medium]` | [ ]    |
-| officer panel — roster, stats, loyalty, assignment           | `[ui]` `[medium]` | [ ]    |
-| ledger log panel — scrollable event history                  | `[ui]` `[easy]`   | [ ]    |
-| full turn loop playable: A → B → C → repeat                  | `[ui]` `[medium]` | [ ]    |
+| item                                                                  | tags              | status |
+| :-------------------------------------------------------------------- | :---------------- | :----- |
+| Vite app scaffold + index.html entry point                            | `[ui]` `[easy]`   | [ ]    |
+| Canvas strategic map — cities, factions, turn counter                 | `[ui]` `[medium]` | [ ]    |
+| scenario + sovereign selection screen                                 | `[ui]` `[easy]`   | [ ]    |
+| command input (keyboard + click: build / recruit / march / end turn)  | `[ui]` `[medium]` | [ ]    |
+| city panel — pillars, food, gold, governor slot                       | `[ui]` `[medium]` | [ ]    |
+| officer panel — roster, stats, loyalty, assignment                    | `[ui]` `[medium]` | [ ]    |
+| ledger log panel — scrollable event history                           | `[ui]` `[easy]`   | [ ]    |
+| full turn loop playable: A → B → C → repeat                           | `[ui]` `[medium]` | [ ]    |
 
 ---
 
 ### milestone 3 — city development & economics `not started`
 
-| item                                                               | status | notes                                                    |
-| :----------------------------------------------------------------- | :----- | :------------------------------------------------------- |
-| City Go struct (AG / COM / TECH / ORD / DEF, food, gold, garrison) | [ ]    | `internal/models`                                        |
-| seasonal delta calculation per pillar                              | [ ]    | `internal/core/economy`                                  |
-| TECH multiplier on AG / COM yield                                  | [ ]    | pure functions                                           |
-| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF)             | [ ]    | BUILD_TECH / BUILD_ORD deferred                          |
-| food and gold stockpile per city (draw from upkeep each cycle)     | [~]    | structure defined; per-city tracking not yet implemented |
-| CityScreen overlay — pillar bars, food, gold display               | [ ]    | TUI panel first (M3); Ebitengine panel at M9             |
+| item                                                                | status | notes                                                    |
+| :------------------------------------------------------------------ | :----- | :------------------------------------------------------- |
+| City interface (AG / COM / TECH / ORD / DEF, food, gold, garrison)  | [ ]    | `src/models`                                             |
+| seasonal delta calculation per pillar                               | [ ]    | `src/core/economy`                                       |
+| TECH multiplier on AG / COM yield                                   | [ ]    | pure functions                                           |
+| CP command validation (BUILD_AG, BUILD_COM, BUILD_DEF)              | [ ]    | BUILD_TECH / BUILD_ORD deferred                          |
+| food and gold stockpile per city (draw from upkeep each cycle)      | [~]    | structure defined; per-city tracking not yet implemented |
+| CityScreen — pillar bars, food, gold display                        | [ ]    |                                                          |
 
 ---
 
@@ -493,7 +430,7 @@ Bubble Tea terminal frontend over the Go engine. the full game loop must be play
 | officer search mechanic (`search <city_id>`)                              | `[engine]` `[easy]`   | [ ]    |
 | XP system — 3 tiers (novice / veteran / master)                           | `[engine]` `[easy]`   | [ ]    |
 | age and health degradation; officer death                                 | `[engine]` `[medium]` | [ ]    |
-| defection — update loyalty, faction, city_id, army_id in place; log event | `[engine]` `[medium]` | [ ]    |
+| defection — update loyalty, faction, cityId, armyId in place; log event  | `[engine]` `[medium]` | [ ]    |
 | OfficerScreen — roster, stats, assignment panel                           | `[ui]` `[medium]`     | [ ]    |
 
 ---
@@ -545,78 +482,80 @@ Bubble Tea terminal frontend over the Go engine. the full game loop must be play
 | :-------------------------------------------------------------- | :------------------ | :----- |
 | unification victory check (one faction holds all cities)        | `[engine]` `[easy]` | [ ]    |
 | defeat check (sovereign dead, no successor; or all cities lost) | `[engine]` `[easy]` | [ ]    |
-| TUI victory screen — win / defeat state                         | `[ui]` `[easy]`     | [ ]    |
-| TUI ledger screen — scrollable event history and filter         | `[ui]` `[easy]`     | [ ]    |
-| full game playable end-to-end in TUI ← gate for M9              | —                   | [ ]    |
+| victory screen — win / defeat state                             | `[ui]` `[easy]`     | [ ]    |
+| ledger screen — scrollable event history and filter             | `[ui]` `[easy]`     | [ ]    |
+| full game playable end-to-end in browser ← gate for M9          | —                   | [ ]    |
 
 ---
 
-### milestone 9 — Ebitengine rendering (core screens) `not started`
+### milestone 9 — pixel art + packaging `not started`
 
-pixel art rendering layer over the verified Go engine. the engine does not change — only the view layer is added.
-
-| item                                                                | tags              | status |
-| :------------------------------------------------------------------ | :---------------- | :----- |
-| Ebitengine app scaffold (game loop, window, asset loading)          | `[ui]` `[medium]` | [ ]    |
-| StrategicMapScreen — China map, city nodes, faction colours, camera | `[ui]` `[hard]`   | [ ]    |
-| CityScreen — pillar bars, food, gold, governor slot                 | `[ui]` `[medium]` | [ ]    |
-| OfficerScreen — roster, stats, assignment panel                     | `[ui]` `[medium]` | [ ]    |
-| ArmyScreen — troop count, morale, supply, stance                    | `[ui]` `[medium]` | [ ]    |
-| ScenarioSelectScreen — scenario and sovereign selection             | `[ui]` `[medium]` | [ ]    |
-
----
-
-### milestone 10 — Ebitengine rendering (remaining screens) + polish `not started`
+pixel art rendering pass and mobile/desktop packaging. the engine does not change — only the visual layer and deployment targets are added.
 
 | item                                                          | tags              | status |
 | :------------------------------------------------------------ | :---------------- | :----- |
-| BattleScreen — auto-resolve report display                    | `[ui]` `[easy]`   | [ ]    |
-| DiplomacyScreen — faction list, relation scores, action panel | `[ui]` `[medium]` | [ ]    |
-| VictoryScreen — win / defeat screen                           | `[ui]` `[easy]`   | [ ]    |
-| LedgerScreen — scrollable event history and filter            | `[ui]` `[easy]`   | [ ]    |
-| full pixel art asset pass (sprites, tiles, fonts)             | `[ui]` `[hard]`   | [ ]    |
-| mobile port — gomobile Android + iOS                          | `[ui]` `[hard]`   | [ ]    |
+| pixel art sprite pass (cities, armies, terrain tiles)         | `[ui]` `[hard]`   | [ ]    |
+| Capacitor Android setup + APK build                           | `[ui]` `[medium]` | [ ]    |
+| Tauri macOS + Linux + Windows native binary build             | `[ui]` `[medium]` | [ ]    |
+| touch input support (tap to select, swipe to scroll)          | `[ui]` `[medium]` | [ ]    |
+
+---
+
+### milestone 10 — polish + release `not started`
+
+| item                                                  | tags              | status |
+| :---------------------------------------------------- | :---------------- | :----- |
+| iOS Capacitor build + App Store submission            | `[ui]` `[hard]`   | [ ]    |
+| Play Store release (AAB, metadata, screenshots)       | `[ui]` `[medium]` | [ ]    |
+| performance tuning (Canvas render, large ledger)      | `[ui]` `[medium]` | [ ]    |
+| full pixel art asset pass (sprites, tiles, fonts)     | `[ui]` `[hard]`   | [ ]    |
+| save/export UI (download save.json, import from file) | `[ui]` `[easy]`   | [ ]    |
+
+---
 
 ## decisions
 
-| decision                                         | choice                                                                               | why                                                                                                                                                                                                                                                                                               |
-| :----------------------------------------------- | :----------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| TUI-first (Bubble Tea), Ebitengine second        | Bubble Tea → Ebitengine                                                              | verify full game loop in terminal before writing pixel art; engine API is identical for both frontends; swapping view is a one-file change                                                                                                                                                        |
-| Go + Lua hybrid (gopher-lua)                     | Go owns engine; Lua owns content                                                     | Go: typed ledger integrity, `go test`, single binary. Lua: hot-reloadable events/AI/balance without recompile. gopher-lua is pure Go — no CGO, no deployment cost. `//go:embed lua/` bakes scripts into binary. Lua CANNOT mutate ledger directly; all output is Go-validated at the bridge layer |
-| Ebitengine over Defold                           | Go + Ebitengine                                                                      | long-term investment; Go is primary language across the stack. typed structs are safer for a complex simulation. Defold ruled out: Lua as primary language has no typed core — the wrong split. Lua content over a Go engine is the right split                                                   |
-| in-memory ledger over SQLite                     | Dictionary + JSON serialisation                                                      | cross-platform by default — no native extension dependency; snapshot/restore gives sufficient atomicity for a turn-based sim                                                                                                                                                                      |
-| YAML archives, JSON runtime                      | YAML → JSON via `make data`                                                          | YAML is human-readable and diffable; JSON loads fast via `encoding/json` with no extra dependency                                                                                                                                                                                                 |
-| headless-first engine                            | pure Go packages testable via `go test ./internal/...`                               | CI verification without any UI; separates simulation correctness from rendering                                                                                                                                                                                                                   |
-| auto-resolve battle (v1)                         | math formula, no tactical grid                                                       | reach playable loop sooner; grid deferred to post-release expansion                                                                                                                                                                                                                               |
-| single scenario lock (AD 189)                    | Dong Zhuo's Rise only                                                                | prevents data balancing sprawl before core loop is verified                                                                                                                                                                                                                                       |
-| mutable state + append-only log                  | live tables + `ledger_log`                                                           | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring                                                                                                                                                                                                   |
-| single codebase, Go cross-compilation            | one Go codebase builds to macOS / Linux / Windows / WASM; gomobile for Android / iOS | no platform branches; `os.UserConfigDir()` handles save path per platform; Ebitengine abstracts input and rendering                                                                                                                                                                               |
-| desktop primary, mobile secondary                | desktop is the reference platform; mobile port after M8                              | avoids designing around mobile constraints during active development while keeping the port feasible                                                                                                                                                                                              |
-| 2D only, no 3D geometry                          | Ebitengine 2D only                                                                   | strategy game needs no 3D; Ebitengine is a 2D-native library — no 3D renderer to avoid                                                                                                                                                                                                            |
-| pixel art, low asset cost                        | 16×16 or 32×32 tiles, palette-swaps                                                  | cheap to produce, fast to iterate, consistent with the minimalist aesthetic                                                                                                                                                                                                                       |
-| flatten OfficerAllegiance                        | loyalty + faction on Officer directly                                                | separate row-lifecycle table is a database pattern, not a game pattern; city_id/army_id already on Officer                                                                                                                                                                                        |
-| 3-cycle turn loop                                | A (world) / B (commands) / C (settle)                                                | diplomacy is just a gold-cost command; 4 cycles added complexity with no player-visible benefit                                                                                                                                                                                                   |
-| dual cadence (monthly combat / seasonal economy) | movement and battle every month; city yield and recruitment every season (3 turns)   | keeps tactical decisions active each turn; prevents administrative exhaustion from managing city economics at the same frequency as armies; mirrors historical reality where campaigns moved faster than harvests                                                                                 |
-| no snapshot/restore                              | sequential delta apply in cycle C                                                    | turn-based game doesn't need transactional rollback; bugs should be fixed not hidden behind recovery logic                                                                                                                                                                                        |
-| 3 active pillars (AG/COM/DEF)                    | TECH and ORD deferred                                                                | 5 interacting pillars are hard to balance before the core loop is proven                                                                                                                                                                                                                          |
-| static population                                | no growth/decline for MVP                                                            | population dynamics multiply balancing complexity; static cap on recruitment is sufficient                                                                                                                                                                                                        |
-| territory-only victory                           | one faction holds all cities                                                         | multi-dimension legacy scoring requires tuning three systems before the game loop exists                                                                                                                                                                                                          |
-| distance-based supply                            | Chebyshev ≤ 5 tiles to friendly city                                                 | path-finding on faction-owned tile graph is [hard] and a source of edge-case bugs                                                                                                                                                                                                                 |
-| 3-tier XP                                        | 500 / 1500 / 3500                                                                    | 5 tiers with differentiated rewards per tier requires playtesting to balance; 3 flat tiers are clear and testable                                                                                                                                                                                 |
+| decision                                         | choice                                                                             | why                                                                                                                                                                                                            |
+| :----------------------------------------------- | :--------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| TypeScript over Go                               | TypeScript (strict)                                                                | browser-first distribution (open `index.html`); open source contributor accessibility (no toolchain install); Capacitor/Tauri wrapping is mature; strict mode gives compile-time type safety                   |
+| browser-first over TUI-first                     | Canvas + HTML from M2                                                              | players run the game without installing anything; contributors fork and test in any browser; mobile wrapping via Capacitor is straightforward                                                                  |
+| Vite over webpack                                | Vite                                                                               | simpler config, fast HMR dev server, native TS support, WASM-ready                                                                                                                                            |
+| Vitest over Jest                                 | Vitest                                                                             | native Vite integration; same config file; fast; no Babel transform needed for TS                                                                                                                              |
+| Capacitor over gomobile                          | Capacitor                                                                          | wraps any web app with no code changes; mature Android/iOS support; gomobile is Go-specific with a thin community and painful setup                                                                            |
+| Tauri over Electron                              | Tauri                                                                              | native binary output (~5MB vs ~150MB); uses system WebView instead of bundling Chromium                                                                                                                        |
+| no Lua scripting                                 | TypeScript directly                                                                | single language reduces contributor friction; TypeScript strict mode gives compile-time safety; hot-reload handled by Vite HMR during development                                                              |
+| in-memory ledger over SQLite                     | object + localStorage serialisation                                                | cross-platform by default; localStorage works in browser, Capacitor, and Tauri without configuration                                                                                                          |
+| YAML archives, JSON runtime                      | YAML → JSON via `make data`                                                        | YAML is human-readable and diffable; JSON loads fast with native `JSON.parse` and no extra dependency                                                                                                          |
+| headless-first engine                            | pure TS modules testable via `vitest run`                                          | CI verification without any DOM/Canvas; separates simulation correctness from rendering                                                                                                                        |
+| auto-resolve battle (v1)                         | math formula, no tactical grid                                                     | reach playable loop sooner; grid deferred to post-release expansion                                                                                                                                            |
+| single scenario lock (AD 189)                    | Dong Zhuo's Rise only                                                              | prevents data balancing sprawl before core loop is verified                                                                                                                                                    |
+| mutable state + append-only log                  | live objects + `logs` array                                                        | simplifies reads (no event sourcing reconstruction); full history preserved for victory scoring                                                                                                                |
+| territory-only victory                           | one faction holds all cities                                                       | multi-dimension legacy scoring requires tuning three systems before the game loop exists                                                                                                                       |
+| distance-based supply                            | Chebyshev ≤ 5 tiles to friendly city                                               | path-finding on faction-owned tile graph is [hard] and a source of edge-case bugs                                                                                                                             |
+| 3-tier XP                                        | 500 / 1500 / 3500                                                                  | 5 tiers with differentiated rewards per tier requires playtesting to balance; 3 flat tiers are clear and testable                                                                                             |
+| dual cadence (monthly combat / seasonal economy) | movement and battle every month; city yield and recruitment every season (3 turns) | keeps tactical decisions active each turn; prevents administrative exhaustion; mirrors historical reality where campaigns moved faster than harvests                                                           |
+| no snapshot/restore                              | sequential delta apply in cycle C                                                  | turn-based game doesn't need transactional rollback; bugs should be fixed not hidden behind recovery logic                                                                                                     |
+| 3 active pillars (AG/COM/DEF)                    | TECH and ORD deferred                                                              | 5 interacting pillars are hard to balance before the core loop is proven                                                                                                                                       |
+| static population                                | no growth/decline for MVP                                                          | population dynamics multiply balancing complexity; static cap on recruitment is sufficient                                                                                                                     |
+| flatten OfficerAllegiance                        | loyalty + faction on Officer directly                                              | separate row-lifecycle table is a database pattern, not a game pattern                                                                                                                                         |
+| 3-cycle turn loop                                | A (world) / B (commands) / C (settle)                                              | diplomacy is just a gold-cost command; 4 cycles added complexity with no player-visible benefit                                                                                                               |
+| 2D only, no 3D geometry                          | Canvas 2D only                                                                     | strategy game needs no 3D                                                                                                                                                                                      |
+| pixel art, low asset cost                        | 16×16 or 32×32 tiles, palette-swaps                                                | cheap to produce, fast to iterate, consistent with the minimalist aesthetic                                                                                                                                    |
 
 ---
 
 ## complexity score
 
-| dimension                         | score | notes                                                                                                 |
-| :-------------------------------- | :---- | :---------------------------------------------------------------------------------------------------- |
-| overall                           | 3 / 5 | moderate; multi-layer simulation with in-memory ledger, headless engine, and TUI/Ebitengine frontends |
-| core (clock, essence, economy)    | 2 / 5 | pure math; stateless functions; well-bounded domain                                                   |
-| engine (sovereign_engine, ledger) | 3 / 5 | three-cycle turn loop, sequential settlement, CP validation logic                                     |
-| data pipeline (YAML → JSON)       | 2 / 5 | one-way conversion; `make data` is the only transform step                                            |
-| ui (TUI / Ebitengine)             | 2 / 5 | view-only; reads from ledger; no simulation logic                                                     |
-| future: army + battle system      | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid                                 |
-| future: diplomacy + events        | 4 / 5 | pairwise faction state, scripted triggers, branching outcomes                                         |
+| dimension                         | score | notes                                                                         |
+| :-------------------------------- | :---- | :---------------------------------------------------------------------------- |
+| overall                           | 2 / 5 | moderate-low; TS browser stack removes Go toolchain and gomobile complexity   |
+| core (clock, essence, economy)    | 2 / 5 | pure math; stateless functions; well-bounded domain                           |
+| engine (sovereign, ledger)        | 3 / 5 | three-cycle turn loop, sequential settlement, CP validation logic             |
+| data pipeline (YAML → JSON)       | 2 / 5 | one-way conversion; `make data` is the only transform step                    |
+| ui (Canvas + HTML)                | 2 / 5 | view-only; reads from ledger; no simulation logic                             |
+| packaging (Capacitor + Tauri)     | 2 / 5 | wrap the same web output; no code changes; mature tooling                     |
+| future: army + battle system      | 4 / 5 | movement, supply lines, auto-resolve math, and eventual tactical grid         |
+| future: diplomacy + events        | 4 / 5 | pairwise faction state, scripted triggers, branching outcomes                 |
 
 ---
 
