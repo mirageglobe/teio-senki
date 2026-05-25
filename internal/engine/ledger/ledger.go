@@ -118,6 +118,18 @@ func (l *Ledger) SetCity(name string, c models.City) {
 	l.Cities[name] = c
 }
 
+// SortedCities returns all cities as a slice sorted alphabetically by name.
+func (l *Ledger) SortedCities() []models.City {
+	result := make([]models.City, 0, len(l.Cities))
+	for _, c := range l.Cities {
+		result = append(result, c)
+	}
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name < result[j].Name
+	})
+	return result
+}
+
 // State returns a read-only snapshot for the UI and Lua layers.
 func (l *Ledger) State(availableCP int) models.GameState {
 	logs := make([]models.LogEntry, len(l.Logs))

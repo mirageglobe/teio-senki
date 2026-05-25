@@ -58,6 +58,8 @@ type Command struct {
 type GameState struct {
 	Year        int
 	Month       int
+	Season      string
+	Element     string
 	Resources   Resources
 	AvailableCP int
 	Logs        []LogEntry

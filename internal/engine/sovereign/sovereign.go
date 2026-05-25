@@ -69,7 +69,10 @@ func (e *Engine) SettleTurn() []models.LogEntry {
 
 // GetState returns a read-only snapshot for the UI.
 func (e *Engine) GetState() models.GameState {
-	return e.ledger.State(e.availableCP)
+	state := e.ledger.State(e.availableCP)
+	state.Season = clock.SeasonForMonth(e.clock.Month)
+	state.Element = clock.ElementForMonth(e.clock.Month)
+	return state
 }
 
 func (e *Engine) runCycleA() {
@@ -118,6 +121,10 @@ func (e *Engine) executeCommand(cmd models.Command) {
 		city.Commerce = min(100, city.Commerce+buildGain)
 		e.ledger.SetCity(cityName, city)
 		e.ledger.Log("COMMAND_EXEC", fmt.Sprintf("%s: commerce → %d", cityName, city.Commerce))
+	case "BUILD_DEF":
+		city.Defense = min(100, city.Defense+buildGain)
+		e.ledger.SetCity(cityName, city)
+		e.ledger.Log("COMMAND_EXEC", fmt.Sprintf("%s: defense → %d", cityName, city.Defense))
 	default:
 		e.ledger.Log("COMMAND_EXEC", fmt.Sprintf("unknown command %s", cmd.Type))
 	}

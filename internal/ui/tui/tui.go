@@ -3,13 +3,23 @@
 package tui
 
 import (
-	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mirageglobe/teio-senki/internal/engine/ledger"
 	"github.com/mirageglobe/teio-senki/internal/engine/sovereign"
 	"github.com/mirageglobe/teio-senki/internal/models"
 )
+
+type tickMsg struct{}
+
+func tick() tea.Cmd {
+	return tea.Tick(35*time.Millisecond, func(time.Time) tea.Msg { return tickMsg{} })
+}
+
+var splashFull = []rune(banner + "\n" + divider + "\n\n" +
+	`"Sovereignty through the Ledger, Strategy through the Elements."` +
+	"\n\n[ press enter ]\n")
 
 type screen int
 
@@ -25,20 +35,22 @@ const (
 )
 
 type model struct {
-	screen      screen
-	ledger      *ledger.Ledger
-	engine      *sovereign.Engine
-	cursor      int
+	screen       screen
+	ledger       *ledger.Ledger
+	engine       *sovereign.Engine
+	cursor       int
 	scrollOffset int
-	scenarioIdx int
-	lords       []models.Officer
-	chosenLord  string
-	cycleALogs  []models.LogEntry
-	cycleCLogs  []models.LogEntry
-	input       string
-	feedback    string
-	width       int
-	height      int
+	scenarioIdx  int
+	lords        []models.Officer
+	chosenLord   string
+	cycleALogs   []models.LogEntry
+	cycleCLogs   []models.LogEntry
+	cityCursor   int
+	feedback     string
+	width        int
+	height       int
+	charIdx      int
+	showHelp     bool
 }
 
 // Run initialises the Bubble Tea program and blocks until the player exits.
@@ -49,15 +61,24 @@ func Run(l *ledger.Ledger) error {
 	return err
 }
 
-func (m model) Init() tea.Cmd { return nil }
+func (m model) Init() tea.Cmd { return tick() }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
+	case tickMsg:
+		if m.screen == screenSplash && m.charIdx < len(splashFull) {
+			m.charIdx++
+			return m, tick()
+		}
 	case tea.KeyMsg:
-		if msg.String() == "ctrl+c" {
+		if msg.String() == "ctrl+c" || msg.String() == "q" {
 			return m, tea.Quit
+		}
+		if msg.String() == "?" {
+			m.showHelp = !m.showHelp
+			return m, nil
 		}
 		return m.handleKey(msg.String())
 	}
@@ -68,7 +89,11 @@ func (m model) handleKey(key string) (tea.Model, tea.Cmd) {
 	switch m.screen {
 	case screenSplash:
 		if key == "enter" || key == " " {
-			m.screen, m.cursor = screenMenu, 0
+			if m.charIdx < len(splashFull) {
+				m.charIdx = len(splashFull)
+			} else {
+				m.screen, m.cursor = screenMenu, 0
+			}
 		}
 	case screenMenu:
 		switch key {
@@ -105,24 +130,14 @@ func (m model) handleKey(key string) (tea.Model, tea.Cmd) {
 			}
 		}
 	case screenSovereign:
-		visibleHeight := m.height - 7
-		if visibleHeight < 1 {
-			visibleHeight = 1
-		}
 		switch key {
 		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
-				if m.cursor < m.scrollOffset {
-					m.scrollOffset = m.cursor
-				}
 			}
 		case "down", "j":
 			if m.cursor < len(m.lords)-1 {
 				m.cursor++
-				if m.cursor >= m.scrollOffset+visibleHeight {
-					m.scrollOffset++
-				}
 			}
 		case "enter":
 			if len(m.lords) > 0 {
@@ -140,20 +155,40 @@ func (m model) handleKey(key string) (tea.Model, tea.Cmd) {
 	case screenGameA:
 		if key == "enter" || key == " " {
 			m.feedback = ""
+			m.cityCursor = 0
 			m.screen = screenGameB
 		}
 	case screenGameB:
+		cities := m.ledger.SortedCities()
 		switch key {
-		case "enter":
-			m = m.execCommand()
-		case "backspace":
-			if len(m.input) > 0 {
-				m.input = m.input[:len(m.input)-1]
+		case "up", "k":
+			if m.cityCursor > 0 {
+				m.cityCursor--
 			}
-		default:
-			if len(key) == 1 {
-				m.input += key
+		case "down", "j":
+			if m.cityCursor < len(cities)-1 {
+				m.cityCursor++
 			}
+		case "a", "c", "d":
+			if len(cities) == 0 {
+				return m, nil
+			}
+			city := cities[m.cityCursor]
+			typeMap := map[string]string{"a": "BUILD_AG", "c": "BUILD_COM", "d": "BUILD_DEF"}
+			ok := m.engine.QueueCommand(models.Command{
+				Type:   typeMap[key],
+				Params: map[string]string{"city": city.Name},
+				Cost:   2,
+			})
+			if ok {
+				m.feedback = "queued " + typeMap[key] + " → " + city.Name
+			} else {
+				m.feedback = "not enough CP"
+			}
+		case "x", "enter":
+			m.cycleCLogs = m.engine.SettleTurn()
+			m.feedback = ""
+			m.screen = screenGameC
 		}
 	case screenGameC:
 		if key == "enter" || key == " " {
@@ -165,42 +200,6 @@ func (m model) handleKey(key string) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) execCommand() model {
-	parts := strings.Fields(m.input)
-	m.input = ""
-	if len(parts) == 0 {
-		return m
-	}
-	switch parts[0] {
-	case "end":
-		m.cycleCLogs = m.engine.SettleTurn()
-		m.screen = screenGameC
-	case "build":
-		if len(parts) < 3 {
-			m.feedback = "usage: build <city> ag|com|def"
-			return m
-		}
-		typeMap := map[string]string{"ag": "BUILD_AG", "com": "BUILD_COM", "def": "BUILD_DEF"}
-		cmdType := typeMap[strings.ToLower(parts[2])]
-		if cmdType == "" {
-			m.feedback = "unknown type — use ag, com, or def"
-			return m
-		}
-		ok := m.engine.QueueCommand(models.Command{
-			Type:   cmdType,
-			Params: map[string]string{"city": parts[1]},
-			Cost:   2,
-		})
-		if ok {
-			m.feedback = "queued " + cmdType + " on " + parts[1]
-		} else {
-			m.feedback = "not enough CP"
-		}
-	default:
-		m.feedback = "unknown command: " + parts[0]
-	}
-	return m
-}
 
 func tailLogs(logs []models.LogEntry, n int) []models.LogEntry {
 	if len(logs) <= n {
