@@ -669,6 +669,7 @@ highest dependency risk:
 
 ### ideas
 
+- `[ui]` **map zoom toggle** — toggle between a wide view (95–136°E, 18–50°N; current default) and a zoomed Three Kingdoms core view (~104–122°E, 25–42°N) via a keypress (e.g. `z`). both views share the same engine state; only `lonMin/lonMax/latMin/latMax` constants change. wide view shows steppe/Korea/Japan context; narrow view gives detail on the core campaign area. TUI-only; GFX layer handles zoom via camera scroll [easy]
 - `[engine]` **tactical grid battle** — full 15×9 tactical grid; unit movement ranges; detailed terrain modifiers [hard]
 - `[engine]` **advanced diplomacy & espionage** — spy placement, bribery (resisted by integrity), marriage alliances [hard]
 - `[engine]` **historical scripted events** — full chronological triggers (Yellow Turban AD 184, Red Cliffs AD 208, etc.) [hard]
