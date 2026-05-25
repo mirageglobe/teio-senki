@@ -521,3 +521,116 @@ cities:
     technology: 40
     order: 45
     faction: "Shi Xie"
+
+  # ── Lelang / Korea (樂浪) ─────────────────────────────────────────────────
+  # Han commandery in northern Korea, administered from ~108 BC until 313 AD.
+  # Gateway for Han influence into the Korean peninsula and Japan.
+
+  - name: "Lelang"
+    chinese: "樂浪"
+    region: "You Zhou"
+    terrain: plain
+    x: 17
+    y: 12
+    population: 50000
+    defense: 62
+    agriculture: 45
+    commerce: 42
+    technology: 35
+    order: 52
+    faction: "Han"
+
+  # Early Goguryeo capital in the Tongge River valley; mountain pass fortress.
+  - name: "Gungnaeseong"
+    chinese: "國內城"
+    region: "Korea"
+    terrain: mountain
+    x: 17
+    y: 14
+    population: 80000
+    defense: 72
+    agriculture: 40
+    commerce: 32
+    technology: 28
+    order: 55
+    faction: "Goguryeo"
+
+  # Proto-Silla polity centred near modern Gyeongju; emerging tribal confederacy.
+  - name: "Saro"
+    chinese: "斯盧"
+    region: "Korea"
+    terrain: plain
+    x: 18
+    y: 10
+    population: 50000
+    defense: 38
+    agriculture: 48
+    commerce: 38
+    technology: 25
+    order: 50
+    faction: "Silla"
+
+  # ── Wa / Japan (倭) ──────────────────────────────────────────────────────
+  # Ito Kingdom (伊都国) in northern Kyushu — the official Han diplomatic port.
+  # Han-appointed inspector resided here; received tribute missions from Wa.
+
+  - name: "Ito"
+    chinese: "伊都"
+    region: "Wa"
+    terrain: coast
+    x: 19
+    y: 9
+    population: 30000
+    defense: 28
+    agriculture: 38
+    commerce: 55
+    technology: 22
+    order: 42
+    faction: "Wa"
+
+  # Queen Himiko's kingdom; exact location debated but northern Kyushu is consensus.
+  - name: "Yamatai"
+    chinese: "邪馬台"
+    region: "Wa"
+    terrain: forest
+    x: 19
+    y: 8
+    population: 40000
+    defense: 32
+    agriculture: 45
+    commerce: 42
+    technology: 22
+    order: 58
+    faction: "Wa"
+
+  # Ancient Izumo polity in western Honshu; famed shrine culture and sea trade.
+  - name: "Izumo"
+    chinese: "出雲"
+    region: "Wa"
+    terrain: plain
+    x: 19
+    y: 11
+    population: 35000
+    defense: 28
+    agriculture: 40
+    commerce: 45
+    technology: 20
+    order: 48
+    faction: "Wa"
+
+  # ── Jiuzhen / Vietnam (九真) ──────────────────────────────────────────────
+  # Second Han commandery south of Jiaozhi; administered until the fall of Han.
+
+  - name: "Jiuzhen"
+    chinese: "九真"
+    region: "Jiao Zhou"
+    terrain: river
+    x: 6
+    y: 0
+    population: 70000
+    defense: 45
+    agriculture: 62
+    commerce: 48
+    technology: 30
+    order: 40
+    faction: "Han"

@@ -17,7 +17,9 @@ func tick() tea.Cmd {
 	return tea.Tick(35*time.Millisecond, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
-var splashFull = []rune(banner + "\n" + divider + "\n\n" +
+const splashDivider = "────────────────────────────────────────"
+
+var splashFull = []rune(banner + "\n" + splashDivider + "\n\n" +
 	`"Sovereignty through the Ledger, Strategy through the Elements."` +
 	"\n\n[ press enter ]\n")
 
@@ -52,7 +54,6 @@ type model struct {
 	charIdx      int
 	showHelp     bool
 	tickCount    int
-	mapPulse     bool
 }
 
 // Run initialises the Bubble Tea program and blocks until the player exits.
@@ -71,7 +72,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.width, m.height = msg.Width, msg.Height
 	case tickMsg:
 		m.tickCount++
-		m.mapPulse = (m.tickCount/30)%2 == 0 // ~1 s half-cycle at 35 ms/tick
 		if m.screen == screenSplash && m.charIdx < len(splashFull) {
 			m.charIdx++
 		}

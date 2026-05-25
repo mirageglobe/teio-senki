@@ -27,13 +27,20 @@ var seasonDisplay = map[string][2]string{
 }
 
 const banner = "帝王战纪：三国录  —  Sovereign Record"
-const divider = "────────────────────────────────────────"
 
 const (
-	padTop    = 5
-	padBottom = 5
+	padTop    = 3
+	padBottom = 3
 	padLeft   = 3
 )
+
+func (m model) dividerLine() string {
+	w := m.width - padLeft
+	if w < 20 {
+		w = 40
+	}
+	return strings.Repeat("─", w)
+}
 
 func indentLines(s string) string {
 	prefix := strings.Repeat(" ", padLeft)
@@ -45,15 +52,31 @@ func indentLines(s string) string {
 }
 
 func (m model) mapBody(body string) string {
-	var season string
+	season := "Spring"
 	if m.engine != nil {
 		season = m.engine.GetState().Season
 	}
-	return joinColumns(RenderMap(m.ledger.SortedCities(), m.mapPulse, season), body, mapW, 4)
+	cityPhase := m.tickCount / 20
+	wavePhase := m.tickCount / 25
+	framedW := mapW + 2 // +2 for left/right border chars
+	rightW := m.width - framedW - 4 - padLeft
+	if rightW < 20 {
+		rightW = 40
+	}
+	cities := m.ledger.SortedCities()
+	selectedCity := ""
+	if m.screen == screenGameB && len(cities) > 0 {
+		selectedCity = cities[m.cityCursor].Name
+	}
+	return joinColumns(RenderMap(cities, cityPhase, season, wavePhase, selectedCity), body, framedW, 4, rightW)
 }
 
 // joinColumns places left and right strings side by side, padding left to fixedW runes.
-func joinColumns(left, right string, fixedW, gap int) string {
+// rightW > 0 wraps the right column at that width.
+func joinColumns(left, right string, fixedW, gap, rightW int) string {
+	if rightW > 0 {
+		right = wrapText(right, rightW)
+	}
 	ll := strings.Split(strings.TrimRight(left, "\n"), "\n")
 	rl := strings.Split(strings.TrimRight(right, "\n"), "\n")
 	h := len(ll)
@@ -85,25 +108,59 @@ func joinColumns(left, right string, fixedW, gap int) string {
 	return sb.String()
 }
 
-func (m model) headerSimple() string {
-	return styleTitle.Render(banner) + "\n" + divider + "\n\n"
+// wrapText word-wraps plain text to width. Styled (ANSI) lines are passed through unchanged.
+func wrapText(text string, width int) string {
+	lines := strings.Split(text, "\n")
+	var out strings.Builder
+	for i, line := range lines {
+		if i > 0 {
+			out.WriteByte('\n')
+		}
+		if lipgloss.Width(line) <= width {
+			out.WriteString(line)
+			continue
+		}
+		words := strings.Fields(line)
+		col := 0
+		for j, word := range words {
+			wl := lipgloss.Width(word)
+			if j == 0 {
+				out.WriteString(word)
+				col = wl
+			} else if col+1+wl > width {
+				out.WriteByte('\n')
+				out.WriteString(word)
+				col = wl
+			} else {
+				out.WriteByte(' ')
+				out.WriteString(word)
+				col += 1 + wl
+			}
+		}
+	}
+	return out.String()
 }
 
-func (m model) headerGame() string {
+func (m model) headerSimple() string {
+	return styleTitle.Render(banner) + "\n" + m.dividerLine() + "\n\n"
+}
+
+// gameStatus returns the date/season/resource line rendered into the right pane, above the cycle label.
+func (m model) gameStatus() string {
 	state := m.engine.GetState()
 	var season string
 	if sd, ok := seasonDisplay[state.Season]; ok {
 		season = styleSeason.Render(sd[0]) + "  " + styleElement.Render(sd[1]) + "  " + styleDim.Render(strings.ToLower(state.Element))
 	}
-	statusLine := fmt.Sprintf("[ %d.%02d ]  %s     grain: %d   gold: %d   CP: %d",
-		state.Year, state.Month, season,
+	dateLine := fmt.Sprintf("[ %d.%02d ]  %s", state.Year, state.Month, season)
+	resLine := fmt.Sprintf("grain: %d   gold: %d   CP: %d",
 		state.Resources.Grain, state.Resources.Gold, state.AvailableCP)
-	return styleTitle.Render(banner) + "\n" + statusLine + "\n" + divider + "\n\n"
+	return dateLine + "\n" + styleDim.Render(resLine) + "\n\n"
 }
 
 func (m model) footer() string {
 	if m.showHelp {
-		return divider + "\n" + styleFooter.Render("  [ ? ] close help   [ q ] quit")
+		return m.dividerLine() + "\n" + styleFooter.Render("  [ ? ] close help   [ q ] quit")
 	}
 	var hints string
 	switch m.screen {
@@ -122,7 +179,7 @@ func (m model) footer() string {
 	case screenGameC:
 		hints = "[ enter ] next month   [ q ] quit   [ ? ] help"
 	}
-	return divider + "\n" + styleFooter.Render("  "+hints)
+	return m.dividerLine() + "\n" + styleFooter.Render("  "+hints)
 }
 
 func (m model) withFooter(content string) string {
@@ -250,11 +307,12 @@ func (m model) viewBriefing() string {
 
 func (m model) viewCycleA() string {
 	var b strings.Builder
+	b.WriteString(m.gameStatus())
 	b.WriteString(styleSeason.Render("cycle A — world update") + "\n\n")
 	for _, e := range m.cycleALogs {
 		fmt.Fprintf(&b, "  %s %s\n", styleDim.Render("["+e.Type+"]"), e.Description)
 	}
-	return m.headerGame() + m.mapBody(b.String())
+	return m.headerSimple() + m.mapBody(b.String())
 }
 
 func (m model) viewHelp() string {
@@ -280,6 +338,7 @@ func (m model) viewHelp() string {
 
 func (m model) viewCycleB() string {
 	var b strings.Builder
+	b.WriteString(m.gameStatus())
 	b.WriteString(styleSeason.Render("cycle B — commands") + "\n\n")
 	const pageSize = 10
 	fmt.Fprintf(&b, "  %-20s  %4s  %4s  %4s\n", "city", "ag", "com", "def")
@@ -309,14 +368,15 @@ func (m model) viewCycleB() string {
 			fmt.Fprintf(&b, "\n  %s\n", styleGood.Render(m.feedback))
 		}
 	}
-	return m.headerGame() + m.mapBody(b.String())
+	return m.headerSimple() + m.mapBody(b.String())
 }
 
 func (m model) viewCycleC() string {
 	var b strings.Builder
+	b.WriteString(m.gameStatus())
 	b.WriteString(styleSeason.Render("cycle C — settlement") + "\n\n")
 	for _, e := range m.cycleCLogs {
 		fmt.Fprintf(&b, "  %s %s\n", styleDim.Render("["+e.Type+"]"), e.Description)
 	}
-	return m.headerGame() + m.mapBody(b.String())
+	return m.headerSimple() + m.mapBody(b.String())
 }

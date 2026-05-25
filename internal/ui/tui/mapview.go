@@ -19,8 +19,9 @@ var mapStyleCity = [6]lipgloss.Style{
 }
 
 var (
-	mapStyleWave     = lipgloss.NewStyle().Foreground(lipgloss.Color("27"))  // ocean blue
-	mapStyleMountain = lipgloss.NewStyle().Foreground(lipgloss.Color("130")) // brown
+	mapStyleSelected = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("201")) // bright magenta — selected city
+	mapStyleWave     = lipgloss.NewStyle().Foreground(lipgloss.Color("27"))              // ocean blue
+	mapStyleMountain = lipgloss.NewStyle().Foreground(lipgloss.Color("130"))             // brown
 	mapStyleHills    = lipgloss.NewStyle().Foreground(lipgloss.Color("179")) // tan
 	mapStyleForest   = lipgloss.NewStyle().Foreground(lipgloss.Color("107")) // light sage green
 	mapStyleRiver    = lipgloss.NewStyle().Foreground(lipgloss.Color("38"))  // cyan-blue
@@ -116,6 +117,16 @@ var cityGeo = map[string][2]float64{
 	"Yongchang":  {99.2, 25.1},
 	// Jiao Province
 	"Panyu":      {113.2, 23.1}, "Jiaozhi":   {105.8, 21.0},
+	// Korea
+	"Lelang":       {126.0, 38.9},
+	"Gungnaeseong": {126.5, 41.1},
+	"Saro":          {129.2, 35.8},
+	// Wa (Japan)
+	"Ito":           {130.2, 33.5},
+	"Yamatai":       {130.6, 33.1},
+	"Izumo":         {132.7, 35.4},
+	// Vietnam
+	"Jiuzhen":       {105.5, 19.5},
 }
 
 // Mountain ranges [lonMin, latMin, lonMax, latMax] — rendered at checkerboard density.
@@ -308,8 +319,8 @@ func drawPoly(c *canvas, poly [][2]float64) {
 
 // RenderMap returns a coloured braille string with layered terrain:
 //
-//	cities (bold gold) > border (seasonal) > mountains (dim brown) > rivers (dim blue) > forests (dim green) > sea (animated blue)
-func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int) string {
+//	selected city (magenta) > cities (bold gold) > border (seasonal) > mountains > hills > rivers > marsh > forests > steppe > sea
+func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int, selectedCity string) string {
 	// --- borders ---
 	borders := newCanvas()
 	drawPoly(borders, chinaBorder)
@@ -328,6 +339,18 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 			citydots.set(cx+1, cy)
 			citydots.set(cx, cy+1)
 			citydots.set(cx+1, cy+1)
+		}
+	}
+
+	// --- selected city highlight (same size as city dot, magenta) ---
+	selecteddots := newCanvas()
+	if selectedCity != "" {
+		if geo, ok := cityGeo[selectedCity]; ok {
+			cx, cy := geoToPixel(geo[0], geo[1])
+			selecteddots.set(cx, cy)
+			selecteddots.set(cx+1, cy)
+			selecteddots.set(cx, cy+1)
+			selecteddots.set(cx+1, cy+1)
 		}
 	}
 
@@ -479,8 +502,9 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 	}
 	styleCity := mapStyleCity[step]
 
-	// --- merge layers: cities > border > mountains > hills > rivers > marsh > forests > steppe > sea ---
+	// --- merge layers: selected > cities > border > mountains > hills > rivers > marsh > forests > steppe > sea ---
 	borderRunes   := []rune(borders.render())
+	selectedRunes := []rune(selecteddots.render())
 	cityRunes     := []rune(citydots.render())
 	mountainRunes := []rune(mountains.render())
 	hillsRunes    := []rune(hillsCanvas.render())
@@ -492,6 +516,7 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 
 	var sb strings.Builder
 	for i, br := range borderRunes {
+		xr  := selectedRunes[i]
 		cr  := cityRunes[i]
 		mr  := mountainRunes[i]
 		hr  := hillsRunes[i]
@@ -503,6 +528,8 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 		switch {
 		case br == '\n':
 			sb.WriteRune('\n')
+		case xr != 0x2800:
+			sb.WriteString(mapStyleSelected.Render(string(xr)))
 		case cr != 0x2800:
 			sb.WriteString(styleCity.Render(string(cr)))
 		case br != 0x2800:
