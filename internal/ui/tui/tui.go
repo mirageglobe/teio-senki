@@ -9,7 +9,6 @@ import (
 	"github.com/mirageglobe/teio-senki/internal/engine/ledger"
 	"github.com/mirageglobe/teio-senki/internal/engine/sovereign"
 	"github.com/mirageglobe/teio-senki/internal/models"
-	"github.com/mirageglobe/teio-senki/internal/version"
 )
 
 type tickMsg struct{}
@@ -18,11 +17,7 @@ func tick() tea.Cmd {
 	return tea.Tick(35*time.Millisecond, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
-const splashDivider = "────────────────────────────────────────"
-
-var splashFull = []rune(banner + "  v" + version.Current + "\n" + splashDivider + "\n\n" +
-	`"Sovereignty through the Ledger, Strategy through the Elements."` +
-	"\n\n[ press enter ]\n")
+var splashFull = []rune("\"Sovereignty through the Ledger,\nStrategy through the Elements.\"\n\n[ press enter ]")
 
 type screen int
 
@@ -48,24 +43,26 @@ type model struct {
 	chosenLord   string
 	cycleALogs   []models.LogEntry
 	cycleCLogs   []models.LogEntry
-	cityCursor   int
-	feedback     string
+	cityCursor        int
+	feedback          string
+	showLog           bool
 	width        int
 	height       int
 	charIdx      int
 	showHelp     bool
 	tickCount    int
+	queuedCities map[string]bool
 }
 
 // Run initialises the Bubble Tea program and blocks until the player exits.
 func Run(l *ledger.Ledger) error {
-	m := model{ledger: l, lords: l.Lords()}
+	m := model{ledger: l, lords: l.Lords(), queuedCities: make(map[string]bool)}
 	p := tea.NewProgram(m, tea.WithAltScreen())
 	_, err := p.Run()
 	return err
 }
 
-func (m model) Init() tea.Cmd { return tick() }
+func (m model) Init() tea.Cmd { return tea.Batch(tick(), tea.HideCursor) }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -164,6 +161,10 @@ func (m model) handleKey(key string) (tea.Model, tea.Cmd) {
 			m.screen = screenGameB
 		}
 	case screenGameB:
+		if key == "l" {
+			m.showLog = !m.showLog
+			return m, nil
+		}
 		cities := m.ledger.SortedCities()
 		switch key {
 		case "up", "k":
@@ -187,16 +188,18 @@ func (m model) handleKey(key string) (tea.Model, tea.Cmd) {
 			})
 			if ok {
 				m.feedback = "queued " + typeMap[key] + " → " + city.Name
+				m.queuedCities[city.Name] = true
 			} else {
 				m.feedback = "not enough CP"
 			}
-		case "x", "enter":
+		case "x":
 			m.cycleCLogs = m.engine.SettleTurn()
 			m.feedback = ""
 			m.screen = screenGameC
 		}
 	case screenGameC:
 		if key == "enter" || key == " " {
+			m.queuedCities = map[string]bool{}
 			m.engine.StartTurn()
 			m.cycleALogs = tailLogs(m.engine.GetState().Logs, 8)
 			m.screen = screenGameA

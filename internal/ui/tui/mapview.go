@@ -2,6 +2,7 @@ package tui
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mirageglobe/teio-senki/internal/models"
@@ -19,7 +20,8 @@ var mapStyleCity = [6]lipgloss.Style{
 }
 
 var (
-	mapStyleSelected = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("201")) // bright magenta — selected city
+	mapStyleSelected = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("201")) // bright magenta
+	mapStyleQueued   = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("208")) // orange — selected city
 	mapStyleWave     = lipgloss.NewStyle().Foreground(lipgloss.Color("27"))              // ocean blue
 	mapStyleMountain = lipgloss.NewStyle().Foreground(lipgloss.Color("130"))             // brown
 	mapStyleHills    = lipgloss.NewStyle().Foreground(lipgloss.Color("179")) // tan
@@ -317,18 +319,192 @@ func drawPoly(c *canvas, poly [][2]float64) {
 	}
 }
 
+// --- static layer pre-computation ---
+// borders, terrain, and rivers never change; compute once at first render.
+
+var (
+	staticOnce      sync.Once
+	staticBordDots  []bool // raw pixel grid used for sea erosion
+	staticBordRune  []rune
+	staticMtnRune   []rune
+	staticHillRune  []rune
+	staticRiverRune []rune
+	staticMarshRune []rune
+	staticForestRune []rune
+	staticSteppeRune []rune
+)
+
+func initStatic() {
+	staticOnce.Do(func() {
+		brd := newCanvas()
+		drawPoly(brd, chinaBorder)
+		drawPoly(brd, taiwanBorder)
+		drawPoly(brd, kyushuBorder)
+		drawPoly(brd, shikokuBorder)
+		drawPoly(brd, honshuBorder)
+		drawPoly(brd, koreaBorder)
+		staticBordDots = brd.dots
+		staticBordRune = []rune(brd.render())
+
+		mtn := newCanvas()
+		for _, r := range mountainRanges {
+			x0, y1 := geoToPixel(r[0], r[1])
+			x1, y0 := geoToPixel(r[2], r[3])
+			for py := y0; py <= y1; py++ {
+				for px := x0; px <= x1; px++ {
+					lon, lat := pixelToGeo(px, py)
+					if !pointInPoly(lon, lat, chinaBorder) {
+						continue
+					}
+					if (px+py)%2 == 0 {
+						mtn.set(px, py)
+					}
+				}
+			}
+		}
+		staticMtnRune = []rune(mtn.render())
+
+		hill := newCanvas()
+		for _, r := range hillsRegions {
+			x0, y1 := geoToPixel(r[0], r[1])
+			x1, y0 := geoToPixel(r[2], r[3])
+			for py := y0; py <= y1; py++ {
+				for px := x0; px <= x1; px++ {
+					lon, lat := pixelToGeo(px, py)
+					if !pointInPoly(lon, lat, chinaBorder) {
+						continue
+					}
+					if (px+py)%5 == 0 {
+						hill.set(px, py)
+					}
+				}
+			}
+		}
+		staticHillRune = []rune(hill.render())
+
+		rv := newCanvas()
+		for _, river := range rivers {
+			for i := 1; i < len(river); i++ {
+				x0, y0 := geoToPixel(river[i-1][0], river[i-1][1])
+				x1, y1 := geoToPixel(river[i][0], river[i][1])
+				rv.line(x0, y0, x1, y1)
+			}
+		}
+		staticRiverRune = []rune(rv.render())
+
+		msh := newCanvas()
+		for _, r := range marshRegions {
+			x0, y1 := geoToPixel(r[0], r[1])
+			x1, y0 := geoToPixel(r[2], r[3])
+			for py := y0; py <= y1; py++ {
+				for px := x0; px <= x1; px++ {
+					lon, lat := pixelToGeo(px, py)
+					if !pointInPoly(lon, lat, chinaBorder) {
+						continue
+					}
+					if (px*2+py)%6 == 0 {
+						msh.set(px, py)
+					}
+				}
+			}
+		}
+		staticMarshRune = []rune(msh.render())
+
+		fst := newCanvas()
+		for _, r := range forestRegions {
+			x0, y1 := geoToPixel(r[0], r[1])
+			x1, y0 := geoToPixel(r[2], r[3])
+			for py := y0; py <= y1; py++ {
+				for px := x0; px <= x1; px++ {
+					lon, lat := pixelToGeo(px, py)
+					if !pointInPoly(lon, lat, chinaBorder) {
+						continue
+					}
+					if (px*3+py*2)%7 == 0 {
+						fst.set(px, py)
+					}
+				}
+			}
+		}
+		staticForestRune = []rune(fst.render())
+
+		stp := newCanvas()
+		for _, r := range steppeRegions {
+			x0, y1 := geoToPixel(r[0], r[1])
+			x1, y0 := geoToPixel(r[2], r[3])
+			for py := y0; py <= y1; py++ {
+				for px := x0; px <= x1; px++ {
+					lon, lat := pixelToGeo(px, py)
+					if !pointInPoly(lon, lat, chinaBorder) {
+						continue
+					}
+					if (px*4+py*3)%11 == 0 {
+						stp.set(px, py)
+					}
+				}
+			}
+		}
+		staticSteppeRune = []rune(stp.render())
+	})
+}
+
+// --- render cache ---
+// RenderMap output is identical when (cityPhase, wavePhase, season, selectedCity, queuedCities) are unchanged.
+
+type mapCacheKey struct {
+	cityPhase    int
+	wavePhase    int
+	season       string
+	selectedCity string
+}
+
+var (
+	mapLastKey    mapCacheKey
+	mapLastQueued map[string]bool
+	mapLastResult string
+)
+
+// CachedRenderMap returns a cached string when parameters are unchanged since the last call.
+func CachedRenderMap(cities []models.City, cityPhase int, season string, wavePhase int, selectedCity string, queuedCities map[string]bool) string {
+	key := mapCacheKey{cityPhase, wavePhase, season, selectedCity}
+	if mapLastResult != "" && key == mapLastKey && mapsEqualBool(mapLastQueued, queuedCities) {
+		return mapLastResult
+	}
+	result := RenderMap(cities, cityPhase, season, wavePhase, selectedCity, queuedCities)
+	mapLastKey = key
+	mapLastQueued = copyMapBool(queuedCities)
+	mapLastResult = result
+	return result
+}
+
+func mapsEqualBool(a, b map[string]bool) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for k, v := range a {
+		if b[k] != v {
+			return false
+		}
+	}
+	return true
+}
+
+func copyMapBool(m map[string]bool) map[string]bool {
+	if m == nil {
+		return nil
+	}
+	out := make(map[string]bool, len(m))
+	for k, v := range m {
+		out[k] = v
+	}
+	return out
+}
+
 // RenderMap returns a coloured braille string with layered terrain:
 //
 //	selected city (magenta) > cities (bold gold) > border (seasonal) > mountains > hills > rivers > marsh > forests > steppe > sea
-func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int, selectedCity string) string {
-	// --- borders ---
-	borders := newCanvas()
-	drawPoly(borders, chinaBorder)
-	drawPoly(borders, taiwanBorder)
-	drawPoly(borders, kyushuBorder)
-	drawPoly(borders, shikokuBorder)
-	drawPoly(borders, honshuBorder)
-	drawPoly(borders, koreaBorder)
+func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int, selectedCity string, queuedCities map[string]bool) string {
+	initStatic()
 
 	// --- city POIs ---
 	citydots := newCanvas()
@@ -342,7 +518,7 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 		}
 	}
 
-	// --- selected city highlight (same size as city dot, magenta) ---
+	// --- selected city highlight (magenta) ---
 	selecteddots := newCanvas()
 	if selectedCity != "" {
 		if geo, ok := cityGeo[selectedCity]; ok {
@@ -354,107 +530,19 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 		}
 	}
 
-	// --- mountain terrain (checkerboard, inside chinaBorder) ---
-	mountains := newCanvas()
-	for _, r := range mountainRanges {
-		x0, y1 := geoToPixel(r[0], r[1])
-		x1, y0 := geoToPixel(r[2], r[3])
-		for py := y0; py <= y1; py++ {
-			for px := x0; px <= x1; px++ {
-				lon, lat := pixelToGeo(px, py)
-				if !pointInPoly(lon, lat, chinaBorder) {
-					continue
-				}
-				if (px+py)%2 == 0 {
-					mountains.set(px, py)
-				}
-			}
+	// --- queued city highlight (orange) ---
+	queueddots := newCanvas()
+	for name := range queuedCities {
+		if geo, ok := cityGeo[name]; ok {
+			cx, cy := geoToPixel(geo[0], geo[1])
+			queueddots.set(cx, cy)
+			queueddots.set(cx+1, cy)
+			queueddots.set(cx, cy+1)
+			queueddots.set(cx+1, cy+1)
 		}
 	}
 
-	// --- forest terrain (sparse organic scatter, inside chinaBorder) ---
-	forests := newCanvas()
-	for _, r := range forestRegions {
-		x0, y1 := geoToPixel(r[0], r[1])
-		x1, y0 := geoToPixel(r[2], r[3])
-		for py := y0; py <= y1; py++ {
-			for px := x0; px <= x1; px++ {
-				lon, lat := pixelToGeo(px, py)
-				if !pointInPoly(lon, lat, chinaBorder) {
-					continue
-				}
-				if (px*3+py*2)%7 == 0 {
-					forests.set(px, py)
-				}
-			}
-		}
-	}
-
-	// --- hills terrain (light diagonal pattern, inside chinaBorder) ---
-	hillsCanvas := newCanvas()
-	for _, r := range hillsRegions {
-		x0, y1 := geoToPixel(r[0], r[1])
-		x1, y0 := geoToPixel(r[2], r[3])
-		for py := y0; py <= y1; py++ {
-			for px := x0; px <= x1; px++ {
-				lon, lat := pixelToGeo(px, py)
-				if !pointInPoly(lon, lat, chinaBorder) {
-					continue
-				}
-				if (px+py)%5 == 0 {
-					hillsCanvas.set(px, py)
-				}
-			}
-		}
-	}
-
-	// --- marsh terrain (medium dot pattern, inside chinaBorder) ---
-	marshCanvas := newCanvas()
-	for _, r := range marshRegions {
-		x0, y1 := geoToPixel(r[0], r[1])
-		x1, y0 := geoToPixel(r[2], r[3])
-		for py := y0; py <= y1; py++ {
-			for px := x0; px <= x1; px++ {
-				lon, lat := pixelToGeo(px, py)
-				if !pointInPoly(lon, lat, chinaBorder) {
-					continue
-				}
-				if (px*2+py)%6 == 0 {
-					marshCanvas.set(px, py)
-				}
-			}
-		}
-	}
-
-	// --- steppe terrain (very sparse scatter, inside chinaBorder northern regions) ---
-	steppeCanvas := newCanvas()
-	for _, r := range steppeRegions {
-		x0, y1 := geoToPixel(r[0], r[1])
-		x1, y0 := geoToPixel(r[2], r[3])
-		for py := y0; py <= y1; py++ {
-			for px := x0; px <= x1; px++ {
-				lon, lat := pixelToGeo(px, py)
-				if !pointInPoly(lon, lat, chinaBorder) {
-					continue
-				}
-				if (px*4+py*3)%11 == 0 {
-					steppeCanvas.set(px, py)
-				}
-			}
-		}
-	}
-
-	// --- rivers (continuous polylines) ---
-	riverCanvas := newCanvas()
-	for _, river := range rivers {
-		for i := 1; i < len(river); i++ {
-			x0, y0 := geoToPixel(river[i-1][0], river[i-1][1])
-			x1, y1 := geoToPixel(river[i][0], river[i][1])
-			riverCanvas.line(x0, y0, x1, y1)
-		}
-	}
-
-	// --- sea (animated diagonal ripple, masked by chinaBorder + 1px coastline buffer) ---
+	// --- sea (animated diagonal ripple, masked by land polygons + 1px coastline buffer) ---
 	water := newCanvas()
 	for _, r := range seaRegions {
 		x0, y1 := geoToPixel(r[0], r[1])
@@ -479,10 +567,10 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 			if !water.dots[py*pw+px] {
 				continue
 			}
-			if (px > 0 && borders.dots[py*pw+(px-1)]) ||
-				(px < pw-1 && borders.dots[py*pw+(px+1)]) ||
-				(py > 0 && borders.dots[(py-1)*pw+px]) ||
-				(py < ph-1 && borders.dots[(py+1)*pw+px]) {
+			if (px > 0 && staticBordDots[py*pw+(px-1)]) ||
+				(px < pw-1 && staticBordDots[py*pw+(px+1)]) ||
+				(py > 0 && staticBordDots[(py-1)*pw+px]) ||
+				(py < ph-1 && staticBordDots[(py+1)*pw+px]) {
 				water.dots[py*pw+px] = false
 			}
 		}
@@ -502,34 +590,31 @@ func RenderMap(cities []models.City, cityPhase int, season string, wavePhase int
 	}
 	styleCity := mapStyleCity[step]
 
-	// --- merge layers: selected > cities > border > mountains > hills > rivers > marsh > forests > steppe > sea ---
-	borderRunes   := []rune(borders.render())
+	// --- merge layers: selected > queued > cities > border > mountains > hills > rivers > marsh > forests > steppe > sea ---
 	selectedRunes := []rune(selecteddots.render())
+	queuedRunes   := []rune(queueddots.render())
 	cityRunes     := []rune(citydots.render())
-	mountainRunes := []rune(mountains.render())
-	hillsRunes    := []rune(hillsCanvas.render())
-	riverRunes    := []rune(riverCanvas.render())
-	marshRunes    := []rune(marshCanvas.render())
-	forestRunes   := []rune(forests.render())
-	steppeRunes   := []rune(steppeCanvas.render())
 	waterRunes    := []rune(water.render())
 
 	var sb strings.Builder
-	for i, br := range borderRunes {
+	for i, br := range staticBordRune {
 		xr  := selectedRunes[i]
+		qr  := queuedRunes[i]
 		cr  := cityRunes[i]
-		mr  := mountainRunes[i]
-		hr  := hillsRunes[i]
-		rr  := riverRunes[i]
-		mar := marshRunes[i]
-		fr  := forestRunes[i]
-		sr  := steppeRunes[i]
+		mr  := staticMtnRune[i]
+		hr  := staticHillRune[i]
+		rr  := staticRiverRune[i]
+		mar := staticMarshRune[i]
+		fr  := staticForestRune[i]
+		sr  := staticSteppeRune[i]
 		wr  := waterRunes[i]
 		switch {
 		case br == '\n':
 			sb.WriteRune('\n')
 		case xr != 0x2800:
 			sb.WriteString(mapStyleSelected.Render(string(xr)))
+		case qr != 0x2800:
+			sb.WriteString(mapStyleQueued.Render(string(qr)))
 		case cr != 0x2800:
 			sb.WriteString(styleCity.Render(string(cr)))
 		case br != 0x2800:
