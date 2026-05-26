@@ -17,7 +17,7 @@ func tick() tea.Cmd {
 	return tea.Tick(35*time.Millisecond, func(time.Time) tea.Msg { return tickMsg{} })
 }
 
-var splashFull = []rune("\"Sovereignty through the Ledger,\nStrategy through the Elements.\"\n\n[ press enter ]")
+var splashFull = []rune("\"Sovereignty through the Ledger, Strategy through the Elements.\"  [ press enter ]")
 
 type screen int
 
