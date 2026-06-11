@@ -41,6 +41,7 @@ internal/
   vm/                   # Lua VM binding layer — exposes typed Go API to Lua content
     loader/             # script discovery, hot-reload watcher, embed fallback
     bridge/             # Go↔Lua type adapters: GameState table, Command table
+  version/              # version constant (Current string)
   ui/
     tui/                # Bubble Tea terminal frontend — dumb view, zero game logic
       map/              # ASCII strategic map
@@ -429,12 +430,14 @@ rules:
 | **3: simulation** | city, officers, armies, battle, diplomacy, victory — engine + TUI | 3–8        | [ ]             |
 | **4: rendering**  | Ebitengine pixel art layer over proven engine                     | 9, 10      | [ ]             |
 
+> M0 done · M1 in progress
+
 ### milestone tracking
 
 | milestone | focus                                                              | status          |
 | :-------- | :----------------------------------------------------------------- | :-------------- |
-| 0         | Go scaffold — project structure, Makefile, data pipeline           | [~] in progress |
-| 1         | engine core — ledger, clock, essence, economy, turn loop           | [ ]             |
+| 0         | Go scaffold — project structure, Makefile, data pipeline           | [x] done        |
+| 1         | engine core — ledger, clock, essence, economy, turn loop           | [~] in progress |
 | 2         | TUI shell — Bubble Tea; ASCII map; full game loop playable         | [ ]             |
 | 3         | city economics — Go engine + TUI city screen                       | [ ]             |
 | 4         | officers — management & allegiance; Go engine + TUI officer screen | [ ]             |
@@ -447,33 +450,33 @@ rules:
 
 ---
 
-### milestone 0 — foundation `in progress`
+### milestone 0 — foundation `done`
 
 > status key: `[x]` done — `[~]` partial — `[ ]` not started
 
-| item                                                            | status | notes |
-| :-------------------------------------------------------------- | :----- | :---- |
-| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio)   | [x]    |       |
-| splash screen (fade, blink prompt, auto-advance, key dismiss)   | [ ]    |       |
-| main entry point (load data, init ledger, start game loop)      | [ ]    |       |
-| design: officer + city archives (YAML, 498 officers, 30 cities) | [x]    |       |
-| design: bazi calendar, turn structure, ledger schema            | [x]    |       |
+| item                                                            | status | notes                                                         |
+| :-------------------------------------------------------------- | :----- | :------------------------------------------------------------ |
+| Go + Ebitengine project scaffold (Makefile, go.mod, cmd/teio)   | [x]    |                                                               |
+| splash screen (fade, blink prompt, auto-advance, key dismiss)   | [x]    | braille pixel art, animated title shine, tagline, key dismiss |
+| main entry point (load data, init ledger, start game loop)      | [x]    | cmd/teio/main.go: LoadData → tui.Run                          |
+| design: officer + city archives (YAML, 498 officers, 30 cities) | [x]    |                                                               |
+| design: bazi calendar, turn structure, ledger schema            | [x]    |                                                               |
 
 ---
 
-### milestone 1 — data + turn engine `not started`
+### milestone 1 — data + turn engine `in progress`
 
 JSON archive loading, in-memory ledger, bazi clock, and 3-cycle turn loop. **priority focus: AD 189 scenario.**
 
-| item                                                              | status | notes                                           |
-| :---------------------------------------------------------------- | :----- | :---------------------------------------------- |
-| JSON archive loading + ledger seed                                | [ ]    | `internal/engine/ledger` as typed Go structs    |
-| scenario & sovereign selection logic                              | [ ]    | filter officers/cities by faction at game start |
-| bazi calendar + essence drift                                     | [ ]    | `internal/core/clock` + `internal/core/essence` |
-| cycle A — world update (season, essence, loyalty, supply)         | [ ]    |                                                 |
-| cycle B — player commands (city / officer / military / diplomacy) | [ ]    |                                                 |
-| cycle C — sequential settlement                                   | [ ]    | sequential delta apply; no snapshot/restore     |
-| `go test ./internal/...` — unit + integration tests               | [ ]    |                                                 |
+| item                                                              | status | notes                                                        |
+| :---------------------------------------------------------------- | :----- | :----------------------------------------------------------- |
+| JSON archive loading + ledger seed                                | [x]    | `ledger.LoadData` reads officers.json + cities.json          |
+| scenario & sovereign selection logic                              | [ ]    | filter officers/cities by faction at game start              |
+| bazi calendar + essence drift                                     | [x]    | `internal/core/clock` + `internal/core/essence` with tests   |
+| cycle A — world update (season, essence, loyalty, supply)         | [x]    | `sovereign.StartTurn` → `runCycleA`                          |
+| cycle B — player commands (city / officer / military / diplomacy) | [x]    | `sovereign.QueueCommand` with CP validation                  |
+| cycle C — sequential settlement                                   | [x]    | `sovereign.SettleTurn` → `executeCommand` + `runCycleCSettle`|
+| `go test ./internal/...` — unit + integration tests               | [x]    | ledger, sovereign, clock, essence, economy all have tests    |
 
 ---
 
