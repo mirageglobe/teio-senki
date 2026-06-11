@@ -1,23 +1,14 @@
 # Claude Code
 .claude/
 
-# Godot
-godot/.godot/
-godot/exports/
-*.translation
-*.import
-
-# Godot generated
-godot/**/*.uid
-
-# Generated from YAML via `make data` — do not commit
-godot/data/officers.json
-godot/data/cities.json
+# Generated from YAML via `make data` — do not edit directly
+# assets/data/*.json is intentionally tracked (runtime dependency for Go)
 
 # Game runtime state
-godot/data/ledger.db
-godot/data/ledger.db-shm
-godot/data/ledger.db-wal
+save.json
+
+# Build output
+bin/
 
 # macOS
 .DS_Store

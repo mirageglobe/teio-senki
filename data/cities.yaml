@@ -1,7 +1,7 @@
 # 帝王战纪：三国录 — World Ledger: Cities
 #
 # Grid: x 0–19 (west → east), y 0–14 (south → north)
-# Terrain: plain | mountain | forest | river | coast | pass
+# Terrain: plain | mountain | forest | river | coast | pass | marsh | hills | steppe
 # Faction: starting controller at scenario open (190 AD — Dong Zhuo Chaos)
 #
 # Four Economic Pillars (1–100):
@@ -445,3 +445,192 @@ cities:
     technology: 52
     order: 62
     faction: "Sun Ce"
+
+  # ── Nanzhong / South (南中) ─────────────────────────────────────────────────
+  # Shu Han's southern frontier — pacified by Zhuge Liang in 225 AD.
+
+  - name: "Yuesui"
+    chinese: "越嶲"
+    region: "Yi Zhou"
+    terrain: mountain
+    x: 3
+    y: 3
+    population: 60000
+    defense: 65
+    agriculture: 55
+    commerce: 30
+    technology: 28
+    order: 40
+    faction: "Liu Zhang"
+
+  - name: "Jianning"
+    chinese: "建寧"
+    region: "Yi Zhou"
+    terrain: plain
+    x: 4
+    y: 2
+    population: 80000
+    defense: 55
+    agriculture: 60
+    commerce: 45
+    technology: 35
+    order: 38
+    faction: "Liu Zhang"
+
+  - name: "Yongchang"
+    chinese: "永昌"
+    region: "Yi Zhou"
+    terrain: forest
+    x: 2
+    y: 2
+    population: 50000
+    defense: 60
+    agriculture: 65
+    commerce: 35
+    technology: 25
+    order: 35
+    faction: "Liu Zhang"
+
+  # ── Jiao Province (交州) ────────────────────────────────────────────────────
+  # Wu's southernmost territory — governed by Shi Xie (士燮) until 226 AD.
+
+  - name: "Panyu"
+    chinese: "番禺"
+    region: "Jiao Zhou"
+    terrain: coast
+    x: 9
+    y: 1
+    population: 150000
+    defense: 55
+    agriculture: 65
+    commerce: 80
+    technology: 58
+    order: 55
+    faction: "Shi Xie"
+
+  - name: "Jiaozhi"
+    chinese: "交趾"
+    region: "Jiao Zhou"
+    terrain: river
+    x: 5
+    y: 0
+    population: 100000
+    defense: 50
+    agriculture: 70
+    commerce: 55
+    technology: 40
+    order: 45
+    faction: "Shi Xie"
+
+  # ── Lelang / Korea (樂浪) ─────────────────────────────────────────────────
+  # Han commandery in northern Korea, administered from ~108 BC until 313 AD.
+  # Gateway for Han influence into the Korean peninsula and Japan.
+
+  - name: "Lelang"
+    chinese: "樂浪"
+    region: "You Zhou"
+    terrain: plain
+    x: 17
+    y: 12
+    population: 50000
+    defense: 62
+    agriculture: 45
+    commerce: 42
+    technology: 35
+    order: 52
+    faction: "Han"
+
+  # Early Goguryeo capital in the Tongge River valley; mountain pass fortress.
+  - name: "Gungnaeseong"
+    chinese: "國內城"
+    region: "Korea"
+    terrain: mountain
+    x: 17
+    y: 14
+    population: 80000
+    defense: 72
+    agriculture: 40
+    commerce: 32
+    technology: 28
+    order: 55
+    faction: "Goguryeo"
+
+  # Proto-Silla polity centred near modern Gyeongju; emerging tribal confederacy.
+  - name: "Saro"
+    chinese: "斯盧"
+    region: "Korea"
+    terrain: plain
+    x: 18
+    y: 10
+    population: 50000
+    defense: 38
+    agriculture: 48
+    commerce: 38
+    technology: 25
+    order: 50
+    faction: "Silla"
+
+  # ── Wa / Japan (倭) ──────────────────────────────────────────────────────
+  # Ito Kingdom (伊都国) in northern Kyushu — the official Han diplomatic port.
+  # Han-appointed inspector resided here; received tribute missions from Wa.
+
+  - name: "Ito"
+    chinese: "伊都"
+    region: "Wa"
+    terrain: coast
+    x: 19
+    y: 9
+    population: 30000
+    defense: 28
+    agriculture: 38
+    commerce: 55
+    technology: 22
+    order: 42
+    faction: "Wa"
+
+  # Queen Himiko's kingdom; exact location debated but northern Kyushu is consensus.
+  - name: "Yamatai"
+    chinese: "邪馬台"
+    region: "Wa"
+    terrain: forest
+    x: 19
+    y: 8
+    population: 40000
+    defense: 32
+    agriculture: 45
+    commerce: 42
+    technology: 22
+    order: 58
+    faction: "Wa"
+
+  # Ancient Izumo polity in western Honshu; famed shrine culture and sea trade.
+  - name: "Izumo"
+    chinese: "出雲"
+    region: "Wa"
+    terrain: plain
+    x: 19
+    y: 11
+    population: 35000
+    defense: 28
+    agriculture: 40
+    commerce: 45
+    technology: 20
+    order: 48
+    faction: "Wa"
+
+  # ── Jiuzhen / Vietnam (九真) ──────────────────────────────────────────────
+  # Second Han commandery south of Jiaozhi; administered until the fall of Han.
+
+  - name: "Jiuzhen"
+    chinese: "九真"
+    region: "Jiao Zhou"
+    terrain: river
+    x: 6
+    y: 0
+    population: 70000
+    defense: 45
+    agriculture: 62
+    commerce: 48
+    technology: 30
+    order: 40
+    faction: "Han"
